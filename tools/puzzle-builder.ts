@@ -116,7 +116,7 @@ function countIntersections(
 }
 
 async function generatePuzzle(): Promise<Puzzle | null> {
-	const words = await fs.readFile('../public/words-filtered.txt', { encoding: 'utf-8' })
+	const words = await fs.readFile('../public/fair-puzzle-words.txt', { encoding: 'utf-8' })
 		.then(w => w.split('\n'));
 	console.log(`loaded ${words.length} words`);
 
@@ -130,7 +130,7 @@ async function generatePuzzle(): Promise<Puzzle | null> {
 	// Only include words that use our selected letters
 	const filteredWords = words
 		.filter(word => word.length >= MIN_WORD_LENGTH)
-		.filter(word => selectedLetters.some(letter => word.includes(letter)))
+		.filter(word => word.split('').every(letter => selectedLetters.includes(letter)))
 		.sort((a, b) => b.length - a.length); // Prioritize longer words
 
 	console.log('filtered words:', filteredWords.length);
@@ -199,11 +199,18 @@ async function generatePuzzle(): Promise<Puzzle | null> {
 }
 
 async function r() {
-	const puzzle = await generatePuzzle();
-	if (puzzle) {
-		console.log(JSON.stringify(puzzle, null, 2));
-	} else {
-		console.log('Failed to generate valid puzzle');
+	for(let i = 0; i < 10000; i++) {
+		const puzzle = await generatePuzzle();
+		if (puzzle) {
+			if (puzzle.words.length === 1) {
+				continue;
+			}
+
+			console.log(JSON.stringify(puzzle, null, 2));
+			break;
+		} else {
+			console.log('Failed to generate valid puzzle');
+		}
 	}
 }
 
