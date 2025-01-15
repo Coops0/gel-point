@@ -1,217 +1,194 @@
-import { promises as fs } from 'fs';
-
-const LETTER_COUNT = 5;
-const PUZZLE_GRID_HEIGHT = 5;
-const PUZZLE_GRID_WIDTH = 5;
-const MIN_WORD_LENGTH = 3;
-
-const ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
+import * as fs from 'fs';
 
 interface Position {
-	x: number;
-	y: number;
+    row: number;
+    col: number;
 }
 
 interface WordPlacement {
-	word: string;
-	start: Position;
-	direction: 'horizontal' | 'vertical';
+    word: string;
+    positions: Position[];
+    direction: 'horizontal' | 'vertical';
 }
 
 interface Puzzle {
-	grid: string[];
-	words: string[];
+    grid: string[];
+    words: string[];
 }
 
-function createEmptyGrid(): string[][] {
-	return Array(PUZZLE_GRID_HEIGHT).fill(0).map(() =>
-		Array(PUZZLE_GRID_WIDTH).fill('0')
-	);
+class PuzzleGenerator {
+    private readonly wordList: string[];
+    private readonly gridSize: number;
+    private readonly grid: string[][];
+    private readonly availableLetters: string[];
+    private placedWords: WordPlacement[] = [];
+
+    constructor(wordListPath: string, availableLetters: string[], gridSize: number = 8) {
+        this.gridSize = gridSize;
+        this.availableLetters = availableLetters.map(l => l.toLowerCase());
+
+        this.wordList = this.loadWordList(wordListPath);
+        this.grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill('0'));
+    }
+
+    private loadWordList(filePath: string): string[] {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        return content.toLowerCase().split('\n')
+            .map(word => word.trim())
+            .filter(word => word.length >= 3)
+            .filter(word => this.canMakeWordFromLetters(word));
+    }
+
+    private canMakeWordFromLetters(word: string): boolean {
+        const letterCounts = new Map<string, number>();
+        for (const letter of this.availableLetters) {
+            letterCounts.set(letter, (letterCounts.get(letter) || 0) + 1);
+        }
+
+        for (const char of word) {
+            const count = letterCounts.get(char) || 0;
+            if (count === 0) {
+                return false;
+            } else {
+                letterCounts.set(char, count - 1);
+            }
+        }
+        return true;
+    }
+
+    private canPlaceWord(word: string, startPos: Position, direction: 'horizontal' | 'vertical'): boolean {
+        for (let i = 0; i < word.length; i++) {
+            const pos = {
+                row: direction === 'horizontal' ? startPos.row : startPos.row + i,
+                col: direction === 'horizontal' ? startPos.col + i : startPos.col
+            };
+
+            // Check bounds
+            if (pos.row >= this.gridSize || pos.col >= this.gridSize) return false;
+
+            // Check if cell is empty or has matching letter
+            if (this.grid[pos.row][pos.col] !== '0' &&
+                this.grid[pos.row][pos.col] !== word[i]) {
+                return false;
+            }
+
+            // Check adjacent cells (except intersections)
+            if (direction === 'horizontal') {
+                // Check cells above and below
+                if (pos.row > 0 && this.grid[pos.row - 1][pos.col] !== '0') return false;
+                if (pos.row < this.gridSize - 1 && this.grid[pos.row + 1][pos.col] !== '0') return false;
+            } else {
+                // Check cells left and right
+                if (pos.col > 0 && this.grid[pos.row][pos.col - 1] !== '0') return false;
+                if (pos.col < this.gridSize - 1 && this.grid[pos.row][pos.col + 1] !== '0') return false;
+            }
+
+            // positions.push(pos);
+        }
+
+        // Check spacing before and after word
+        const beforePos = direction === 'horizontal'
+            ? { row: startPos.row, col: startPos.col - 1 }
+            : { row: startPos.row - 1, col: startPos.col };
+
+        const afterPos = direction === 'horizontal'
+            ? { row: startPos.row, col: startPos.col + word.length }
+            : { row: startPos.row + word.length, col: startPos.col };
+
+        if (beforePos.col >= 0 && beforePos.row >= 0 && this.grid[beforePos.row][beforePos.col] !== '0') {
+            return false;
+        }
+
+        return !(this.grid[afterPos.row][afterPos.col] !== '0' && afterPos.row < this.gridSize && afterPos.col < this.gridSize);
+
+    }
+
+    private placeWord(word: string, startPos: Position, direction: 'horizontal' | 'vertical'): void {
+        const positions: Position[] = [];
+        for (let i = 0; i < word.length; i++) {
+            const pos = {
+                row: direction === 'horizontal' ? startPos.row : startPos.row + i,
+                col: direction === 'horizontal' ? startPos.col + i : startPos.col
+            };
+            this.grid[pos.row][pos.col] = word[i];
+            positions.push(pos);
+        }
+        this.placedWords.push({ word, positions, direction });
+    }
+
+    private findIntersection(word: string): { pos: Position; direction: 'horizontal' | 'vertical' } | null {
+        for (const placedWord of this.placedWords) {
+            for (let i = 0; i < word.length; i++) {
+                for (let j = 0; j < placedWord.positions.length; j++) {
+                    const pos = placedWord.positions[j];
+                    if (word[i] === this.grid[pos.row][pos.col]) {
+                        // Try both directions
+                        const directions: Array<'horizontal' | 'vertical'> =
+                            [placedWord.direction === 'horizontal' ? 'vertical' : 'horizontal'];
+
+                        for (const direction of directions) {
+                            const startPos = {
+                                row: direction === 'horizontal' ? pos.row : pos.row - i,
+                                col: direction === 'horizontal' ? pos.col - i : pos.col
+                            };
+
+                            if (startPos.row >= 0 && startPos.col >= 0 &&
+                                startPos.row + (direction === 'vertical' ? word.length - 1 : 0) < this.gridSize &&
+                                startPos.col + (direction === 'horizontal' ? word.length - 1 : 0) < this.gridSize) {
+
+                                if (this.canPlaceWord(word, startPos, direction)) {
+                                    return { pos: startPos, direction };
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public generatePuzzle(): Puzzle {
+        // Start with a random word in the middle
+        const firstWord = this.wordList[Math.floor(Math.random() * this.wordList.length)];
+        const startPos = {
+            row: Math.floor(this.gridSize / 2),
+            col: Math.floor((this.gridSize - firstWord.length) / 2)
+        };
+        this.placeWord(firstWord, startPos, 'horizontal');
+
+        // Try to place more words
+        let attempts = 0;
+        const maxAttempts = 100;
+
+        while (attempts < maxAttempts) {
+            const word = this.wordList[Math.floor(Math.random() * this.wordList.length)];
+            if (this.placedWords.some(w => w.word === word)) continue;
+
+            const intersection = this.findIntersection(word);
+            if (intersection) {
+                this.placeWord(word, intersection.pos, intersection.direction);
+                attempts = 0;  // Reset attempts on successful placement
+            }
+            attempts++;
+        }
+
+        // Format output
+        return {
+            grid: this.grid.map(row => row.join('')),
+            words: this.placedWords.map(w => {
+                const coords = w.positions.map(p => `${p.col},${p.row}`).join(',');
+                return `${w.word},${coords}`;
+            })
+        };
+    }
 }
 
-function canPlaceWord(
-	grid: string[][],
-	word: string,
-	start: Position,
-	direction: 'horizontal' | 'vertical'
-): boolean {
-	if (direction === 'horizontal') {
-		if (start.x + word.length > PUZZLE_GRID_WIDTH) return false;
+// Usage example:
+const generator = new PuzzleGenerator(
+    '../public/words-filtered.txt',
+    ['b', 'o', 'r', 'i', 'n']
+);
 
-		for (let i = 0; i < word.length; i++) {
-			const cell = grid[start.y][start.x + i];
-			if (cell !== '0' && cell !== word[i]) return false;
-
-			// No adjacent words on same axis
-			if (i === 0 && start.x > 0 && grid[start.y][start.x - 1] !== '0') return false;
-			if (i === word.length - 1 && start.x + i + 1 < PUZZLE_GRID_WIDTH &&
-				grid[start.y][start.x + i + 1] !== '0') return false;
-		}
-	} else {
-		if (start.y + word.length > PUZZLE_GRID_HEIGHT) return false;
-
-		for (let i = 0; i < word.length; i++) {
-			const cell = grid[start.y + i][start.x];
-			if (cell !== '0' && cell !== word[i]) return false;
-
-			// No adjacent words on same axis
-			if (i === 0 && start.y > 0 && grid[start.y - 1][start.x] !== '0') return false;
-			if (i === word.length - 1 && start.y + i + 1 < PUZZLE_GRID_HEIGHT &&
-				grid[start.y + i + 1][start.x] !== '0') return false;
-		}
-	}
-	return true;
-}
-
-function placeWord(
-	grid: string[][],
-	word: string,
-	start: Position,
-	direction: 'horizontal' | 'vertical'
-) {
-	if (direction === 'horizontal') {
-		for (let i = 0; i < word.length; i++) {
-			grid[start.y][start.x + i] = word[i];
-		}
-	} else {
-		for (let i = 0; i < word.length; i++) {
-			grid[start.y + i][start.x] = word[i];
-		}
-	}
-}
-
-function formatWordPlacement(
-	word: string,
-	start: Position,
-	direction: 'horizontal' | 'vertical'
-): string {
-	const coordinates: number[] = [];
-	for (let i = 0; i < word.length; i++) {
-		if (direction === 'horizontal') {
-			coordinates.push(start.x + i, start.y);
-		} else {
-			coordinates.push(start.x, start.y + i);
-		}
-	}
-	return `${word},${coordinates.join(',')}`;
-}
-
-function countIntersections(
-	grid: string[][],
-	word: string,
-	start: Position,
-	direction: 'horizontal' | 'vertical'
-): number {
-	let intersections = 0;
-
-	for (let i = 0; i < word.length; i++) {
-		const x = direction === 'horizontal' ? start.x + i : start.x;
-		const y = direction === 'vertical' ? start.y + i : start.y;
-		if (grid[y][x] === word[i]) {
-			intersections++;
-		}
-	}
-
-	return intersections;
-}
-
-async function generatePuzzle(): Promise<Puzzle | null> {
-	const words = await fs.readFile('../public/fair-puzzle-words.txt', { encoding: 'utf-8' })
-		.then(w => w.split('\n'));
-	console.log(`loaded ${words.length} words`);
-
-	// Pick exactly LETTER_COUNT random letters
-	const selectedLetters = [...ALPHABET]
-		.sort(() => Math.random() - 0.5)
-		.slice(0, LETTER_COUNT);
-
-	console.log('chose letters:', selectedLetters);
-
-	// Only include words that use our selected letters
-	const filteredWords = words
-		.filter(word => word.length >= MIN_WORD_LENGTH)
-		.filter(word => word.split('').every(letter => selectedLetters.includes(letter)))
-		.sort((a, b) => b.length - a.length); // Prioritize longer words
-
-	console.log('filtered words:', filteredWords.length);
-
-	let bestGrid = createEmptyGrid();
-	let bestWords: WordPlacement[] = [];
-	let bestScore = -1;
-
-	// Try multiple puzzles
-	for (let puzzleAttempt = 0; puzzleAttempt < 20; puzzleAttempt++) {
-		const currentGrid = createEmptyGrid();
-		const placedWords: WordPlacement[] = [];
-
-		// Try to place words
-		for (const word of filteredWords) {
-			if (placedWords.find(p => p.word === word)) continue;
-
-			let bestPlacement: WordPlacement | null = null;
-			let maxIntersections = -1;
-
-			// Try every possible position
-			for (let y = 0; y < PUZZLE_GRID_HEIGHT; y++) {
-				for (let x = 0; x < PUZZLE_GRID_WIDTH; x++) {
-					for (const direction of ['horizontal', 'vertical'] as const) {
-						const pos = { x, y };
-						if (!canPlaceWord(currentGrid, word, pos, direction)) continue;
-
-						const intersections = countIntersections(currentGrid, word, pos, direction);
-						if (intersections > maxIntersections ||
-							(intersections === maxIntersections && Math.random() < 0.5)) {
-							maxIntersections = intersections;
-							bestPlacement = { word, start: pos, direction };
-						}
-					}
-				}
-			}
-
-			// Place the word with most intersections if found
-			if (bestPlacement && (maxIntersections > 0 || placedWords.length === 0)) {
-				placeWord(currentGrid, bestPlacement.word, bestPlacement.start, bestPlacement.direction);
-				placedWords.push(bestPlacement);
-			}
-		}
-
-		// Score based on word count and total intersections
-		const score = placedWords.length * 100 + placedWords.reduce((sum, placement) =>
-			sum + countIntersections(currentGrid, placement.word, placement.start, placement.direction), 0);
-
-		if (score > bestScore) {
-			bestScore = score;
-			bestGrid = currentGrid.map(row => [...row]);
-			bestWords = [...placedWords];
-		}
-	}
-
-	if (bestWords.length === 0) return null;
-
-	return {
-		grid: bestGrid.map(row => row.join('')),
-		words: bestWords.map(placement => formatWordPlacement(
-			placement.word,
-			placement.start,
-			placement.direction
-		))
-	};
-}
-
-async function r() {
-	for(let i = 0; i < 10000; i++) {
-		const puzzle = await generatePuzzle();
-		if (puzzle) {
-			if (puzzle.words.length === 1) {
-				continue;
-			}
-
-			console.log(JSON.stringify(puzzle, null, 2));
-			break;
-		} else {
-			console.log('Failed to generate valid puzzle');
-		}
-	}
-}
-
-r();
+const puzzle = generator.generatePuzzle();
+console.log(JSON.stringify(puzzle, null, 2));

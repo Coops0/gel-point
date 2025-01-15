@@ -72,7 +72,7 @@ onMounted(() => {
 
   setTimeout(async () => {
     const puzzles = await fetch('/puzzles.json').then(res => res.json());
-    const rawPuzzle = puzzles[1];
+    const rawPuzzle = puzzles[2];
 
     words.value = (<string[]>rawPuzzle.words).map(word => {
       const [w, ...coords] = word.split(',');
