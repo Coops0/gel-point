@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex items-center justify-center h-[600px]" ref="wordContainer">
+  <div class="relative flex items-center justify-center h-[500px]" ref="wordContainer">
     <div
         class="absolute top-4 text-2xl font-bold transition-opacity"
         :class="!buildingWord && 'opacity-0'"
@@ -16,36 +16,27 @@
           :x2="line.end.x + width/2"
           :y2="line.end.y + height/2"
           stroke="#818CF8"
-          stroke-width="3"
+          stroke-width="10"
           class="animated-line"
       />
     </svg>
 
-    <div
-        v-for="{ x, y, letter } in alignedLetters"
-        :key="letter"
-        :style="{ transform: `translate(${x}px, ${y}px)` }"
-        class="absolute flex items-center justify-center w-12 h-12 text-lg font-bold
-               transition-colors duration-200 rounded-full select-none cursor-pointer"
-        :class="[
-          'bg-indigo-400 text-white hover:bg-indigo-500',
-          buildingWord.includes(letter) && '!bg-indigo-600 ring-indigo-400 ring-4',
-          animating && 'animate-bonus'
-        ]"
-        @pointerdown="() => startTouch(letter)"
-        @pointerenter="() => hover(letter)"
-        @touchstart.prevent.passive="() => startTouch(letter)"
-    >
-      {{ letter }}
-    </div>
+    <Letter v-for="l in alignedLetters"
+            :key="l.letter" v-bind="l"
+            :animating
+            :active="buildingWord.includes(l.letter)"
+            @start-touch="() => startTouch(l.letter)"
+            @hover="() => hover(l.letter)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Position } from '@/App.vue';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import Letter from '@/components/Letter.vue';
 
-const CIRCLE_RADIUS = 80;
+const CIRCLE_RADIUS = 130;
 
 const wordContainer = ref<HTMLElement | null>(null);
 
@@ -54,9 +45,7 @@ const height = ref(600);
 
 const props = defineProps<{ letters: string[] }>();
 
-const showBonusAnimation = defineModel<boolean>({
-  required: true
-});
+const showBonusAnimation = defineModel<boolean>({ required: true });
 
 const emit = defineEmits<{ 'test-word': [word: string] }>();
 
@@ -111,8 +100,15 @@ function startTouch(letter: string) {
 }
 
 function hover(letter: string) {
-  if (buildingWord.value && !buildingWord.value.includes(letter)) {
+  const len = buildingWord.value.length;
+  if (!len) return;
+
+  const index = buildingWord.value.indexOf(letter);
+
+  if (index === -1) {
     buildingWord.value += letter;
+  } else if (index === len - 2) {
+    buildingWord.value = buildingWord.value.slice(0, -1);
   }
 }
 
@@ -120,11 +116,9 @@ function endTouch() {
   const word = buildingWord.value;
   buildingWord.value = '';
 
-  if (!word || word.length < 3) {
-    return;
+  if (word && word.length >= 3) {
+    emit('test-word', word);
   }
-
-  emit('test-word', word);
 }
 
 const updateDimensions = () => {
@@ -152,7 +146,7 @@ onUnmounted(() => {
 @keyframes lineDraw {
   to {
     stroke-dashoffset: 0;
-    stroke-width: 5;
+    stroke-width: 14;
   }
 }
 
@@ -174,21 +168,21 @@ onUnmounted(() => {
   }
 
   30% {
-    filter: brightness(1.2) blur(0px);
+    filter: brightness(1.2) blur(0);
     box-shadow: 0 0 8px 4px rgba(129, 140, 248, 0.4);
   }
 
-  45% {
-    filter: brightness(1.3) blur(0px);
+  50% {
+    filter: brightness(1.3) blur(0);
     box-shadow: 0 0 12px 6px rgba(165, 180, 252, 0.5);
   }
 
-  70% {
-    filter: brightness(1.1) blur(1px);
+  60% {
+    filter: brightness(1.1) blur(0);
     box-shadow: 0 0 10px 5px rgba(129, 140, 248, 0.3);
   }
 
-  100% {
+  80% {
     filter: brightness(1) blur(0);
     box-shadow: 0 0 0 0 rgba(129, 140, 248, 0);
   }
@@ -196,7 +190,5 @@ onUnmounted(() => {
 
 .animate-bonus {
   animation: bonusAnimation 3s ease-in-out forwards;
-  backface-visibility: hidden;
-  will-change: filter, box-shadow;
 }
 </style>

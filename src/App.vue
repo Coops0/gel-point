@@ -4,7 +4,7 @@
       <PuzzleGrid :grid="activeGrid"/>
       <WordBuilder :letters @test-word="testWord" v-model="showBonusAnimation"/>
 
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-2 items-center">
         <div class="font-bold">{{ foundBonusWords.length }} extra words found</div>
       </div>
     </div>

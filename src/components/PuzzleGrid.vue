@@ -8,7 +8,7 @@
       <div
           v-for="(cell, colIndex) in row"
           :key="colIndex"
-          class="flex items-center justify-center w-12 h-12 text-lg font-medium transition-colors"
+          class="flex items-center justify-center w-16 h-16 text-lg font-medium transition-colors"
           :class="{
             'bg-gray-400 text-white': cell !== null && cell !== undefined,
             'bg-gray-200': cell === null,
