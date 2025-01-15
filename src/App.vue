@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-8">
     <div v-if="letters.length">
       <PuzzleGrid :grid="activeGrid"/>
-      <WordBuilder :letters @test-word="testWord" :show-bonus-animation="showBonusAnimation"/>
+      <WordBuilder :letters @test-word="testWord" v-model="showBonusAnimation"/>
 
       <div class="flex flex-col gap-2">
         <div class="font-bold">{{ foundBonusWords.length }} extra words found</div>
@@ -23,7 +23,6 @@ import WordBuilder from '@/components/WordBuilder.vue';
 
 let allWordList: string[] = [];
 const foundBonusWords = ref<string[]>([]);
-
 const showBonusAnimation = ref(false);
 
 export interface Position {

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-2 justify-center">
+  <div class="flex flex-col gap-2 justify-center items-center">
     <div
         class="flex flex-row gap-2"
         v-for="(row, rowIndex) in grid"
