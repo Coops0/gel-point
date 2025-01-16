@@ -175,8 +175,6 @@ function mouseOver(rowIndex: number, colIndex: number) {
 }
 
 function copy() {
-
-
   const wordsSerialized = words.value.map(r => {
     const range = buildRange(r);
     const word = range.map(([i, j]) => grid.value[i][j] || '').join('');
@@ -191,7 +189,6 @@ function copy() {
     });
 
     const coords = range.map(([i, j]) => `${i},${j}`).join(',');
-
     return `${word},${coords}`;
   });
 

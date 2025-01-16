@@ -1,6 +1,7 @@
 import type { ComputedRef, Ref } from 'vue';
 import { computed, ref, watch } from 'vue';
 import { useWords } from '@/composables/words.composable.ts';
+import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 
 export type Cell = string | null | undefined;
 export type Grid = Cell[][];
@@ -35,9 +36,9 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
     const { words: allWords } = useWords();
 
     const staticGrid = ref<Grid>([]);
-    const activeGrid = ref<Grid>([]);
+    const activeGrid = useLocalStorage<Grid>('active-grid', []);
 
-    const foundBonusWords = ref<string[]>([]);
+    const foundBonusWords = useLocalStorage<string[]>('bonus-words', []);
 
     const words: ComputedRef<Array<WordMapping>> = computed(() =>
         (<string[]>puzzle.value?.words ?? []).map(word => {
@@ -92,19 +93,26 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
             return;
         }
 
+        const hasCachedPuzzle = staticGrid.value.length === 0 && activeGrid.value.length > 0;
+
         staticGrid.value = (<string[]>puzzle.value.grid).map(row =>
             row.split('').map(cell => cell === '0' ? undefined : cell)
         );
 
-        activeGrid.value = staticGrid.value.map(row =>
-            row.map(cell => cell === undefined ? undefined : null)
-        );
+        if (!hasCachedPuzzle) {
+            activeGrid.value = staticGrid.value.map(row =>
+                row.map(cell => cell === undefined ? undefined : null)
+            );
+        }
     }, { immediate: true });
+
+    const isLoaded = computed(() => puzzle.value !== null && activeGrid.value.length);
 
     return {
         grid: activeGrid,
         letters,
         foundBonusWords,
-        testWord
+        testWord,
+        isLoaded
     };
 };

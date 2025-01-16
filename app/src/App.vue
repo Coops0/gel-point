@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-8">
-    <div v-if="letters.length">
+    <div v-if="isLoaded">
       <PuzzleGrid :grid/>
       <WordBuilder
           :letters
@@ -20,6 +20,8 @@ import { ref } from 'vue';
 import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
 import { usePuzzle, WordTestResult } from '@/composables/puzzle.composable.ts';
+import { useLocalStorage } from '@/composables/local-storage.composable.ts';
+import { useTheme } from '@/composables/theme.composable.ts';
 
 // RULES:
 // Word length >= 3 characters
@@ -27,9 +29,9 @@ import { usePuzzle, WordTestResult } from '@/composables/puzzle.composable.ts';
 // Words can branch into others, but may not overlap: 2 words on the same axis must have at least 1 cell between them.
 
 const showBonusAnimation = ref(false);
-const puzzleIndex = ref(0);
+const puzzleIndex = useLocalStorage('puzzle-index', 0);
 
-const { letters, grid, testWord: testWordResult, foundBonusWords } = usePuzzle(puzzleIndex);
+const { letters, grid, testWord: testWordResult, foundBonusWords, isLoaded } = usePuzzle(puzzleIndex);
 
 function testWord(word: string) {
   switch (testWordResult(word)) {
@@ -44,4 +46,6 @@ function testWord(word: string) {
       break;
   }
 }
+
+const _theme = useTheme();
 </script>
