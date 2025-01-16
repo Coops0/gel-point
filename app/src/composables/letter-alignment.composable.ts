@@ -1,4 +1,5 @@
-import { computed, ref } from 'vue';
+import { computed, type Ref } from 'vue';
+import { clamp } from '@/util';
 
 export interface LetterPosition {
     x: number;
@@ -6,8 +7,8 @@ export interface LetterPosition {
     letter: string;
 }
 
-export const useLetterAlignment = (letters: string[]) => {
-    const circleRadius = ref(130);
+export const useLetterAlignment = (letters: string[], width: Ref<number>) => {
+    const circleRadius = computed(() => clamp(width.value / 6.6, 60, 130));
 
     const alignedLetters = computed<LetterPosition[]>(() =>
         letters.map((letter, i) => {
@@ -21,5 +22,8 @@ export const useLetterAlignment = (letters: string[]) => {
         })
     );
 
-    return { alignedLetters };
-}
+    const circleSize = computed(() => clamp(width.value / 10, 60, 90));
+    const sectionHeight = computed(() => circleRadius.value * 3.17);
+
+    return { alignedLetters, circleSize, sectionHeight };
+};

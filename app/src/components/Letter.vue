@@ -1,10 +1,10 @@
 <template>
-  <div :style="{ transform }"
-       class="absolute flex items-center justify-center w-20 h-20 text-xl font-bold
-               transition-colors duration-200 rounded-full select-none cursor-pointer"
+  <div :style="{ transform, width: `${size}px`, height: `${size}px` }"
+       class="absolute flex items-center justify-center text-xl font-bold
+               transition-colors duration-200 rounded-full select-none cursor-pointer
+               bg-colors-accent-400 text-colors-background-50 hover:bg-colors-accent-500 shadow-lg"
        :class="[
-          'bg-indigo-400 text-white hover:bg-indigo-500',
-          active && '!bg-indigo-600 ring-indigo-400 ring-4',
+          active && '!bg-colors-accent-600 ring-colors-primary-400 ring-4',
           animating && 'animate-bonus'
         ]"
        @pointerdown="() => emit('start-touch')"
@@ -24,6 +24,7 @@ const props = defineProps<{
   letter: string;
   animating: boolean;
   active: boolean;
+  size: number;
 }>();
 
 const transform = computed(() => `translate(${props.x}px, ${props.y}px)`);

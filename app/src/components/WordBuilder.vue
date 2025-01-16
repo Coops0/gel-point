@@ -1,7 +1,8 @@
+// WordBuilder.vue
 <template>
-  <div class="relative flex items-center justify-center h-[500px]" ref="wordContainer">
+  <div class="relative flex items-center justify-center" ref="wordContainer" :style="{ height: `${sectionHeight}px` }">
     <div
-        class="absolute top-4 text-2xl font-bold transition-opacity"
+        class="absolute top-4 text-2xl font-bold transition-opacity text-primary-900"
         :class="!buildingWord && 'opacity-0'"
     >
       {{ buildingWord }}
@@ -15,9 +16,8 @@
           :y1="line.start.y + height/2"
           :x2="line.end.x + width/2"
           :y2="line.end.y + height/2"
-          stroke="#818CF8"
+          class="animated-line stroke-colors-primary-600"
           stroke-width="10"
-          class="animated-line"
       />
     </svg>
 
@@ -26,6 +26,7 @@
             v-bind="l"
             :animating
             :active="buildingWord.includes(l.letter)"
+            :size="circleSize"
             @start-touch="() => startTouch(l.letter)"
             @hover="() => hover(l.letter)"
     />
@@ -44,7 +45,7 @@ const emit = defineEmits<{ 'test-word': [word: string] }>();
 
 const wordContainer = ref<HTMLElement | null>(null);
 const { height, width } = useReactiveSizes(wordContainer);
-const { alignedLetters } = useLetterAlignment(props.letters);
+const { alignedLetters, circleSize, sectionHeight } = useLetterAlignment(props.letters, width);
 
 
 const buildingWord = ref<string>('');
@@ -59,7 +60,6 @@ const activeLines = computed(() => {
   for (let i = 0; i < letters.length - 1; i++) {
     const startLetter = alignedLetters.value.find(l => l.letter === letters[i]);
     const endLetter = alignedLetters.value.find(l => l.letter === letters[i + 1]);
-
 
     if (startLetter && endLetter) {
       lines.push({
@@ -119,54 +119,3 @@ onUnmounted(() => {
   document.removeEventListener('touchend', endTouch);
 });
 </script>
-
-<style>
-@keyframes lineDraw {
-  to {
-    stroke-dashoffset: 0;
-    stroke-width: 14;
-  }
-}
-
-.animated-line {
-  animation: lineDraw 1000ms ease forwards;
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-}
-
-@keyframes bonusAnimation {
-  0% {
-    filter: brightness(1) blur(0);
-    box-shadow: 0 0 0 0 rgba(129, 140, 248, 0);
-  }
-
-  15% {
-    filter: brightness(1.4) blur(1px);
-    box-shadow: 0 0 15px 8px rgba(99, 102, 241, 0.6);
-  }
-
-  30% {
-    filter: brightness(1.2) blur(0);
-    box-shadow: 0 0 8px 4px rgba(129, 140, 248, 0.4);
-  }
-
-  50% {
-    filter: brightness(1.3) blur(0);
-    box-shadow: 0 0 12px 6px rgba(165, 180, 252, 0.5);
-  }
-
-  60% {
-    filter: brightness(1.1) blur(0);
-    box-shadow: 0 0 10px 5px rgba(129, 140, 248, 0.3);
-  }
-
-  80% {
-    filter: brightness(1) blur(0);
-    box-shadow: 0 0 0 0 rgba(129, 140, 248, 0);
-  }
-}
-
-.animate-bonus {
-  animation: bonusAnimation 3s ease-in-out forwards;
-}
-</style>

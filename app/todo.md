@@ -5,6 +5,12 @@
 - [ ] make a better letter reveal effect for grid
 - [ ] make grid cells dynamically sized
 - [ ] put "bonus words" somewhere better 
-- [ ] check if has completed all puzzles
+- [x] check if has completed all puzzles
 - [x] save/load state
   - [x] INCLUDING MID-GAME!!
+- [ ] no 3 letter words
+- [x] use readonly
+
+
+PHONE APP:
+- [ ] haptic feedback

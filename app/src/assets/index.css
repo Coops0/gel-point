@@ -1,3 +1,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes lineDraw {
+    to {
+        stroke-dashoffset: 0;
+        stroke-width: 14;
+    }
+}
+
+.animated-line {
+    animation: lineDraw 750ms ease forwards;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+}
+
+@keyframes bonusAnimation {
+    0% {
+        filter: brightness(1) blur(0);
+        box-shadow: 0 0 0 0 theme('colors.colors-primary-400');
+    }
+
+    15% {
+        filter: brightness(1.4) blur(1px);
+        box-shadow: 0 0 15px 8px theme('colors.colors-primary-600');
+    }
+
+    30% {
+        filter: brightness(1.2) blur(0);
+        box-shadow: 0 0 8px 4px theme('colors.colors-primary-500');
+    }
+
+    50% {
+        filter: brightness(1.3) blur(0);
+        box-shadow: 0 0 12px 6px theme('colors.colors-primary-300');
+    }
+
+    60% {
+        filter: brightness(1.1) blur(0);
+        box-shadow: 0 0 10px 5px theme('colors.colors-primary-400');
+    }
+
+    80% {
+        filter: brightness(1) blur(0);
+        box-shadow: 0 0 0 0 theme('colors.colors-primary-400');
+    }
+}
+
+.animate-bonus {
+    animation: bonusAnimation 3s ease-in-out forwards;
+}

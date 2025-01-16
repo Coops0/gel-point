@@ -1,4 +1,4 @@
-import { onMounted, ref } from 'vue';
+import { onMounted, readonly, ref } from 'vue';
 
 export const useWords = () => {
     const words = ref<string[]>([]);
@@ -13,5 +13,5 @@ export const useWords = () => {
             .then(words => words.split('\n'));
     });
 
-    return { words };
+    return readonly(words);
 }

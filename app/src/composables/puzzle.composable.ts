@@ -1,9 +1,9 @@
 import type { ComputedRef, Ref } from 'vue';
-import { computed, ref, watch } from 'vue';
+import { computed, readonly, ref, watch } from 'vue';
 import { useWords } from '@/composables/words.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 
-export type Cell = string | null | undefined;
+export type Cell = string | 0 | -1;
 export type Grid = Cell[][];
 export type WordMapping = [string, Array<[number, number]>];
 
@@ -19,21 +19,21 @@ interface StaticPuzzle {
     grid: string[];
 }
 
-let cachedPuzzles: StaticPuzzle[] = [];
+const cachedPuzzles = ref<StaticPuzzle[]>([]);
 
 async function fetchPuzzle(index: number): Promise<StaticPuzzle> {
-    if (cachedPuzzles.length < index + 1) {
-        cachedPuzzles = await fetch('/puzzles.json')
+    if (cachedPuzzles.value.length < index + 1) {
+        cachedPuzzles.value = await fetch('/puzzles.json')
             .then(res => res.json());
     }
 
-    return cachedPuzzles[index];
+    return cachedPuzzles.value[index];
 }
 
 export const usePuzzle = (puzzleIndex: Ref<number>) => {
     const puzzle = ref<StaticPuzzle | null>(null);
 
-    const { words: allWords } = useWords();
+    const allWords = useWords();
 
     const staticGrid = ref<Grid>([]);
     const activeGrid = useLocalStorage<Grid>('active-grid', []);
@@ -60,7 +60,7 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
         }));
 
     const letters: ComputedRef<string[]> = computed(() =>
-        [...new Set(staticGrid.value.flat().filter(cell => cell !== undefined) as string[])]
+        [...new Set(staticGrid.value.flat().filter(cell => cell !== -1 && cell !== 0) as string[])]
     );
 
     const testWord = (word: string): WordTestResult => {
@@ -70,15 +70,19 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
                 return WordTestResult.NotFound;
             }
 
-            foundBonusWords.value.push(word);
+            foundBonusWords.value = [...foundBonusWords.value, word];
             return WordTestResult.Bonus;
         }
 
+        const newGrid = [...activeGrid.value];
+
         for (const [col, row] of match[1]) {
-            activeGrid.value[row][col] = staticGrid.value[row][col] as string;
+            newGrid[row][col] = staticGrid.value[row][col] as string;
         }
 
-        if (activeGrid.value.every(row => row.every(cell => cell !== null))) {
+        activeGrid.value = newGrid;
+
+        if (activeGrid.value.every(row => row.every(cell => cell !== 0))) {
             return WordTestResult.Win;
         } else {
             return WordTestResult.Found;
@@ -89,19 +93,21 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
         puzzle.value = await fetchPuzzle(pi);
 
         if (!puzzle.value) {
-            console.warn(`puzzle ${pi} was not found`);
+            if (pi + 1 <= cachedPuzzles.value.length) {
+                console.warn(`puzzle ${pi} was not found`);
+            }
             return;
         }
 
         const hasCachedPuzzle = staticGrid.value.length === 0 && activeGrid.value.length > 0;
 
         staticGrid.value = (<string[]>puzzle.value.grid).map(row =>
-            row.split('').map(cell => cell === '0' ? undefined : cell)
+            row.split('').map(cell => cell === '0' ? -1 : cell)
         );
 
         if (!hasCachedPuzzle) {
             activeGrid.value = staticGrid.value.map(row =>
-                row.map(cell => cell === undefined ? undefined : null)
+                row.map(cell => cell === -1 ? -1 : 0)
             );
         }
     }, { immediate: true });
@@ -111,8 +117,9 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
     return {
         grid: activeGrid,
         letters,
-        foundBonusWords,
+        foundBonusWords: readonly(foundBonusWords),
         testWord,
-        isLoaded
+        isLoaded,
+        totalPuzzles: computed(() => cachedPuzzles.value.length),
     };
 };
