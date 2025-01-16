@@ -21,8 +21,9 @@
       />
     </svg>
 
-    <Letter v-for="l in alignedLetters"
-            :key="l.letter" v-bind="l"
+    <Letter v-for="(l, i) in alignedLetters"
+            :key="i.toString() + l.letter"
+            v-bind="l"
             :animating
             :active="buildingWord.includes(l.letter)"
             @start-touch="() => startTouch(l.letter)"
@@ -32,40 +33,28 @@
 </template>
 
 <script setup lang="ts">
-import type { Position } from '@/App.vue';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import Letter from '@/components/Letter.vue';
+import { useReactiveSizes } from '@/composables/reactive-sizes.composable.ts';
+import { type LetterPosition, useLetterAlignment } from '@/composables/letter-alignment.composable.ts';
 
-const CIRCLE_RADIUS = 130;
-
-const wordContainer = ref<HTMLElement | null>(null);
-
-const width = ref(400);
-const height = ref(600);
 
 const props = defineProps<{ letters: string[] }>();
-
 const showBonusAnimation = defineModel<boolean>({ required: true });
-
 const emit = defineEmits<{ 'test-word': [word: string] }>();
+
+const wordContainer = ref<HTMLElement | null>(null);
+const { height, width } = useReactiveSizes(wordContainer);
+const { alignedLetters } = useLetterAlignment(props.letters);
+
 
 const buildingWord = ref<string>('');
 const animating = ref(false);
 
-const alignedLetters = computed<Position[]>(() =>
-    props.letters.map((letter, i) => {
-      const step = (i / props.letters.length);
-      const angle = step * Math.PI * 2 - (Math.PI / 2);
-      return {
-        x: Math.cos(angle) * CIRCLE_RADIUS,
-        y: Math.sin(angle) * CIRCLE_RADIUS,
-        letter
-      };
-    })
-);
+type Position = Omit<LetterPosition, 'letter'>;
 
 const activeLines = computed(() => {
-  const lines: Array<{ start: Omit<Position, 'letter'>; end: Omit<Position, 'letter'> }> = [];
+  const lines: Array<{ start: Position; end: Position }> = [];
   const letters = buildingWord.value.split('');
 
   for (let i = 0; i < letters.length - 1; i++) {
@@ -121,22 +110,12 @@ function endTouch() {
   }
 }
 
-const updateDimensions = () => {
-  if (wordContainer.value) {
-    width.value = wordContainer.value.clientWidth;
-    height.value = wordContainer.value.clientHeight;
-  }
-};
-
 onMounted(() => {
-  updateDimensions();
-  window.addEventListener('resize', updateDimensions);
   document.addEventListener('pointerup', endTouch, { passive: true });
   document.addEventListener('touchend', endTouch, { passive: true });
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', updateDimensions);
   document.removeEventListener('pointerup', endTouch);
   document.removeEventListener('touchend', endTouch);
 });

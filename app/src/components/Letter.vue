@@ -1,22 +1,24 @@
 <template>
-  <div :style="{ transform: `translate(${x}px, ${y}px)` }"
-      class="absolute flex items-center justify-center w-24 h-24 text-2xl font-bold
+  <div :style="{ transform }"
+       class="absolute flex items-center justify-center w-20 h-20 text-xl font-bold
                transition-colors duration-200 rounded-full select-none cursor-pointer"
-      :class="[
+       :class="[
           'bg-indigo-400 text-white hover:bg-indigo-500',
           active && '!bg-indigo-600 ring-indigo-400 ring-4',
           animating && 'animate-bonus'
         ]"
-      @pointerdown="() => emit('start-touch')"
-      @pointerenter="() => emit('hover')"
-      @touchstart.prevent.passive="() => emit('start-touch')"
+       @pointerdown="() => emit('start-touch')"
+       @pointerenter="() => emit('hover')"
+       @touchstart.prevent.passive="() => emit('start-touch')"
   >
     {{ letter }}
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue';
+
+const props = defineProps<{
   x: number;
   y: number;
   letter: string;
@@ -24,8 +26,10 @@ defineProps<{
   active: boolean;
 }>();
 
+const transform = computed(() => `translate(${props.x}px, ${props.y}px)`);
+
 const emit = defineEmits<{
   'start-touch': [];
-  'hover': [];
+  hover: [];
 }>();
 </script>

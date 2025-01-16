@@ -8,7 +8,8 @@
       <div
           v-for="(cell, colIndex) in row"
           :key="colIndex"
-          class="flex items-center justify-center w-16 h-16 text-lg font-medium transition-colors"
+          class="flex items-center justify-center text-2xl font-medium transition-colors"
+          :style="{ width: `${size}px`, height: `${size}px` }"
           :class="{
             'bg-gray-400 text-white': cell !== null && cell !== undefined,
             'bg-gray-200': cell === null,
@@ -22,7 +23,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Grid } from '@/App.vue';
+import type { Grid } from '@/composables/puzzle.composable.ts';
+import { ref } from 'vue';
 
-defineProps<{ grid: Grid; }>();
+defineProps<{ grid: Grid }>();
+
+const size = ref(64);
 </script>
