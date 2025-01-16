@@ -21,20 +21,25 @@
       />
     </svg>
 
-    <Letter v-for="(l, i) in alignedLetters"
-            :key="i.toString() + l.letter"
-            v-bind="l"
-            :animating
-            :active="buildingWord.includes(l.letter)"
-            :size="circleSize"
-            @start-touch="() => startTouch(l.letter)"
-            @hover="() => hover(l.letter)"
-    />
+    <div>
+      <Letter v-for="(l, i) in alignedLetters"
+              :key="i.toString() + l.letter"
+              v-bind="l"
+              :animating
+              :active="buildingWord.includes(l.letter)"
+              :size="circleSize"
+              @start-touch="() => startTouch(l.letter)"
+              @hover="() => hover(l.letter)"
+      />
+    </div>
+    <button @click="shuffle"
+            class="absolute bottom-4 right-4 px-4 py-2 bg-primary-500 text-primary-50 rounded-lg shadow-md"
+    >SHUFFLE</button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, toRef, watch } from 'vue';
 import Letter from '@/components/Letter.vue';
 import { useReactiveSizes } from '@/composables/reactive-sizes.composable.ts';
 import { type LetterPosition, useLetterAlignment } from '@/composables/letter-alignment.composable.ts';
@@ -45,7 +50,7 @@ const emit = defineEmits<{ 'test-word': [word: string] }>();
 
 const wordContainer = ref<HTMLElement | null>(null);
 const { height, width } = useReactiveSizes(wordContainer);
-const { alignedLetters, circleSize, sectionHeight } = useLetterAlignment(props.letters, width);
+const { alignedLetters, circleSize, sectionHeight, shuffle } = useLetterAlignment(toRef(() => props.letters), width);
 
 
 const buildingWord = ref<string>('');

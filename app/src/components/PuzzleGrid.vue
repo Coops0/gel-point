@@ -3,11 +3,11 @@
     <div
         class="flex flex-row gap-2"
         v-for="(row, rowIndex) in localGrid"
-        :key="rowIndex"
+        :key="rowIndex.toString() + '' + row.length"
     >
       <div
           v-for="(cell, colIndex) in row"
-          :key="colIndex"
+          :key="rowIndex.toString() + cell + colIndex.toString()"
           class="flex items-center justify-center text-2xl font-medium transition-colors"
           :style="{ width: `${size}px`, height: `${size}px` }"
           :class="{
@@ -34,22 +34,41 @@ const localGrid = ref(structuredClone(toRaw(props.grid)));
 const { height, width } = useReactiveSizes();
 const size = computed(() => clamp((height.value * width.value) / 10000, 32, 64));
 
+let previousTimeouts: number[] = [];
+
 watch(() => props.grid, g => {
   if (g.flat().length !== localGrid.value.flat().length) {
-    localGrid.value = structuredClone(toRaw(g));
-    return;
+    // localGrid.value = structuredClone(toRaw(g));
+    localGrid.value.length = g.length;
+    localGrid.value.forEach((row, i) => {
+      row.length = g[i].length;
+    });
   }
+
+  previousTimeouts.forEach(id => clearTimeout(id));
+  previousTimeouts = [];
+
+  const cellsToUpdate: Array<[number, number]> = [];
 
   for (let i = 0; i < g.length; i++) {
     for (let j = 0; j < g[i].length; j++) {
-      if (g[i][j] === localGrid.value[i][j]) {
-        continue;
+      if (g[i][j] !== localGrid.value[i][j]) {
+        cellsToUpdate.push(<[number, number]>[i, j]);
       }
-
-      setTimeout(() => {
-        localGrid.value[i][j] = g[i][j];
-      }, (i * 50) + (j * 100));
     }
+  }
+
+  if (!cellsToUpdate.length) return;
+  const [startRow, startCol] = cellsToUpdate[0];
+
+  for (const cell of cellsToUpdate) {
+    const [row, col] = cell;
+
+    const timeout = setTimeout(() => {
+      localGrid.value[row][col] = g[row][col];
+    }, Math.abs(row - startRow) * 50 + Math.abs(col - startCol) * 100);
+
+    previousTimeouts.push(timeout);
   }
 }, { deep: true });
 

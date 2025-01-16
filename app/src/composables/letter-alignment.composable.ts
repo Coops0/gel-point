@@ -1,4 +1,4 @@
-import { computed, type Ref } from 'vue';
+import { computed, ref, type Ref, watch } from 'vue';
 import { clamp } from '@/util';
 
 export interface LetterPosition {
@@ -7,12 +7,15 @@ export interface LetterPosition {
     letter: string;
 }
 
-export const useLetterAlignment = (letters: string[], width: Ref<number>) => {
+export const useLetterAlignment = (letters: Ref<string[]>, width: Ref<number>) => {
+    const localLetters = ref(letters.value);
+    watch(letters, l => (localLetters.value = l));
+
     const circleRadius = computed(() => clamp(width.value / 6.6, 60, 130));
 
     const alignedLetters = computed<LetterPosition[]>(() =>
-        letters.map((letter, i) => {
-            const step = (i / letters.length);
+        localLetters.value.map((letter, i) => {
+            const step = (i / localLetters.value.length);
             const angle = step * Math.PI * 2 - (Math.PI / 2);
             return {
                 x: Math.cos(angle) * circleRadius.value,
@@ -22,8 +25,12 @@ export const useLetterAlignment = (letters: string[], width: Ref<number>) => {
         })
     );
 
+    const shuffle = () => {
+        localLetters.value = localLetters.value.sort(() => Math.random() - 0.5);
+    }
+
     const circleSize = computed(() => clamp(width.value / 10, 60, 90));
     const sectionHeight = computed(() => circleRadius.value * 3.17);
 
-    return { alignedLetters, circleSize, sectionHeight };
+    return { alignedLetters, circleSize, sectionHeight, shuffle };
 };

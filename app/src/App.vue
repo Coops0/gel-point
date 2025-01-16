@@ -58,10 +58,15 @@ function testWord(word: string) {
       showBonusAnimation.value = true;
       break;
     case WordTestResult.Win:
-      puzzleIndex.value++;
-      if (puzzleIndex.value <= totalPuzzles.value) {
+      const nextPuzzle = puzzleIndex.value + 1;
+      if (nextPuzzle <= totalPuzzles.value) {
         showNextLevelAnimation.value = true;
       }
+
+      setTimeout(() => {
+        puzzleIndex.value = nextPuzzle;
+      }, 1000);
+
       break;
     case WordTestResult.NotFound:
     case WordTestResult.Found:
