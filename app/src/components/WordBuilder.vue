@@ -38,7 +38,6 @@ import Letter from '@/components/Letter.vue';
 import { useReactiveSizes } from '@/composables/reactive-sizes.composable.ts';
 import { type LetterPosition, useLetterAlignment } from '@/composables/letter-alignment.composable.ts';
 
-
 const props = defineProps<{ letters: string[] }>();
 const showBonusAnimation = defineModel<boolean>({ required: true });
 const emit = defineEmits<{ 'test-word': [word: string] }>();

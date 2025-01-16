@@ -29,12 +29,13 @@
       <input type="number" v-model.number="width"/>
       <input type="number" v-model.number="height"/>
       <button @click="() => copy()">Copy</button>
+      <p>{{ letters.size }} letters</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 interface Range {
   from: [number, number];
@@ -47,6 +48,8 @@ const height = ref(8);
 const grid = ref<(string | null)[][]>(
     Array.from({ length: height.value }, () => Array.from({ length: width.value }, () => null))
 );
+
+const letters = computed(() => new Set([...grid.value.flat().filter(cell => cell !== null)]));
 
 const words = ref<Range[]>([]);
 
@@ -172,9 +175,21 @@ function mouseOver(rowIndex: number, colIndex: number) {
 }
 
 function copy() {
+
+
   const wordsSerialized = words.value.map(r => {
     const range = buildRange(r);
     const word = range.map(([i, j]) => grid.value[i][j] || '').join('');
+
+    let letterCheck: string[] = [];
+    word.split('').forEach(letter => {
+      if (letterCheck.includes(letter)) {
+        alert(`LETTER ${letter.toUpperCase()} IS DUPLICATED IN WORD ${word.toUpperCase()}`);
+        return;
+      }
+      letterCheck.push(letter);
+    });
+
     const coords = range.map(([i, j]) => `${i},${j}`).join(',');
 
     return `${word},${coords}`;
@@ -185,10 +200,12 @@ function copy() {
     words: wordsSerialized
   };
 
+  console.log(payload);
+
   try {
     navigator.clipboard.writeText(JSON.stringify(payload));
   } catch {
-    console.log(payload);
+    alert('cc copy fail');
   }
 }
 </script>
