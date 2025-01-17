@@ -1,0 +1,24 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "enables the default permissions",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "fs:scope-data",
+    "fs:scope-cache",
+    "log:default",
+    "haptics:allow-vibrate",
+    "haptics:allow-selection-feedback",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "https://gel-point.cooperhanessian.com"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+[package]
+name = "gel-point"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0.5", features = [] }
+
+[dependencies]
+serde_json = "1.0.135"
+serde = { version = "1.0.217", features = ["derive"] }
+log = "0.4.25"
+tauri = { version = "2.2.2", features = [] }
+tauri-plugin-log = "2.2.0"
+tauri-plugin-fs = "2.2.0"
+tauri-plugin-haptics = "2.2.2"
+tauri-plugin-http = "2.2.0"
+tokio = { version = "1.43.0", features = ["fs"] }
+sha2 = "0.10.8"
+anyhow = "1.0.95"
