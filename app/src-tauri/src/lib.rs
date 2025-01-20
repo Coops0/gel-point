@@ -1,15 +1,11 @@
-use crate::state::AppState;
+use crate::state::{memoized_fetch_cache, CachedData, Paths};
 use log::warn;
-use std::{path::PathBuf, sync::Mutex};
-use tauri::{path::PathResolver, AppHandle, Manager, State, Wry};
+use tauri::{Manager, State};
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::TargetKind;
 
 mod ctx_macro_offload;
 mod state;
-
-#[cfg(debug_assertions)]
-const BASE_API_URL: &str = "http://localhost:8000";
 
 #[cfg(not(debug_assertions))]
 const BASE_API_URL: &str = "https://gel-point.cooperhanessian.com";
@@ -26,26 +22,21 @@ pub fn run() {
         )
         .plugin(tauri_plugin_haptics::init())
         .plugin(tauri_plugin_http::init())
+        .invoke_handler(tauri::generate_handler![get_cache])
         .setup(|app| {
+            let paths = Paths::new(app.path())?;
+
             let scope = app.fs_scope();
-            let path_resolver = app.path();
-
-            let app_cache_dir = path_resolver.app_cache_dir()?;
-            let app_data_dir = path_resolver.app_data_dir()?;
-
-            scope.allow_file(app_cache_dir.join("puzzles.json"))?;
-            scope.allow_file(app_cache_dir.join("words.txt"))?;
-            scope.allow_file(app_data_dir.join("state.json"))?;
-
-            let state = AppState::new(path_resolver)?;
+            scope.allow_file(paths.words())?;
+            scope.allow_file(paths.puzzles())?;
+            // scope.allow_file(paths.game_state())?;
 
             let state = tauri::async_runtime::block_on(async move {
-                if let Err(why) = state.memoized_fetch_cache().await {
-                    warn!("failed to memoize or fetch cache: {why:?}");
-                }
+                let (words, puzzles) = memoized_fetch_cache(&paths).await?;
+                // let game_state = try_load_game_state(&paths).await?;
 
-                state
-            });
+                Ok::<CachedData, anyhow::Error>(CachedData { words, puzzles /*, game_state*/ })
+            })?;
 
             if !app.manage(state) {
                 warn!("failed to create managed app state in setup hook");
@@ -55,4 +46,9 @@ pub fn run() {
         })
         .run(ctx_macro_offload::ctx())
         .expect("error while running tauri application");
+}
+
+#[tauri::command]
+async fn get_cache(state: State<'_, CachedData>) -> tauri::Result<&CachedData> {
+    Ok(state.inner())
 }

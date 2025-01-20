@@ -1,52 +1,40 @@
-use crate::BASE_API_URL;
+use serde::Serialize;
 use sha2::{Digest, Sha256};
-use std::{
-    path::{Path, PathBuf}, sync::{Arc, Mutex, MutexGuard}
-};
+use std::path::{Path, PathBuf};
 use tauri::{path::PathResolver, Wry};
-use tauri_plugin_http::reqwest;
 use tokio::try_join;
 
-pub struct AppState {
-    paths: Paths,
-    cache: Arc<Mutex<Cache>>,
+#[derive(Serialize, Clone)]
+pub struct CachedData {
+    pub words: String,
+    pub puzzles: String,
+    // pub game_state: String
 }
 
-impl AppState {
-    pub fn new(path_resolver: &PathResolver<Wry>) -> tauri::Result<Self> {
-        Ok(Self {
-            paths: Paths::new(path_resolver)?,
-            cache: Arc::new(Mutex::new(Cache::default()))
-        })
-    }
-}
-
-struct Paths {
+pub struct Paths {
     cache_dir: PathBuf,
-    data_dir: PathBuf
+    // data_dir: PathBuf
 }
 
 impl Paths {
-    fn new(path_resolver: &PathResolver<Wry>) -> tauri::Result<Self> {
+    pub fn new(path_resolver: &PathResolver<Wry>) -> tauri::Result<Self> {
         Ok(Self {
             cache_dir: path_resolver.app_cache_dir()?,
-            data_dir: path_resolver.app_data_dir()?
+            // data_dir: path_resolver.app_data_dir()?
         })
     }
 
-    fn words(&self) -> PathBuf {
+    pub fn words(&self) -> PathBuf {
         self.cache_dir.join("words.txt")
     }
 
-    fn puzzles(&self) -> PathBuf {
+    pub fn puzzles(&self) -> PathBuf {
         self.cache_dir.join("puzzles.json")
     }
-}
 
-#[derive(Default)]
-struct Cache {
-    words: Option<String>,
-    puzzles: Option<String>
+    // pub fn game_state(&self) -> PathBuf {
+    //     self.data_dir.join("state.json")
+    // }
 }
 
 async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
@@ -55,40 +43,44 @@ async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
     hasher.update(&local_bytes);
 
     let hash = hasher.finalize().to_vec();
+    
+    #[cfg(not(debug_assertions))]
+    let remote_hash = reqwest::get(format!("{}/{route}/hash", crate::BASE_API_URL))
+        .await?
+        .bytes()
+        .await?
+        .to_vec();
+    
+    #[cfg(debug_assertions)]
+    let remote_hash = hash.clone();
 
-    let remote_hash =
-        reqwest::get(format!("{BASE_API_URL}/{route}/hash")).await?.bytes().await?.to_vec();
-
-    let text = if hash == remote_hash {
-        String::from_utf8(local_bytes)?
-    } else {
-        let t = reqwest::get(format!("{BASE_API_URL}/{route}")).await?.text().await?;
-        tokio::fs::write(path, t.as_bytes()).await?;
-
-        t
+    if hash == remote_hash {
+        return String::from_utf8(local_bytes).map_err(Into::into);
+    }
+    
+    #[cfg(not(debug_assertions))]
+    let text = reqwest::get(format!("{}/{route}", crate::BASE_API_URL)).await?.text().await?;
+    
+    #[cfg(debug_assertions)]
+    let text = match route {
+        "words" => include_str!("../assets/words.txt").to_string(),
+        "puzzles" => include_str!("../assets/puzzles.json").to_string(),
+        _ => unreachable!()
     };
+    
+    tokio::fs::write(path, text.as_bytes()).await?;
 
     Ok(text)
 }
 
-impl AppState {
-    fn c(&self) -> MutexGuard<'_, Cache> {
-        self.cache.lock().expect("cache mutex was poisoned")
-    }
+pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, String)> {
+    let words_txt = paths.words();
+    let puzzles_json = paths.puzzles();
 
-    pub async fn memoized_fetch_cache(&self) -> anyhow::Result<()> {
-        let words_txt = self.paths.words();
-        let puzzles_json = self.paths.puzzles();
-
-        let (words, puzzles) = try_join!(
-            memoize_or_fetch(&words_txt, "words"),
-            memoize_or_fetch(&puzzles_json, "puzzles")
-        )?;
-
-        let mut c = self.c();
-        c.words = Some(words);
-        c.puzzles = Some(puzzles);
-
-        Ok(())
-    }
+    try_join!(memoize_or_fetch(&words_txt, "words"), memoize_or_fetch(&puzzles_json, "puzzles"))
+        .map_err(Into::into)
 }
+
+// pub async fn try_load_game_state(paths: &Paths) -> anyhow::Result<String> {
+//     tokio::fs::read_to_string(paths.game_state()).await.map_err(Into::into)
+// }

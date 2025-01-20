@@ -13,9 +13,9 @@
       </div>
       <div v-else class="flex flex-col h-screen">
         <KeepAlive>
-          <PuzzleGrid :grid key="puzzle"/>
+          <PuzzleGrid class="mt-4" :grid key="puzzle"/>
         </KeepAlive>
-        <div class="mt-auto mb-6">
+        <div class="mb-6">
           <WordBuilder
               :letters
               @test-word="testWord"

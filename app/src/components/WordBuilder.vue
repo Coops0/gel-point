@@ -1,6 +1,5 @@
-// WordBuilder.vue
 <template>
-  <div class="relative flex items-center justify-center" ref="wordContainer" :style="{ height: `${sectionHeight}px` }">
+  <div class="mt-48 flex items-center justify-center relative h-full left-1/2" ref="wordContainer">
     <div
         class="absolute top-4 text-2xl font-bold transition-opacity text-primary-900"
         :class="!buildingWord && 'opacity-0'"
@@ -27,7 +26,6 @@
               v-bind="l"
               :animating
               :active="buildingWord.includes(l.letter)"
-              :size="circleSize"
               @start-touch="() => startTouch(l.letter)"
               @hover="() => hover(l.letter)"
       />
@@ -50,7 +48,7 @@ const emit = defineEmits<{ 'test-word': [word: string] }>();
 
 const wordContainer = ref<HTMLElement | null>(null);
 const { height, width } = useReactiveSizes(wordContainer);
-const { alignedLetters, circleSize, sectionHeight, shuffle } = useLetterAlignment(toRef(() => props.letters), width);
+const { alignedLetters, shuffle } = useLetterAlignment(toRef(() => props.letters), width);
 
 
 const buildingWord = ref<string>('');

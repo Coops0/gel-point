@@ -8,8 +8,7 @@
       <div
           v-for="(cell, colIndex) in row"
           :key="rowIndex.toString() + cell + colIndex.toString()"
-          class="flex items-center justify-center text-2xl font-medium transition-colors"
-          :style="{ width: `${size}px`, height: `${size}px` }"
+          class="flex items-center justify-center text-2xl font-medium transition-colors size-12"
           :class="{
             'bg-colors-secondary-400 text-colors-background-50': cell !== 0 && cell !== -1,
             'bg-colors-secondary-200': cell === 0,
@@ -24,15 +23,10 @@
 
 <script setup lang="ts">
 import type { Grid } from '@/composables/puzzle.composable.ts';
-import { computed, ref, toRaw, watch } from 'vue';
-import { useReactiveSizes } from '@/composables/reactive-sizes.composable.ts';
-import { clamp } from '@/util';
+import { ref, toRaw, watch } from 'vue';
 
 const props = defineProps<{ grid: Grid }>();
 const localGrid = ref(structuredClone(toRaw(props.grid)));
-
-const { height, width } = useReactiveSizes();
-const size = computed(() => clamp((height.value * width.value) / 10000, 32, 64));
 
 let previousTimeouts: number[] = [];
 
