@@ -1,21 +1,20 @@
 <template>
-  <div class="flex items-center absolute size-full" ref="wordContainer">
+  <div class="absolute inset-0 flex items-center justify-center" ref="wordContainer">
     <div
         class="text-white absolute top-4 text-2xl font-bold transition-opacity text-primary-900"
         :class="!buildingWord && 'opacity-0'"
     >
-      <!-- TODO make the word last until fade out -->
-      {{ buildingWord?.length ? buildingWord : '...' }}
+      {{ displayedBuildingWord }}
     </div>
 
-    <svg class="absolute inset-0 pointer-events-none" :width :height>
+    <svg class="absolute pointer-events-none" :width :height>
       <line
           v-for="(line, index) in activeLines"
           :key="index"
-          :x1="line.start.x + width/2"
-          :y1="line.start.y + height/2"
-          :x2="line.end.x + width/2"
-          :y2="line.end.y + height/2"
+          :x1="line.start.x + width/2 + CIRCLE_CENTER_OFFSET"
+          :y1="line.start.y + height/2 + CIRCLE_CENTER_OFFSET"
+          :x2="line.end.x + width/2 + CIRCLE_CENTER_OFFSET"
+          :y2="line.end.y + height/2 + CIRCLE_CENTER_OFFSET"
           class="animated-line stroke-colors-primary-600"
           stroke-width="10"
       />
@@ -31,11 +30,6 @@
               @hover="event => hover(event, l.letter)"
       />
     </div>
-
-    <button @click="shuffle"
-            class="absolute bg-primary-500 text-primary-50 rounded-lg shadow-md"
-    >SHUFFLE
-    </button>
   </div>
 </template>
 
@@ -43,18 +37,31 @@
 import { computed, onMounted, onUnmounted, ref, toRef, watch } from 'vue';
 import Letter from '@/components/Letter.vue';
 import { useReactiveSizes } from '@/composables/reactive-sizes.composable.ts';
-import { type LetterPosition, useLetterAlignment } from '@/composables/letter-alignment.composable.ts';
+import {
+  CIRCLE_CENTER_OFFSET,
+  type LetterPosition,
+  useLetterAlignment
+} from '@/composables/letter-alignment.composable.ts';
 
 const props = defineProps<{ letters: string[] }>();
-const showBonusAnimation = defineModel<boolean>({ required: true });
+const showBonusAnimation = defineModel<boolean>('showBonusAnimation', { required: true });
+const shouldShuffle = defineModel<boolean>('shouldShuffle', { required: true });
 const emit = defineEmits<{ 'test-word': [word: string] }>();
 
 const wordContainer = ref<HTMLElement | null>(null);
-const { height, width } = useReactiveSizes(wordContainer);
+const { height, width } = useReactiveSizes();
 const { alignedLetters, shuffle } = useLetterAlignment(toRef(() => props.letters), width);
 
 const buildingWord = ref<string>('');
 const animating = ref(false);
+
+const displayedBuildingWord = ref<string>('');
+watch(buildingWord, w => {
+  // allow word to still be there to fade out
+  if (w.length) {
+    displayedBuildingWord.value = w;
+  }
+});
 
 type Position = Omit<LetterPosition, 'letter'>;
 
@@ -86,6 +93,13 @@ watch(showBonusAnimation, show => {
   }
 
   showBonusAnimation.value = false;
+});
+
+watch(shouldShuffle, s => {
+  if (s) {
+    shuffle();
+    shouldShuffle.value = false;
+  }
 });
 
 function startTouch(event: PointerEvent, letter: string) {

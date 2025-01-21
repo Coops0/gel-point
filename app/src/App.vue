@@ -12,19 +12,25 @@
         <button @click="reset" class="bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">RESET</button>
       </div>
       <div v-else class="flex flex-col h-screen">
-        <KeepAlive>
-          <PuzzleGrid class="mt-4" :grid key="puzzle"/>
-        </KeepAlive>
-        <div class="mb-6">
-          <WordBuilder
-              :letters
-              @test-word="testWord"
-              v-model="showBonusAnimation"
-          />
-
-          <div class="mt-4 flex flex-col gap-2 items-center">
-            <div class="text-colors-primary-400">LEVEL {{ puzzleIndex + 1 }}</div>
-            <div class="font-bold text-colors-primary-900">{{ foundBonusWords.length }} extra words found</div>
+        <div class="flex-1">
+          <KeepAlive>
+            <PuzzleGrid class="mt-4" :grid key="puzzle"/>
+          </KeepAlive>
+        </div>
+        <div class="flex flex-col items-center gap-4 mb-32">
+          <div class="text-colors-primary-400">LEVEL {{ puzzleIndex + 1 }}</div>
+          <div class="font-bold text-colors-primary-900">{{ foundBonusWords.length }} extra words found</div>
+          <button @click="shuffle" class="bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">SHUFFLE</button>
+          <button class="bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">BUY</button>
+        </div>
+        <div class="flex flex-col items-center gap-4 mb-28">
+          <div class="relative size-fit">
+            <WordBuilder
+                :letters
+                @test-word="testWord"
+                v-model:show-bonus-animation="showBonusAnimation"
+                v-model:should-shuffle="shouldShuffle"
+            />
           </div>
         </div>
       </div>
@@ -47,6 +53,7 @@ import WinMessage from '@/components/WinMessage.vue';
 // Words can branch into others, but may not overlap: 2 words on the same axis must have at least 1 cell between them.
 
 const showBonusAnimation = ref(false);
+const shouldShuffle = ref(false);
 const showNextLevelAnimation = ref(false);
 const puzzleIndex = useLocalStorage('puzzle-index', 0);
 
@@ -84,6 +91,10 @@ const reset = () => {
     grid.value = [];
     puzzleIndex.value = 0;
   });
+};
+
+const shuffle = () => {
+  shouldShuffle.value = true;
 };
 
 const _theme = useTheme();

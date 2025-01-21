@@ -15,7 +15,7 @@ function forwardConsole(
     console[fnName] = (message) => {
         original(message);
         // noinspection JSIgnoredPromiseFromCall
-        logger(message).catch();
+        logger(message);
     };
 }
 
