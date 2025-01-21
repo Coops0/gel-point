@@ -1,13 +1,14 @@
 <template>
-  <div class="mt-48 flex items-center justify-center relative h-full left-1/2" ref="wordContainer">
+  <div class="flex items-center absolute size-full" ref="wordContainer">
     <div
-        class="absolute top-4 text-2xl font-bold transition-opacity text-primary-900"
+        class="text-white absolute top-4 text-2xl font-bold transition-opacity text-primary-900"
         :class="!buildingWord && 'opacity-0'"
     >
-      {{ buildingWord }}
+      <!-- TODO make the word last until fade out -->
+      {{ buildingWord?.length ? buildingWord : '...' }}
     </div>
 
-    <svg class="absolute inset-0 pointer-events-none" :width="width" :height="height">
+    <svg class="absolute inset-0 pointer-events-none" :width :height>
       <line
           v-for="(line, index) in activeLines"
           :key="index"
@@ -26,13 +27,15 @@
               v-bind="l"
               :animating
               :active="buildingWord.includes(l.letter)"
-              @start-touch="() => startTouch(l.letter)"
-              @hover="() => hover(l.letter)"
+              @start-touch="event => startTouch(event, l.letter)"
+              @hover="event => hover(event, l.letter)"
       />
     </div>
+
     <button @click="shuffle"
-            class="absolute bottom-4 right-4 px-4 py-2 bg-primary-500 text-primary-50 rounded-lg shadow-md"
-    >SHUFFLE</button>
+            class="absolute bg-primary-500 text-primary-50 rounded-lg shadow-md"
+    >SHUFFLE
+    </button>
   </div>
 </template>
 
@@ -49,7 +52,6 @@ const emit = defineEmits<{ 'test-word': [word: string] }>();
 const wordContainer = ref<HTMLElement | null>(null);
 const { height, width } = useReactiveSizes(wordContainer);
 const { alignedLetters, shuffle } = useLetterAlignment(toRef(() => props.letters), width);
-
 
 const buildingWord = ref<string>('');
 const animating = ref(false);
@@ -86,11 +88,12 @@ watch(showBonusAnimation, show => {
   showBonusAnimation.value = false;
 });
 
-function startTouch(letter: string) {
+function startTouch(event: PointerEvent, letter: string) {
   buildingWord.value = letter;
+  (<Element>event.target)?.releasePointerCapture(event.pointerId);
 }
 
-function hover(letter: string) {
+function hover(_event: PointerEvent, letter: string) {
   const len = buildingWord.value.length;
   if (!len) return;
 

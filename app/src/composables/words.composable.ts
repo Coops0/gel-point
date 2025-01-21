@@ -8,6 +8,7 @@ export const useWords = () => {
             return;
         }
 
+        // TODO this needs to be tauri command
         words.value = await fetch('/words.txt')
             .then(res => res.text())
             .then(words => words.split('\n'));

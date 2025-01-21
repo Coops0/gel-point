@@ -11,6 +11,6 @@
 - [ ] no 3 letter words
 - [x] use readonly
 - [ ] letters NEED to be bouncy/elastic
-- [ ] setup tauri and tear out dynamic sizing Lol 
+- [x] setup tauri and tear out dynamic sizing Lol 
 - [ ] tauri haptic feedback
 - [ ] tauri cache puzzles & words and compare w hash on rust backend

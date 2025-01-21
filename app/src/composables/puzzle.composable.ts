@@ -23,6 +23,7 @@ const cachedPuzzles = ref<StaticPuzzle[]>([]);
 
 async function fetchPuzzle(index: number): Promise<StaticPuzzle> {
     if (cachedPuzzles.value.length < index + 1) {
+        // TODO this needs to be tauri command
         cachedPuzzles.value = await fetch('/puzzles.json')
             .then(res => res.json());
     }
