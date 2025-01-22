@@ -26,6 +26,7 @@
               v-bind="l"
               :animating
               :active="buildingWord.includes(l.letter)"
+              :last-selected="buildingWord.endsWith(l.letter)"
               @start-touch="event => startTouch(event, l.letter)"
               @hover="event => hover(event, l.letter)"
       />

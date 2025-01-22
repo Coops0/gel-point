@@ -25,9 +25,12 @@ const props = defineProps<{
   letter: string;
   animating: boolean;
   active: boolean;
+  lastSelected: boolean;
 }>();
 
 const dragOffset = ref([0, 0]);
+const moveToOffsetTarget = ref([0, 0]);
+
 const transform = computed(() => `translate(${props.x + dragOffset.value[0]}px, ${props.y + dragOffset.value[1]}px)`);
 
 const emit = defineEmits<{
@@ -41,36 +44,45 @@ const element = useTemplateRef<HTMLElement>(uniqueId);
 const onPointerMove = (event: MouseEvent) => {
   const el = element.value;
   if (!el || !props.active) {
-    dragOffset.value = [0, 0];
+    moveToOffsetTarget.value = [0, 0];
     return;
   }
 
-  let [x, y] = [event.clientX - el.offsetWidth, event.clientY - el.offsetHeight];
+  const rect = el.getBoundingClientRect();
+  let [x, y] = [event.clientX - rect.x, event.clientY - rect.y];
 
-  x = lerp(x, props.x, 0.1) / 100;
-  y = lerp(y, props.y, 0.1) / 100;
+  const modifier = props.lastSelected ? 80 : 300;
 
-  dragOffset.value = [x, y];
+  x = lerp(x, props.x, 0.1) / modifier;
+  y = lerp(y, props.y, 0.1) / modifier;
+
+  moveToOffsetTarget.value = [x, y];
 };
 
 const onPointerUp = () => {
-  const interval = setInterval(() => {
-    const [x, y] = dragOffset.value;
-    if (x === 0 && y === 0) {
-      clearInterval(interval);
-    } else {
-      dragOffset.value = [x * 0.9, y * 0.9];
-    }
-  }, 15);
+  moveToOffsetTarget.value = [0, 0];
 };
+
+const moveToOffset = () => {
+  const [targetX, targetY] = moveToOffsetTarget.value;
+  const [x, y] = dragOffset.value;
+  dragOffset.value = [lerp(x, targetX, 0.1), lerp(y, targetY, 0.1)];
+}
+
+const moveToOffsetInterval = ref<number | null>(null);
 
 onMounted(() => {
   document.addEventListener('pointermove', onPointerMove, { passive: true });
   document.addEventListener('pointerup', onPointerUp, { passive: true });
+
+  moveToOffsetInterval.value = setInterval(moveToOffset, 15);
 });
 
 onUnmounted(() => {
   document.removeEventListener('pointermove', onPointerMove);
   document.removeEventListener('pointerup', onPointerUp);
+  if (moveToOffsetInterval.value) {
+    clearInterval(moveToOffsetInterval.value);
+  }
 });
 </script>
