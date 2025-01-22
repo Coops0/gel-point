@@ -51,7 +51,7 @@ const emit = defineEmits<{ 'test-word': [word: string] }>();
 
 const wordContainer = ref<HTMLElement | null>(null);
 const { height, width } = useReactiveSizes();
-const { alignedLetters, shuffle } = useLetterAlignment(toRef(() => props.letters), width);
+const { alignedLetters, shuffle } = useLetterAlignment(toRef(() => props.letters));
 
 const buildingWord = ref<string>('');
 const animating = ref(false);

@@ -12,13 +12,16 @@
         <button @click="reset" class="bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">RESET</button>
       </div>
       <div v-else class="flex flex-col h-screen">
+        <div class="flex justify-center items-center gap-4">
+          <div class="text-colors-primary-400">LEVEL {{ puzzleIndex + 1 }}</div>
+        </div>
+
         <div class="flex-1">
           <KeepAlive>
             <PuzzleGrid class="mt-4" :grid key="puzzle"/>
           </KeepAlive>
         </div>
         <div class="flex flex-col items-center gap-4 mb-32">
-          <div class="text-colors-primary-400">LEVEL {{ puzzleIndex + 1 }}</div>
           <div class="font-bold text-colors-primary-900">{{ foundBonusWords.length }} extra words found</div>
           <button @click="shuffle" class="bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">SHUFFLE</button>
           <button class="bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">BUY</button>

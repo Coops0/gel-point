@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, useId, useTemplateRef } from 'vue';
+import { computed, onMounted, onUnmounted, ref, useId, useTemplateRef, watch } from 'vue';
 import { lerp } from '@/util';
 
 const props = defineProps<{
@@ -28,10 +28,30 @@ const props = defineProps<{
   lastSelected: boolean;
 }>();
 
+const localPos = ref([props.x, props.y]);
+
+const shuffleInterval = ref<number | null>(null);
+
+watch(() => [props.x, props.y], ([newX, newY]) => {
+  if (shuffleInterval.value) {
+    clearInterval(shuffleInterval.value);
+  }
+
+  shuffleInterval.value = setInterval(() => {
+    if (localPos.value[0] === newX && localPos.value[1] === newY) {
+      clearInterval(shuffleInterval.value!);
+      localPos.value = [newX, newY];
+    } else {
+      localPos.value[0] = lerp(localPos.value[0], newX, 0.1);
+      localPos.value[1] = lerp(localPos.value[1], newY, 0.1);
+    }
+  }, 15);
+}, { deep: true });
+
 const dragOffset = ref([0, 0]);
 const moveToOffsetTarget = ref([0, 0]);
 
-const transform = computed(() => `translate(${props.x + dragOffset.value[0]}px, ${props.y + dragOffset.value[1]}px)`);
+const transform = computed(() => `translate(${localPos.value[0] + dragOffset.value[0]}px, ${localPos.value[1] + dragOffset.value[1]}px)`);
 
 const emit = defineEmits<{
   'start-touch': [event: PointerEvent];
@@ -53,8 +73,8 @@ const onPointerMove = (event: MouseEvent) => {
 
   const modifier = props.lastSelected ? 80 : 300;
 
-  x = lerp(x, props.x, 0.1) / modifier;
-  y = lerp(y, props.y, 0.1) / modifier;
+  x = lerp(x, localPos.value[0], 0.1) / modifier;
+  y = lerp(y, localPos.value[1], 0.1) / modifier;
 
   moveToOffsetTarget.value = [x, y];
 };
@@ -67,7 +87,7 @@ const moveToOffset = () => {
   const [targetX, targetY] = moveToOffsetTarget.value;
   const [x, y] = dragOffset.value;
   dragOffset.value = [lerp(x, targetX, 0.1), lerp(y, targetY, 0.1)];
-}
+};
 
 const moveToOffsetInterval = ref<number | null>(null);
 
