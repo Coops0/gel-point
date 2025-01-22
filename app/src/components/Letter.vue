@@ -9,13 +9,15 @@
         ]"
        @pointerdown.prevent="event => emit('start-touch', event)"
        @pointerenter.prevent="event => emit('hover', event)"
+       :ref="uniqueId"
   >
     {{ letter }}
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted, ref, useId, useTemplateRef } from 'vue';
+import { lerp } from '@/util';
 
 const props = defineProps<{
   x: number;
@@ -25,10 +27,50 @@ const props = defineProps<{
   active: boolean;
 }>();
 
-const transform = computed(() => `translate(${props.x}px, ${props.y}px)`);
+const dragOffset = ref([0, 0]);
+const transform = computed(() => `translate(${props.x + dragOffset.value[0]}px, ${props.y + dragOffset.value[1]}px)`);
 
 const emit = defineEmits<{
   'start-touch': [event: PointerEvent];
   hover: [event: PointerEvent];
 }>();
+
+const uniqueId = useId();
+const element = useTemplateRef<HTMLElement>(uniqueId);
+
+const onPointerMove = (event: MouseEvent) => {
+  const el = element.value;
+  if (!el || !props.active) {
+    dragOffset.value = [0, 0];
+    return;
+  }
+
+  let [x, y] = [event.clientX - el.offsetWidth, event.clientY - el.offsetHeight];
+
+  x = lerp(x, props.x, 0.1) / 100;
+  y = lerp(y, props.y, 0.1) / 100;
+
+  dragOffset.value = [x, y];
+};
+
+const onPointerUp = () => {
+  const interval = setInterval(() => {
+    const [x, y] = dragOffset.value;
+    if (x === 0 && y === 0) {
+      clearInterval(interval);
+    } else {
+      dragOffset.value = [x * 0.9, y * 0.9];
+    }
+  }, 15);
+};
+
+onMounted(() => {
+  document.addEventListener('pointermove', onPointerMove, { passive: true });
+  document.addEventListener('pointerup', onPointerUp, { passive: true });
+});
+
+onUnmounted(() => {
+  document.removeEventListener('pointermove', onPointerMove);
+  document.removeEventListener('pointerup', onPointerUp);
+});
 </script>
