@@ -39,7 +39,8 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
     const staticGrid = ref<Grid>([]);
     const activeGrid = useLocalStorage<Grid>('active-grid', []);
 
-    const foundBonusWords = useLocalStorage<string[]>('bonus-words', []);
+    const foundBonusWords = useLocalStorage<string[]>('bonus-words', [], w => w.join(','), s => s.split(','));
+    const availableBonusWordPoints = useLocalStorage('available-bonus-word-points', 0);
 
     const words: ComputedRef<Array<WordMapping>> = computed(() =>
         (<string[]>puzzle.value?.words ?? []).map(word => {
@@ -71,6 +72,7 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
                 return WordTestResult.NotFound;
             }
 
+            availableBonusWordPoints.value++;
             foundBonusWords.value = [...foundBonusWords.value, word];
             return WordTestResult.Bonus;
         }
@@ -113,12 +115,13 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
         }
     }, { immediate: true });
 
-    const isLoaded = computed(() => puzzle.value !== null && activeGrid.value.length);
+    const isLoaded = computed(() => puzzle.value !== null && !!activeGrid.value.length);
 
     return {
         grid: activeGrid,
         letters,
-        foundBonusWords: readonly(foundBonusWords),
+        // availableBonusWordPoints: readonly(availableBonusWordPoints),
+        availableBonusWordPoints, // todo change back
         testWord,
         isLoaded,
         totalPuzzles: computed(() => cachedPuzzles.value.length),

@@ -1,20 +1,24 @@
 import { ref, watch } from 'vue';
 
-function loadAndParse<T>(key: string): T | null {
+export const useLocalStorage = <T = any>(
+    key: string,
+    defaultValue: T,
+    serialize: (data: T) => string = JSON.stringify,
+    deserialize: (payload: string) => T = JSON.parse
+) => {
+    let initialLoadedValue = null;
     try {
-        const raw = localStorage.getItem(key);
-        if (raw !== null) {
-            return JSON.parse(raw);
+        const rawPayload = localStorage.getItem(key);
+        if (rawPayload) {
+            initialLoadedValue = deserialize(rawPayload);
         }
     } catch {
         /* empty */
     }
-    return null;
-}
 
-export const useLocalStorage = <T = any>(key: string, defaultValue: T) => {
-    const value = ref<T>(loadAndParse<T>(key) || defaultValue);
-    watch(value, v => localStorage.setItem(key, JSON.stringify(v)));
+    const value = ref<T>(initialLoadedValue || defaultValue);
+
+    watch(value, v => localStorage.setItem(key, serialize(v)));
 
     return value;
 };

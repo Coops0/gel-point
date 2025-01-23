@@ -1,9 +1,14 @@
 <template>
-  <div class="flex flex-col gap-8">
+  <div class="flex flex-col">
     <WinMessage v-model="showNextLevelAnimation"/>
+    <div
+        class="fixed inset-0 z-50 bg-black duration-500 transition-all"
+        :class="showBuySelector ? 'bg-opacity-75 opacity-100' : 'bg-opacity-0 opacity-0 pointer-events-none'"
+    />
     <div class="bg-colors-background-50 text-text-900 min-h-screen p-2">
       <!-- DEBUG! -->
       <button @click="reset" class="fixed bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">RESET</button>
+      <button @click="debugChangeBonus" class="fixed right-0 bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">B-+</button>
 
       <div v-if="!isLoaded"></div>
       <div v-else-if="totalPuzzles !== 0 && totalPuzzles < puzzleIndex + 1">
@@ -18,14 +23,16 @@
 
         <div class="flex-1">
           <KeepAlive>
-            <PuzzleGrid class="mt-4" :grid key="puzzle"/>
+            <PuzzleGrid class="mt-4" :grid :buy-mode="showBuySelector" key="puzzle"/>
           </KeepAlive>
         </div>
-        <div class="flex flex-col items-center gap-4 mb-32">
-          <div class="font-bold text-colors-primary-900">{{ foundBonusWords.length }} extra words found</div>
-          <button @click="shuffle" class="bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">SHUFFLE</button>
-          <button class="bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">BUY</button>
-        </div>
+
+        <Actions class="fixed left-2 bottom-4"
+                 :available-bonus-word-points="availableBonusWordPoints"
+                 @shuffle="shuffle"
+                 @buy="startBuy"
+        />
+
         <div class="flex flex-col items-center gap-4 mb-28">
           <div class="relative size-fit">
             <WordBuilder
@@ -49,6 +56,7 @@ import { usePuzzle, WordTestResult } from '@/composables/puzzle.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import { useTheme } from '@/composables/theme.composable.ts';
 import WinMessage from '@/components/WinMessage.vue';
+import Actions from '@/components/Actions.vue';
 
 // RULES:
 // Word length >= 3 characters
@@ -58,9 +66,18 @@ import WinMessage from '@/components/WinMessage.vue';
 const showBonusAnimation = ref(false);
 const shouldShuffle = ref(false);
 const showNextLevelAnimation = ref(false);
+const showBuySelector = ref(false);
+
 const puzzleIndex = useLocalStorage('puzzle-index', 0);
 
-const { letters, grid, testWord: testWordResult, foundBonusWords, isLoaded, totalPuzzles } = usePuzzle(puzzleIndex);
+const {
+  letters,
+  grid,
+  testWord: testWordResult,
+  availableBonusWordPoints,
+  isLoaded,
+  totalPuzzles
+} = usePuzzle(puzzleIndex);
 
 function testWord(word: string) {
   switch (testWordResult(word)) {
@@ -96,8 +113,17 @@ const reset = () => {
   });
 };
 
+const debugChangeBonus = () => {
+  const amount = Math.floor(Math.random() * 10);
+  availableBonusWordPoints.value += Math.random() > 0.5 ? amount : -amount;
+}
+
 const shuffle = () => {
   shouldShuffle.value = true;
+};
+
+const startBuy = () => {
+  showBuySelector.value = true;
 };
 
 const _theme = useTheme();

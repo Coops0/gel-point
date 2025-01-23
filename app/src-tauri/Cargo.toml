@@ -12,13 +12,13 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.0.5", features = [] }
 
 [dependencies]
-serde_json = "1.0.135"
+serde_json = "1.0.137"
 serde = { version = "1.0.217", features = ["derive"] }
 log = "0.4.25"
-tauri = { version = "2.2.2", features = [] }
+tauri = { version = "2.2.3", features = [] }
 tauri-plugin-log = "2.2.0"
 tauri-plugin-fs = "2.2.0"
-tauri-plugin-haptics = "2.2.2"
+tauri-plugin-haptics = "2.2.3"
 tauri-plugin-http = "2.2.0"
 tokio = { version = "1.43.0", features = ["fs"] }
 sha2 = "0.10.8"
