@@ -1,10 +1,10 @@
 <template>
   <div class="flex flex-col">
     <WinMessage v-model="showNextLevelAnimation"/>
-    <div
-        class="fixed inset-0 z-50 bg-black duration-500 transition-all"
-        :class="showBuySelector ? 'bg-opacity-75 opacity-100' : 'bg-opacity-0 opacity-0 pointer-events-none'"
-    />
+<!--    <div-->
+<!--        class="fixed inset-0 z-50 bg-black duration-500 transition-all"-->
+<!--        :class="showBuySelector ? 'bg-opacity-75 opacity-100' : 'bg-opacity-0 opacity-0 pointer-events-none'"-->
+<!--    />-->
     <div class="bg-colors-background-50 text-text-900 min-h-screen p-2">
       <!-- DEBUG! -->
       <button @click="reset" class="fixed bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">RESET</button>

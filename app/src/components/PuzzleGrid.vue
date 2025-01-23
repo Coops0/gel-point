@@ -1,21 +1,21 @@
 <template>
   <div class="flex flex-col gap-2 justify-center items-center">
     <div
-        class="flex flex-row gap-2"
         v-for="(row, rowIndex) in localGrid"
-        :key="rowIndex.toString() + row.length"
-        :class="buyMode && selected[0] === rowIndex ? 'bg-colors-secondary-100' : ''"
+        :key="rowIndex"
+        class="flex flex-row gap-2"
+        :class="{'bg-colors-secondary-100': buyMode && selectedRow === rowIndex}"
     >
       <div
           v-for="(cell, colIndex) in row"
-          @click="() => clickCell(rowIndex, colIndex)"
-          :key="rowIndex.toString() + cell + colIndex.toString()"
+          :key="`${rowIndex}-${colIndex}`"
+          @click="() => handleCellClick(rowIndex, colIndex)"
           class="flex items-center justify-center text-2xl font-medium transition-colors size-12"
           :class="{
             'bg-colors-secondary-400 text-colors-background-50': cell !== 0 && cell !== -1,
             'bg-colors-secondary-200': cell === 0,
             'invisible': cell === -1,
-            'bg-colors-secondary-100': cell !== -1 && buyMode && selected[1] === colIndex,
+            'bg-colors-secondary-100': cell !== -1 && buyMode && selectedCol === colIndex
           }"
       >
         <span v-if="cell !== 0 && cell !== -1">{{ cell }}</span>
@@ -25,8 +25,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Grid } from '@/composables/puzzle.composable.ts';
 import { ref, toRaw, watch } from 'vue';
+import type { Cell, Grid } from '@/composables/puzzle.composable';
 
 const props = defineProps<{
   grid: Grid;
@@ -37,97 +37,94 @@ const emit = defineEmits<{
   selected: [row: number, col: number];
 }>();
 
-const localGrid = ref(structuredClone(toRaw(props.grid)));
+const localGrid = ref<Grid>(structuredClone(toRaw(props.grid)));
+const selectedRow = ref(-1);
+const selectedCol = ref(-1);
+const lastClickTime = ref(0);
 
-const selected = ref<[number, number]>([-1, -1]);
+const DOUBLE_CLICK_THRESHOLD = 300;
 
-let previousTimeouts: number[] = [];
+watch(() => props.grid, updateGrid, { deep: true });
+watch(() => props.buyMode, resetSelection);
 
-watch(() => props.grid, g => {
-  if (g.flat().length !== localGrid.value.flat().length) {
-    localGrid.value.length = g.length;
+let updateTasks: number[] = [];
+
+function updateGrid(newGrid: Grid) {
+  if (newGrid.flat().length !== localGrid.value.flat().length) {
+    localGrid.value.length = newGrid.length;
     localGrid.value.forEach((row, i) => {
-      row.length = g[i].length;
+      row.length = newGrid[i].length;
     });
   }
 
-  previousTimeouts.forEach(id => clearTimeout(id));
-  previousTimeouts = [];
+  updateTasks.forEach(id => clearTimeout(id));
 
-  const cellsToUpdate: Array<[number, number]> = [];
+  const updates = newGrid
+      .flatMap((row, rowIndex) => row.map((cell, cellIndex) => <[number, number, Cell]>[rowIndex, cellIndex, cell]))
+      .filter(([row, col, cell]) => localGrid.value[row][col] !== cell);
 
-  for (let i = 0; i < g.length; i++) {
-    for (let j = 0; j < g[i].length; j++) {
-      if (g[i][j] !== localGrid.value[i][j]) {
-        cellsToUpdate.push(<[number, number]>[i, j]);
-      }
-    }
+  if (updates.length === 0) {
+    updateTasks = [];
+    return;
   }
 
-  if (!cellsToUpdate.length) return;
-  const [startRow, startCol] = cellsToUpdate[0];
+  const [startRow, startCol] = updates[0];
 
-  for (const cell of cellsToUpdate) {
-    const [row, col] = cell;
+  updateTasks = updates
+      .map(([row, col, cell]) =>
+          setTimeout(() => {
+            localGrid.value[row][col] = cell;
+          }, Math.abs(row - startRow) * 50 + Math.abs(col - startCol) * 100)
+      );
+}
 
-    const timeout = setTimeout(() => {
-      localGrid.value[row][col] = g[row][col];
-    }, Math.abs(row - startRow) * 50 + Math.abs(col - startCol) * 100);
+function resetSelection() {
+  selectedRow.value = -1;
+  selectedCol.value = -1;
+}
 
-    previousTimeouts.push(timeout);
-  }
-}, { deep: true });
+const hasEmptyCells = (rowIndex: number, colIndex: number): [boolean, boolean] => ([
+  localGrid.value[rowIndex].some(cell => cell === 0),
+  localGrid.value.some(row => row[colIndex] === 0)
+]);
 
-watch(() => props.buyMode, () => {
-  selected.value = [-1, -1];
-});
-
-const clickCell = (rowIndex: number, colIndex: number) => {
-  const s = [...selected.value];
-  selected.value = [-1, -1];
-
+function handleCellClick(rowIndex: number, colIndex: number) {
   if (!props.buyMode) return;
 
-  if (rowIndex === 0 && validateColForSelection(colIndex)) {
-    // if tap on one of the top rows, then select the column
-    selected.value = [-1, colIndex];
-  } else if (colIndex === 0 && validateRowForSelection(rowIndex)) {
-    // if tap on one of the leftmost columns, then select the row
-    selected.value = [rowIndex, -1];
+  const now = Date.now();
+  const isDoubleClick = (now - lastClickTime.value) < DOUBLE_CLICK_THRESHOLD;
+  lastClickTime.value = now;
+
+  const [hasEmptyInRow, hasEmptyInCol] = hasEmptyCells(rowIndex, colIndex);
+
+  if (isDoubleClick) {
+    // dobule click => try to swap row/col
+    if (selectedRow.value === rowIndex && hasEmptyInCol) {
+      selectedRow.value = -1;
+      selectedCol.value = colIndex;
+    } else if (selectedCol.value === colIndex && hasEmptyInRow) {
+      selectedCol.value = -1;
+      selectedRow.value = rowIndex;
+    }
   } else {
-    const shouldSelectByCol = s[0] === -1 && s[1] === colIndex;
-
-    let tempSelect: [number, number] = [-1, -1];
-    // now get root row/col
-    if (shouldSelectByCol) {
-      tempSelect = findRootCol(colIndex);
-      if (!validateColForSelection(colIndex)) {
-        tempSelect = [-1, -1];
-      }
-    } else {
-      tempSelect = findRootRow(rowIndex);
-      if (!validateRowForSelection(rowIndex)) {
-        tempSelect = [-1, -1];
-      }
+    // Single click behavior
+    if (rowIndex === 0 && hasEmptyInCol) {
+      selectedRow.value = -1;
+      selectedCol.value = colIndex;
+    } else if (colIndex === 0 && hasEmptyInRow) {
+      selectedCol.value = -1;
+      selectedRow.value = rowIndex;
+    } else if (hasEmptyInRow) {
+      selectedCol.value = -1;
+      selectedRow.value = rowIndex;
+    } else if (hasEmptyInCol) {
+      selectedRow.value = -1;
+      selectedCol.value = colIndex;
     }
-
-    // try opposite
-    if (tempSelect[0] === -1 && tempSelect[1] === -1) {
-      tempSelect = shouldSelectByCol ? findRootRow(rowIndex) : findRootCol(colIndex);
-    }
-
-    selected.value = tempSelect;
   }
 
-  if (selected.value[0] !== -1 || selected.value[1] !== -1) {
-    emit('selected', ...selected.value);
+  if (selectedRow.value !== -1 || selectedCol.value !== -1) {
+    emit('selected', selectedRow.value, selectedCol.value);
   }
-};
-
-const findRootRow = (rowIndex: number): [number, number] => [localGrid.value[rowIndex].findIndex(cell => cell === 0), -1];
-const findRootCol = (colIndex: number): [number, number] => [-1, localGrid.value.findIndex(row => row[colIndex] === 0)];
-
-// col/row must have at least 1 valid unfilled cell
-const validateRowForSelection = (rowIndex: number) => localGrid.value[rowIndex].some(cell => cell === 0);
-const validateColForSelection = (colIndex: number) => localGrid.value.some(row => row[colIndex] === 0);
+}
 </script>
