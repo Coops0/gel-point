@@ -4,7 +4,7 @@
         class="flex flex-row gap-2"
         v-for="(row, rowIndex) in localGrid"
         :key="rowIndex.toString() + row.length"
-        :class="selectedRow === rowIndex ? 'bg-colors-secondary-100' : ''"
+        :class="buyMode && selected[0] === rowIndex ? 'bg-colors-secondary-100' : ''"
     >
       <div
           v-for="(cell, colIndex) in row"
@@ -15,7 +15,7 @@
             'bg-colors-secondary-400 text-colors-background-50': cell !== 0 && cell !== -1,
             'bg-colors-secondary-200': cell === 0,
             'invisible': cell === -1,
-            'bg-colors-secondary-100': selectedCol === colIndex,
+            'bg-colors-secondary-100': cell !== -1 && buyMode && selected[1] === colIndex,
           }"
       >
         <span v-if="cell !== 0 && cell !== -1">{{ cell }}</span>
@@ -33,10 +33,13 @@ const props = defineProps<{
   buyMode: boolean;
 }>();
 
+const emit = defineEmits<{
+  selected: [row: number, col: number];
+}>();
+
 const localGrid = ref(structuredClone(toRaw(props.grid)));
 
-const selectedRow = ref(-1);
-const selectedCol = ref(-1);
+const selected = ref<[number, number]>([-1, -1]);
 
 let previousTimeouts: number[] = [];
 
@@ -75,23 +78,56 @@ watch(() => props.grid, g => {
   }
 }, { deep: true });
 
+watch(() => props.buyMode, () => {
+  selected.value = [-1, -1];
+});
 
 const clickCell = (rowIndex: number, colIndex: number) => {
-  selectedCol.value = -1;
-  selectedRow.value = -1;
+  const s = [...selected.value];
+  selected.value = [-1, -1];
 
   if (!props.buyMode) return;
 
+  if (rowIndex === 0 && validateColForSelection(colIndex)) {
+    // if tap on one of the top rows, then select the column
+    selected.value = [-1, colIndex];
+  } else if (colIndex === 0 && validateRowForSelection(rowIndex)) {
+    // if tap on one of the leftmost columns, then select the row
+    selected.value = [rowIndex, -1];
+  } else {
+    const shouldSelectByCol = s[0] === -1 && s[1] === colIndex;
 
-  if (rowIndex === 0) {
-    // col/row must have at least 1 valid unfilled cell
-    if (localGrid.value.find(row => row[colIndex] === 0)) {
-      selectedCol.value = colIndex;
+    let tempSelect: [number, number] = [-1, -1];
+    // now get root row/col
+    if (shouldSelectByCol) {
+      tempSelect = findRootCol(colIndex);
+      if (!validateColForSelection(colIndex)) {
+        tempSelect = [-1, -1];
+      }
+    } else {
+      tempSelect = findRootRow(rowIndex);
+      if (!validateRowForSelection(rowIndex)) {
+        tempSelect = [-1, -1];
+      }
     }
-  } else if (colIndex === 0) {
-    if (localGrid.value[rowIndex].find(cell => cell === 0)) {
-      selectedRow.value = rowIndex;
+
+    // try opposite
+    if (tempSelect[0] === -1 && tempSelect[1] === -1) {
+      tempSelect = shouldSelectByCol ? findRootRow(rowIndex) : findRootCol(colIndex);
     }
+
+    selected.value = tempSelect;
+  }
+
+  if (selected.value[0] !== -1 || selected.value[1] !== -1) {
+    emit('selected', ...selected.value);
   }
 };
+
+const findRootRow = (rowIndex: number): [number, number] => [localGrid.value[rowIndex].findIndex(cell => cell === 0), -1];
+const findRootCol = (colIndex: number): [number, number] => [-1, localGrid.value.findIndex(row => row[colIndex] === 0)];
+
+// col/row must have at least 1 valid unfilled cell
+const validateRowForSelection = (rowIndex: number) => localGrid.value[rowIndex].some(cell => cell === 0);
+const validateColForSelection = (colIndex: number) => localGrid.value.some(row => row[colIndex] === 0);
 </script>
