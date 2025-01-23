@@ -2,20 +2,37 @@
   <div class="flex flex-col">
     <WinMessage v-model="showNextLevelAnimation"/>
     <div
-        class="fixed inset-0 z-50 bg-black duration-500 transition-all"
-        :class="showBuySelector ? 'bg-opacity-75 opacity-100' : 'bg-opacity-0 opacity-0 pointer-events-none'"
+        class="fixed size-full inset-0 z-50 bg-black/75 transition-all duration-500 flex justify-center"
+        :class="showBuySelector ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+     />
+
+    <div
+        class="fixed inset-0 z-[52] transition-all duration-500"
+        :class="showBuySelector ? 'opacity-100' : 'opacity-0 pointer-events-none'"
     >
-      <div class="flex flex-col items-center justify-center h-full">
-        <h1 class="text-center">BUY</h1>
-        <p v-if="affectedCells.length">PRICE: ${{ affectedCells.length * 2 }}</p>
-        <div class="absolute" @click="buySelection">
-          <Transition name="button-slide">
-            <span v-if="!affectedCells.length">SELECT</span>
-            <span v-else-if="!canAfford">CANNOT AFFORD</span>
-            <span v-else>BUY</span>
-          </Transition>
+      <div class="flex flex-col h-full">
+        <h1 class="text-4xl font-bold text-white text-center mt-20">BUY</h1>
+        <p v-if="affectedCells.length" class="text-xl text-white text-center mt-4">
+          PRICE: ${{ affectedCells.length * 2 }}
+        </p>
+        <div class="flex flex-col items-center justify-center flex-grow gap-6">
+          <div
+              @click="buySelection"
+              class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition-colors duration-200"
+          >
+            <Transition name="button-slide">
+              <span v-if="!affectedCells.length">SELECT</span>
+              <span v-else-if="!canAfford" class="text-red-300">CANNOT AFFORD</span>
+              <span v-else>BUY</span>
+            </Transition>
+          </div>
+          <div
+              @click="stopBuy"
+              class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg cursor-pointer transition-colors duration-200"
+          >
+            CANCEL
+          </div>
         </div>
-        <div @click="stopBuy">CANCEL</div>
       </div>
     </div>
     <div class="bg-colors-background-50 text-text-900 min-h-screen p-2">
@@ -39,8 +56,7 @@
         <div class="flex-1">
           <KeepAlive>
             <PuzzleGrid
-                class="mt-4"
-                :class="showBuySelector && 'z-[51]'"
+                class="mt-4 relative z-[51]"
                 :grid
                 :buy-mode="showBuySelector"
                 @selected="buyModeSelect"
@@ -150,30 +166,30 @@ const startBuy = () => {
 
 const stopBuy = () => {
   showBuySelector.value = false;
+  currentlySelected.value = [-1, -1];
+  affectedCells.value = [];
 };
 
 const currentlySelected = ref<[number, number]>([-1, -1]);
-const affectedCells = computed(() => {
-  const [row, col] = currentlySelected.value;
-
-  const flattenedGrid: Array<[number, number]> = grid.value
-      .flatMap((row, rowIndex) => row.map((cell, colIndex) => <[number, number, Cell]>[rowIndex, colIndex, cell]))
-      .filter(([, cell]) => cell === 0)
-      .map(([rowIndex, colIndex]) => [rowIndex, colIndex]);
-
-  if (row !== -1) {
-    return flattenedGrid.filter(([r]) => r === row);
-  } else if (col !== -1) {
-    return flattenedGrid.filter(([, c]) => c === col);
-  } else {
-    return [];
-  }
-});
+const affectedCells = ref<Array<[number, number]>>([]);
 
 const canAfford = computed(() => availableBonusWordPoints.value >= affectedCells.value.length * 2);
 
 const buyModeSelect = (row: number, col: number) => {
   currentlySelected.value = [row, col];
+
+  const flattenedGrid: Array<[number, number]> = grid.value
+      .flatMap((row, rowIndex) => row.map((cell, colIndex) => <[number, number, Cell]>[rowIndex, colIndex, cell]))
+      .filter(([, , cell]) => cell === 0)
+      .map(([rowIndex, colIndex]) => [rowIndex, colIndex]);
+
+  if (row !== -1) {
+    affectedCells.value = flattenedGrid.filter(([r]) => r === row);
+  } else if (col !== -1) {
+    affectedCells.value = flattenedGrid.filter(([, c]) => c === col);
+  } else {
+    affectedCells.value = [];
+  }
 };
 
 const buySelection = () => {
