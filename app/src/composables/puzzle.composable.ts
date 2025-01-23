@@ -115,12 +115,22 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
         }
     }, { immediate: true });
 
+    const buyCells = (cells: Array<[number, number]>) => {
+        const newGrid = [...activeGrid.value];
+
+        for (const [col, row] of cells) {
+            newGrid[row][col] = staticGrid.value[row][col] as string;
+        }
+
+        activeGrid.value = newGrid;
+    }
+
     const isLoaded = computed(() => puzzle.value !== null && !!activeGrid.value.length);
 
     return {
         grid: activeGrid,
+        buyCells,
         letters,
-        // availableBonusWordPoints: readonly(availableBonusWordPoints),
         availableBonusWordPoints, // todo change back
         testWord,
         isLoaded,

@@ -73,6 +73,7 @@ function updateGrid(newGrid: Grid) {
       .map(([row, col, cell]) =>
           setTimeout(() => {
             localGrid.value[row][col] = cell;
+            // 50(|row - startRow|) + 100(|col - startCol|)
           }, Math.abs(row - startRow) * 50 + Math.abs(col - startCol) * 100)
       );
 }
