@@ -65,6 +65,8 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
         [...new Set(staticGrid.value.flat().filter(cell => cell !== -1 && cell !== 0) as string[])]
     );
 
+    const hasWon = () => activeGrid.value.every(row => row.every(cell => cell !== 0));
+
     const testWord = (word: string): WordTestResult => {
         const match = words.value.find(([w]) => w === word);
         if (!match) {
@@ -85,11 +87,7 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
 
         activeGrid.value = newGrid;
 
-        if (activeGrid.value.every(row => row.every(cell => cell !== 0))) {
-            return WordTestResult.Win;
-        } else {
-            return WordTestResult.Found;
-        }
+        return hasWon() ? WordTestResult.Win : WordTestResult.Found;
     };
 
     watch(puzzleIndex, async pi => {
@@ -126,7 +124,7 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
         availableBonusWordPoints.value -= cells.length * 2;
         activeGrid.value = newGrid;
 
-        return activeGrid.value.every(row => row.every(cell => cell !== 0))
+        return hasWon();
     };
 
     const isLoaded = computed(() => puzzle.value !== null && !!activeGrid.value.length);
