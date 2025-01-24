@@ -9,21 +9,21 @@
         ref="buySelector"
     />
 
-    <div class="bg-colors-background-50 text-text-900 min-h-screen p-2">
+    <div class="bg-background-50 text-text-900 min-h-screen p-2">
       <!-- DEBUG! -->
-      <button @click="reset" class="fixed bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">RESET</button>
+      <button @click="reset" class="fixed bg-primary-500 text-background-50 p-2 rounded-md">RESET</button>
       <button @click="debugChangeBonus"
-              class="fixed right-0 bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">B-+
+              class="fixed right-0 bg-primary-500 text-background-50 p-2 rounded-md">B-+
       </button>
 
       <div v-if="!isLoaded"/>
       <div v-else-if="totalPuzzles !== 0 && totalPuzzles < puzzleIndex + 1">
-        <div class="text-colors-primary-400">good job 🎉</div>
-        <div class="text-colors-primary-400">you did all the puzzles. now wait for me to add more.</div>
+        <div class="text-primary-400">good job 🎉</div>
+        <div class="text-primary-400">you did all the puzzles. now wait for me to add more.</div>
       </div>
       <div v-else class="flex flex-col h-screen">
         <div class="flex justify-center items-center gap-4">
-          <div class="text-colors-primary-400">LEVEL {{ puzzleIndex + 1 }}</div>
+          <div class="text-primary-400">LEVEL {{ puzzleIndex + 1 }}</div>
         </div>
 
         <div class="flex-1">
@@ -40,7 +40,7 @@
         </div>
 
         <div
-            class="text-white text-center w-full fixed top-2/3 text-2xl font-bold transition-opacity text-primary-900"
+            class="text-center w-full fixed top-2/3 text-2xl font-bold transition-opacity text-primary-900"
             :class="!showCurrentlyBuildingWord && 'opacity-0'"
         >
           {{ currentlyBuildingWord }}

@@ -11,10 +11,10 @@
           @click="() => handleCellClick(rowIndex, colIndex)"
           class="flex items-center justify-center text-2xl font-medium transition-colors size-12"
           :class="{
-            'bg-colors-secondary-400 text-colors-background-50': cell !== 0 && cell !== -1,
-            'bg-colors-secondary-200': cell === 0,
-            'ring-2 ring-colors-accent-600': cell === 0 && buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
-            'ring-2 ring-colors-accent-300': cell !== 0 && buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
+            'bg-secondary-400 text-background-50': cell !== 0 && cell !== -1,
+            'bg-secondary-200': cell === 0,
+            'ring-3 ring-accent-600': cell === 0 && buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
+            'ring-3 ring-accent-300': cell !== 0 && buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
           }"
       >
         <span v-if="cell !== 0 && cell !== -1">{{ cell }}</span>

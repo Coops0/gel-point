@@ -2,9 +2,9 @@
   <div :style="{ transform }"
        class="absolute flex items-center justify-center text-xl font-bold size-16
                transition-colors duration-200 rounded-full select-none cursor-pointer
-               bg-colors-accent-400 text-colors-background-50 active:bg-colors-accent-500 shadow-lg"
+               bg-accent-400 text-background-50 active:bg-accent-500 shadow-lg"
        :class="[
-          active && '!bg-colors-accent-600 ring-colors-primary-400 ring-4',
+          active && '!bg-accent-600 ring-primary-400 ring-4',
           animating && 'animate-bonus'
         ]"
        @pointerdown.prevent="event => emit('start-touch', event)"

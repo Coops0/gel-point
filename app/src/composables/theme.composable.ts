@@ -8,4 +8,4 @@ export const useTheme = () => theme;
 
 export const loadTheme = () => {
     watch(theme, t => (document.body.dataset.theme = t), { immediate: true });
-}
+};

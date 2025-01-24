@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-2">
-    <div class="text-colors-primary-800 opacity-50 h-8 w-12 text-center relative">
+    <div class="text-primary-800 opacity-50 h-8 w-12 text-center relative">
       <div class="absolute inset-0 overflow-hidden">
         <Transition :name="shouldIncrement ? 'slide-down' : 'slide-up'" @leave="() => updateLocalCounterSingle()"
                     :duration="transitionSpeed">

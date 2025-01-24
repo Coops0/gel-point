@@ -8,7 +8,7 @@
           :y1="line.start.y + height/2 + CIRCLE_CENTER_OFFSET"
           :x2="line.end.x + width/2 + CIRCLE_CENTER_OFFSET"
           :y2="line.end.y + height/2 + CIRCLE_CENTER_OFFSET"
-          class="animated-line stroke-colors-primary-600"
+          class="animated-line stroke-primary-600"
           stroke-width="10"
       />
     </svg>

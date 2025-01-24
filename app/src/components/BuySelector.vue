@@ -11,11 +11,12 @@
   >
     <div class="flex flex-col h-full">
       <h1 class="text-4xl font-bold text-white text-center mt-20">BUY</h1>
-      <p v-show="affectedCells.length" class="text-xl text-white text-center mt-4 animate-pulse">
+      <p class="text-xl text-white text-center mt-4 animate-pulse transition-opacity"
+         :class="!hasSelection && 'opacity-0'">
         PRICE: <span class="transition-colors"
                      :class="canAfford ? 'text-red-300' : 'text-red-500'">{{ affectedCells.length * 2 }}</span>
       </p>
-      <div class="flex flex-col items-center justify-center flex-grow gap-6">
+      <div class="flex flex-col items-center justify-center grow gap-6">
         <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
         <div
             @click="cancel"
