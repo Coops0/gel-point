@@ -5,7 +5,7 @@
         v-model="showBuySelector"
         :grid
         :available-bonus-word-points="availableBonusWordPoints"
-        @buy="c => buyCells(c)"
+        @buy="buy"
         ref="buySelector"
     />
 
@@ -65,7 +65,7 @@ import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
 import { usePuzzle, WordTestResult } from '@/composables/puzzle.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
-import { useTheme } from '@/composables/theme.composable.ts';
+import { loadTheme } from '@/composables/theme.composable.ts';
 import WinMessage from '@/components/WinMessage.vue';
 import Actions from '@/components/Actions.vue';
 import BuySelector from '@/components/BuySelector.vue';
@@ -95,25 +95,34 @@ const {
   buyCells
 } = usePuzzle(puzzleIndex);
 
+function nextlevel() {
+  const nextPuzzle = puzzleIndex.value + 1;
+  if (nextPuzzle <= totalPuzzles.value) {
+    showNextLevelAnimation.value = true;
+  }
+
+  setTimeout(() => {
+    puzzleIndex.value = nextPuzzle;
+  }, 1000);
+}
+
 function testWord(word: string) {
   switch (testWordResult(word)) {
     case WordTestResult.Bonus:
       showBonusAnimation.value = true;
       break;
     case WordTestResult.Win:
-      const nextPuzzle = puzzleIndex.value + 1;
-      if (nextPuzzle <= totalPuzzles.value) {
-        showNextLevelAnimation.value = true;
-      }
-
-      setTimeout(() => {
-        puzzleIndex.value = nextPuzzle;
-      }, 1000);
-
+      nextlevel();
       break;
     case WordTestResult.NotFound:
     case WordTestResult.Found:
       break;
+  }
+}
+
+function buy(cells: Array<[number, number]>) {
+  if (buyCells(cells)) {
+    nextlevel();
   }
 }
 
@@ -136,7 +145,5 @@ function debugChangeBonus() {
   availableBonusWordPoints.value += Math.random() > 0.5 ? amount : -amount;
 }
 
-// need to load theme to apply colors to document
-// noinspection JSUnusedGlobalSymbols
-const _theme = useTheme();
+loadTheme();
 </script>

@@ -115,7 +115,8 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
         }
     }, { immediate: true });
 
-    const buyCells = (cells: Array<[number, number]>) => {
+    /// @returns If sale resulted in a game win
+    const buyCells = (cells: Array<[number, number]>): boolean => {
         const newGrid = [...activeGrid.value];
 
         for (const [row, col] of cells) {
@@ -124,6 +125,8 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
 
         availableBonusWordPoints.value -= cells.length * 2;
         activeGrid.value = newGrid;
+
+        return activeGrid.value.every(row => row.every(cell => cell !== 0))
     };
 
     const isLoaded = computed(() => puzzle.value !== null && !!activeGrid.value.length);
