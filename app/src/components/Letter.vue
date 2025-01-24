@@ -16,8 +16,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, useId, useTemplateRef, watch } from 'vue';
+import { computed, ref, useId, useTemplateRef, watch } from 'vue';
 import { lerp } from '@/util';
+import { useEventListener } from '@/composables/event-listener.composable.ts';
+import { useInterval } from '@/composables/interval.composable.ts';
 
 const props = defineProps<{
   x: number;
@@ -30,16 +32,16 @@ const props = defineProps<{
 
 const localPos = ref([props.x, props.y]);
 
-const shuffleInterval = ref<number | null>(null);
+let shuffleInterval = -1;
 
 watch(() => [props.x, props.y], ([newX, newY]) => {
-  if (shuffleInterval.value) {
-    clearInterval(shuffleInterval.value);
+  if (shuffleInterval !== -1) {
+    clearInterval(shuffleInterval);
   }
 
-  shuffleInterval.value = setInterval(() => {
+  shuffleInterval = setInterval(() => {
     if (localPos.value[0] === newX && localPos.value[1] === newY) {
-      clearInterval(shuffleInterval.value!);
+      clearInterval(shuffleInterval!);
       localPos.value = [newX, newY];
     } else {
       localPos.value[0] = lerp(localPos.value[0], newX, 0.1);
@@ -61,48 +63,39 @@ const emit = defineEmits<{
 const uniqueId = useId();
 const element = useTemplateRef<HTMLElement>(uniqueId);
 
-function onPointerMove(event: MouseEvent) {
-  const el = element.value;
-  if (!el || !props.active) {
-    moveToOffsetTarget.value = [0, 0];
-    return;
-  }
+useEventListener(
+    'pointermove',
+    (event: MouseEvent) => {
+      const el = element.value;
+      if (!el || !props.active) {
+        moveToOffsetTarget.value = [0, 0];
+        return;
+      }
 
-  const rect = el.getBoundingClientRect();
-  let [x, y] = [event.clientX - rect.x, event.clientY - rect.y];
+      const rect = el.getBoundingClientRect();
+      let [x, y] = [event.clientX - rect.x, event.clientY - rect.y];
 
-  const modifier = props.lastSelected ? 80 : 300;
+      const modifier = props.lastSelected ? 80 : 300;
 
-  x = lerp(x, localPos.value[0], 0.1) / modifier;
-  y = lerp(y, localPos.value[1], 0.1) / modifier;
+      x = lerp(x, localPos.value[0], 0.1) / modifier;
+      y = lerp(y, localPos.value[1], 0.1) / modifier;
 
-  moveToOffsetTarget.value = [x, y];
-}
+      moveToOffsetTarget.value = [x, y];
+    },
+    { passive: true }
+);
 
-function onPointerUp() {
-  moveToOffsetTarget.value = [0, 0];
-}
+useEventListener(
+    'pointerup',
+    () => {
+      moveToOffsetTarget.value = [0, 0];
+    },
+    { passive: true }
+);
 
-function moveToOffset() {
+useInterval(() => {
   const [targetX, targetY] = moveToOffsetTarget.value;
   const [x, y] = dragOffset.value;
   dragOffset.value = [lerp(x, targetX, 0.1), lerp(y, targetY, 0.1)];
-}
-
-const moveToOffsetInterval = ref<number | null>(null);
-
-onMounted(() => {
-  document.addEventListener('pointermove', onPointerMove, { passive: true });
-  document.addEventListener('pointerup', onPointerUp, { passive: true });
-
-  moveToOffsetInterval.value = setInterval(moveToOffset, 15);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('pointermove', onPointerMove);
-  document.removeEventListener('pointerup', onPointerUp);
-  if (moveToOffsetInterval.value) {
-    clearInterval(moveToOffsetInterval.value);
-  }
-});
+}, 15);
 </script>

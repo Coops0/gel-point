@@ -2,6 +2,7 @@
   <div
       class="fixed size-full inset-0 z-50 bg-black/75 transition-all duration-500 flex justify-center"
       :class="active ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+      id="buy-selector-backdrop"
   />
 
   <div
@@ -28,8 +29,9 @@
 
 <script setup lang="ts">
 import type { Cell, Grid } from '@/composables/puzzle.composable.ts';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import BuyButton from '@/components/BuyButton.vue';
+import { useEventListener } from '@/composables/event-listener.composable.ts';
 
 const active = defineModel<boolean>({ required: true });
 
@@ -81,15 +83,17 @@ function buySelection() {
   }
 }
 
-function onClickOutsideBuySelector(event: MouseEvent) {
+// detect if click outside of buy selector, close it
+useEventListener(
+    'click',
+    (event: MouseEvent) => {
+      if (!active) return;
 
-}
-
-onMounted(() => {
-  document.addEventListener('click', onClickOutsideBuySelector);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('click', onClickOutsideBuySelector);
-})
+      const target = event.target;
+      if (!target || (<HTMLElement>target).id === 'buy-selector-backdrop') {
+        event.preventDefault();
+        active.value = false;
+      }
+    }
+);
 </script>

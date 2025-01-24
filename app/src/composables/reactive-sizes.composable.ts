@@ -1,4 +1,5 @@
-import { onMounted, onUnmounted, type Ref, ref, watch } from 'vue';
+import { onMounted, type Ref, ref, watch } from 'vue';
+import { useEventListener } from '@/composables/event-listener.composable.ts';
 
 export const useReactiveSizes = (
     wordContainer: Ref<HTMLElement | null> | null = null
@@ -16,13 +17,10 @@ export const useReactiveSizes = (
         }
     };
 
+    useEventListener('resize', () => updateDimensions());
+
     onMounted(() => {
         updateDimensions();
-        window.addEventListener('resize', updateDimensions);
-    });
-
-    onUnmounted(() => {
-        window.removeEventListener('resize', updateDimensions);
     });
 
     if (wordContainer) {

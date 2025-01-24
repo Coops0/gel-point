@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, toRef, watch } from 'vue';
+import { computed, ref, toRef, watch } from 'vue';
 import Letter from '@/components/Letter.vue';
 import { useReactiveSizes } from '@/composables/reactive-sizes.composable.ts';
 import {
@@ -43,6 +43,7 @@ import {
   type LetterPosition,
   useLetterAlignment
 } from '@/composables/letter-alignment.composable.ts';
+import { useEventListener } from '@/composables/event-listener.composable.ts';
 
 const props = defineProps<{ letters: string[] }>();
 const showBonusAnimation = defineModel<boolean>('showBonusAnimation', { required: true });
@@ -130,13 +131,6 @@ function endTouch() {
   }
 }
 
-onMounted(() => {
-  document.addEventListener('pointerup', endTouch, { passive: true });
-  document.addEventListener('touchend', endTouch, { passive: true });
-});
-
-onUnmounted(() => {
-  document.removeEventListener('pointerup', endTouch);
-  document.removeEventListener('touchend', endTouch);
-});
+useEventListener('pointerup', endTouch, { passive: true });
+useEventListener('touchend', endTouch, { passive: true });
 </script>
