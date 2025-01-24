@@ -41,8 +41,8 @@
 
         <Actions class="fixed left-2 bottom-4"
                  :available-bonus-word-points="availableBonusWordPoints"
-                 @shuffle="shuffle"
-                 @buy="startBuy"
+                 @shuffle="() => (shouldShuffle = true)"
+                 @buy="() => (showBuySelector = true)"
         />
 
         <div class="flex flex-col items-center gap-4 mb-28">
@@ -118,6 +118,7 @@ function testWord(word: string) {
   }
 }
 
+// TODO remove
 function reset() {
   if (puzzleIndex.value === 0) {
     puzzleIndex.value = 1;
@@ -130,17 +131,10 @@ function reset() {
   });
 }
 
+// TODO remove
 function debugChangeBonus() {
   const amount = Math.floor(Math.random() * 10);
   availableBonusWordPoints.value += Math.random() > 0.5 ? amount : -amount;
-}
-
-function shuffle() {
-  shouldShuffle.value = true;
-}
-
-function startBuy() {
-  showBuySelector.value = true;
 }
 
 function buyModeSelect(row: number, col: number) {

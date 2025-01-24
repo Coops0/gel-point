@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import type { Cell, Grid } from '@/composables/puzzle.composable.ts';
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import BuyButton from '@/components/BuyButton.vue';
 
 const active = defineModel<boolean>({ required: true });
@@ -81,7 +81,15 @@ function buySelection() {
   }
 }
 
-function onClickOutsideSelector(event: MouseEvent) {
+function onClickOutsideBuySelector(event: MouseEvent) {
 
 }
+
+onMounted(() => {
+  document.addEventListener('click', onClickOutsideBuySelector);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', onClickOutsideBuySelector);
+})
 </script>
