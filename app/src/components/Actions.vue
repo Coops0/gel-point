@@ -26,9 +26,7 @@ const props = defineProps<{
 }>();
 
 const localBonusPoints = ref(props.availableBonusWordPoints);
-
 const shouldIncrement = ref(false);
-
 const transitionSpeed = ref(0);
 
 const emit = defineEmits<{
@@ -58,7 +56,7 @@ watch(() => props.availableBonusWordPoints, v => {
 });
 </script>
 
-<style>
+<style scoped>
 .slide-up-enter-active,
 .slide-up-leave-active,
 .slide-down-enter-active,

@@ -44,14 +44,18 @@ const emit = defineEmits<{
   buy: [Array<[number, number]>]
 }>();
 
-defineExpose({ buyModeSelect });
+defineExpose({ select });
 
-function cancel() {
-  active.value = false;
+function delayedClear() {
   setTimeout(() => {
     currentlySelected.value = [-1, -1];
     affectedCells.value = [];
   }, 500);
+}
+
+function cancel() {
+  active.value = false;
+  delayedClear();
 }
 
 const currentlySelected = ref<[number, number]>([-1, -1]);
@@ -59,7 +63,7 @@ const affectedCells = ref<Array<[number, number]>>([]);
 
 const canAfford = computed(() => props.availableBonusWordPoints >= (affectedCells.value.length * 2));
 
-function buyModeSelect(row: number, col: number) {
+function select(row: number, col: number) {
   currentlySelected.value = [row, col];
 
   const flattenedGrid: Array<[number, number]> = props.grid
@@ -80,6 +84,7 @@ function buySelection() {
   if (canAfford.value) {
     active.value = false;
     emit('buy', affectedCells.value);
+    delayedClear();
   }
 }
 

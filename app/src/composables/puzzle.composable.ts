@@ -1,5 +1,5 @@
 import type { ComputedRef, Ref } from 'vue';
-import { computed, readonly, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useWords } from '@/composables/words.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 
@@ -118,12 +118,13 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
     const buyCells = (cells: Array<[number, number]>) => {
         const newGrid = [...activeGrid.value];
 
-        for (const [col, row] of cells) {
+        for (const [row, col] of cells) {
             newGrid[row][col] = staticGrid.value[row][col] as string;
         }
 
+        availableBonusWordPoints.value -= cells.length * 2;
         activeGrid.value = newGrid;
-    }
+    };
 
     const isLoaded = computed(() => puzzle.value !== null && !!activeGrid.value.length);
 

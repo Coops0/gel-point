@@ -5,7 +5,6 @@ import { watch } from 'vue';
 const theme = useLocalStorage('theme', 'grapefruit');
 
 export const useTheme = () => {
-    watch(theme, t => document.body.dataset.theme = t, { immediate: true });
-
+    watch(theme, t => (document.body.dataset.theme = t), { immediate: true });
     return theme;
 };

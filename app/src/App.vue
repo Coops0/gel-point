@@ -6,7 +6,7 @@
         :grid
         :available-bonus-word-points="availableBonusWordPoints"
         @buy="c => buyCells(c)"
-        ref="buyModeSelectScreen"
+        ref="buySelector"
     />
 
     <div class="bg-colors-background-50 text-text-900 min-h-screen p-2">
@@ -20,7 +20,6 @@
       <div v-else-if="totalPuzzles !== 0 && totalPuzzles < puzzleIndex + 1">
         <div class="text-colors-primary-400">good job 🎉</div>
         <div class="text-colors-primary-400">you did all the puzzles. now wait for me to add more.</div>
-        <button @click="reset" class="bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">RESET</button>
       </div>
       <div v-else class="flex flex-col h-screen">
         <div class="flex justify-center items-center gap-4">
@@ -34,14 +33,14 @@
                 :class="showBuySelector && 'opacity-80'"
                 :grid
                 :buy-mode="showBuySelector"
-                @selected="buyModeSelect"
+                @selected="(row, col) => buySelector?.select(row, col)"
             />
           </KeepAlive>
         </div>
 
         <Actions class="fixed left-2 bottom-4"
                  :available-bonus-word-points="availableBonusWordPoints"
-                 @shuffle="() => (shouldShuffle = true)"
+                 @shuffle="() => wordBuilder?.shuffle()"
                  @buy="() => (showBuySelector = true)"
         />
 
@@ -51,7 +50,7 @@
                 :letters
                 @test-word="testWord"
                 v-model:show-bonus-animation="showBonusAnimation"
-                v-model:should-shuffle="shouldShuffle"
+                ref="wordBuilder"
             />
           </div>
         </div>
@@ -79,10 +78,10 @@ import BuySelector from '@/components/BuySelector.vue';
 const showBonusAnimation = ref(false);
 const showNextLevelAnimation = ref(false);
 
-const shouldShuffle = ref(false);
+const wordBuilder = ref<null | typeof WordBuilder>(null);
 
 const showBuySelector = ref(false);
-const buyModeSelectScreen = ref<typeof BuySelector | null>(null);
+const buySelector = ref<typeof BuySelector | null>(null);
 
 const puzzleIndex = useLocalStorage('puzzle-index', 0);
 
@@ -135,14 +134,6 @@ function reset() {
 function debugChangeBonus() {
   const amount = Math.floor(Math.random() * 10);
   availableBonusWordPoints.value += Math.random() > 0.5 ? amount : -amount;
-}
-
-function buyModeSelect(row: number, col: number) {
-  if (buyModeSelectScreen.value) {
-    buyModeSelectScreen.value.buyModeSelect(row, col);
-  } else {
-    console.warn('buy mode select screen ref is null');
-  }
 }
 
 // need to load theme to apply colors to document

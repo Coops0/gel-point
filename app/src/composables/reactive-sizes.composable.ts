@@ -8,20 +8,13 @@ export const useReactiveSizes = (
     const height = ref(600);
 
     const updateDimensions = () => {
-        if (wordContainer?.value) {
-            width.value = wordContainer.value.clientWidth;
-            height.value = wordContainer.value.clientHeight;
-        } else {
-            width.value = window.innerWidth;
-            height.value = window.innerHeight;
-        }
+        width.value = wordContainer?.value?.clientWidth ?? window.innerWidth;
+        height.value = wordContainer?.value?.clientHeight ?? window.innerHeight;
     };
 
     useEventListener('resize', () => updateDimensions());
 
-    onMounted(() => {
-        updateDimensions();
-    });
+    onMounted(() => updateDimensions());
 
     if (wordContainer) {
         watch(wordContainer, () => updateDimensions(), { immediate: true });
