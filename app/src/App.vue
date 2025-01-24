@@ -155,20 +155,3 @@ const buyModeSelect = (row: number, col: number) => {
 // noinspection JSUnusedGlobalSymbols
 const _theme = useTheme();
 </script>
-
-<style scoped>
-.button-slide-enter-active,
-.button-slide-leave-active {
-  transition: all 0.25s ease-out;
-}
-
-.button-slide-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.button-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-30px);
-}
-</style>
