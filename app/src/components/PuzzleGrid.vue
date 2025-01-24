@@ -13,8 +13,8 @@
           :class="{
             'bg-colors-secondary-400 text-colors-background-50': cell !== 0 && cell !== -1,
             'bg-colors-secondary-200': cell === 0,
-            'invisible': cell === -1,
-            'ring-2 ring-colors-accent-400': cell !== -1 && buyMode && (selectedCol === colIndex || selectedRow === rowIndex)
+            'ring-2 ring-colors-accent-600': cell === 0 && buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
+            'ring-2 ring-colors-accent-300': cell !== 0 && buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
           }"
       >
         <span v-if="cell !== 0 && cell !== -1">{{ cell }}</span>
@@ -35,6 +35,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   selected: [row: number, col: number];
 }>();
+
+defineExpose({ resetSelection });
 
 const localGrid = ref<Grid>(structuredClone(toRaw(props.grid)));
 
@@ -81,6 +83,7 @@ function updateGrid(newGrid: Grid) {
 function resetSelection() {
   selectedRow.value = -1;
   selectedCol.value = -1;
+  emit('selected', -1, -1);
 }
 
 const hasEmptyCells = (rowIndex: number, colIndex: number): [boolean, boolean] => ([

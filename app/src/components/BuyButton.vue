@@ -2,34 +2,27 @@
   <div
       class="w-32 text-center h-12 bg-blue-600 active:bg-blue-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
   >
-    <Transition name="button-slide">
-      <span v-if="!hasSelection" class="fixed">SELECT</span>
-      <span v-else-if="!canAfford" class="text-red-300 fixed">CANNOT AFFORD</span>
-      <span v-else class="fixed">BUY</span>
-    </Transition>
+    <span :class="contents[1]">{{ contents[0] }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue';
+
+const props = defineProps<{
   hasSelection: boolean;
   canAfford: boolean;
 }>();
+
+const contents = computed(() => {
+  if (!props.hasSelection) {
+    return ['SELECT', ''];
+  }
+
+  if (!props.canAfford) {
+    return ['CANNOT AFFORD', 'text-red-500'];
+  }
+
+  return ['BUY', ''];
+});
 </script>
-
-<style scoped>
-.button-slide-enter-active,
-.button-slide-leave-active {
-  transition: all 0.25s ease-out;
-}
-
-.button-slide-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.button-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-30px);
-}
-</style>

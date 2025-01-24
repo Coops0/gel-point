@@ -34,8 +34,16 @@
                 :grid
                 :buy-mode="showBuySelector"
                 @selected="(row, col) => buySelector?.select(row, col)"
+                ref="puzzleGrid"
             />
           </KeepAlive>
+        </div>
+
+        <div
+            class="text-white text-center w-full fixed top-2/3 text-2xl font-bold transition-opacity text-primary-900"
+            :class="!showCurrentlyBuildingWord && 'opacity-0'"
+        >
+          {{ currentlyBuildingWord }}
         </div>
 
         <Actions class="fixed left-2 bottom-4"
@@ -49,6 +57,7 @@
             <WordBuilder
                 :letters
                 @test-word="testWord"
+                @update-built-word="updateBuiltWord"
                 v-model:show-bonus-animation="showBonusAnimation"
                 ref="wordBuilder"
             />
@@ -69,6 +78,7 @@ import { loadTheme } from '@/composables/theme.composable.ts';
 import WinMessage from '@/components/WinMessage.vue';
 import Actions from '@/components/Actions.vue';
 import BuySelector from '@/components/BuySelector.vue';
+import { useEventListener } from '@/composables/event-listener.composable.ts';
 
 // RULES:
 // Word length >= 3 characters
@@ -79,6 +89,10 @@ const showBonusAnimation = ref(false);
 const showNextLevelAnimation = ref(false);
 
 const wordBuilder = ref<null | typeof WordBuilder>(null);
+const puzzleGrid = ref<null | typeof PuzzleGrid>(null);
+
+const currentlyBuildingWord = ref('');
+const showCurrentlyBuildingWord = ref(false);
 
 const showBuySelector = ref(false);
 const buySelector = ref<typeof BuySelector | null>(null);
@@ -95,7 +109,7 @@ const {
   buyCells
 } = usePuzzle(puzzleIndex);
 
-function nextlevel() {
+function goToNextLevel() {
   const nextPuzzle = puzzleIndex.value + 1;
   if (nextPuzzle <= totalPuzzles.value) {
     showNextLevelAnimation.value = true;
@@ -112,7 +126,7 @@ function testWord(word: string) {
       showBonusAnimation.value = true;
       break;
     case WordTestResult.Win:
-      nextlevel();
+      goToNextLevel();
       break;
     case WordTestResult.NotFound:
     case WordTestResult.Found:
@@ -122,9 +136,38 @@ function testWord(word: string) {
 
 function buy(cells: Array<[number, number]>) {
   if (buyCells(cells)) {
-    nextlevel();
+    goToNextLevel();
   }
 }
+
+function updateBuiltWord(word: string) {
+  if (word.length) {
+    currentlyBuildingWord.value = word;
+  }
+
+  showCurrentlyBuildingWord.value = !!word.length;
+}
+
+// detect if click outside of buy selector, close it
+useEventListener(
+    'click',
+    (event: MouseEvent) => {
+      if (!showBuySelector.value) return;
+
+      const target = event.target;
+      if (target && (<HTMLElement>target).id !== 'buy-selector-backdrop') {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (buySelector.value?.hasSelection?.() === true) {
+        puzzleGrid.value?.resetSelection();
+      } else {
+        showBuySelector.value = false;
+      }
+    }
+);
 
 // TODO remove
 function reset() {

@@ -12,10 +12,11 @@
     <div class="flex flex-col h-full">
       <h1 class="text-4xl font-bold text-white text-center mt-20">BUY</h1>
       <p v-show="affectedCells.length" class="text-xl text-white text-center mt-4 animate-pulse">
-        PRICE: {{ affectedCells.length * 2 }}
+        PRICE: <span class="transition-colors"
+                     :class="canAfford ? 'text-red-300' : 'text-red-500'">{{ affectedCells.length * 2 }}</span>
       </p>
       <div class="flex flex-col items-center justify-center flex-grow gap-6">
-        <BuyButton :can-afford="canAfford" :has-selection="!!affectedCells.length" @click="buySelection"/>
+        <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
         <div
             @click="cancel"
             class="px-6 py-3 mt-36 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
@@ -31,7 +32,6 @@
 import type { Cell, Grid } from '@/composables/puzzle.composable.ts';
 import { computed, ref } from 'vue';
 import BuyButton from '@/components/BuyButton.vue';
-import { useEventListener } from '@/composables/event-listener.composable.ts';
 
 const active = defineModel<boolean>({ required: true });
 
@@ -43,8 +43,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   buy: [Array<[number, number]>]
 }>();
-
-defineExpose({ select });
 
 function delayedClear() {
   setTimeout(() => {
@@ -61,7 +59,11 @@ function cancel() {
 const currentlySelected = ref<[number, number]>([-1, -1]);
 const affectedCells = ref<Array<[number, number]>>([]);
 
+const hasSelection = computed(() => !!affectedCells.value.length);
+
 const canAfford = computed(() => props.availableBonusWordPoints >= (affectedCells.value.length * 2));
+
+defineExpose({ select, hasSelection: () => hasSelection.value });
 
 function select(row: number, col: number) {
   currentlySelected.value = [row, col];
@@ -87,18 +89,4 @@ function buySelection() {
     delayedClear();
   }
 }
-
-// detect if click outside of buy selector, close it
-useEventListener(
-    'click',
-    (event: MouseEvent) => {
-      if (!active) return;
-
-      const target = event.target;
-      if (!target || (<HTMLElement>target).id === 'buy-selector-backdrop') {
-        event.preventDefault();
-        active.value = false;
-      }
-    }
-);
 </script>

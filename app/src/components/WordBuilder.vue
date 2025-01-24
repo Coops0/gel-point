@@ -1,12 +1,5 @@
 <template>
   <div class="absolute inset-0 flex items-center justify-center" ref="wordContainer">
-    <div
-        class="text-white absolute top-4 text-2xl font-bold transition-opacity text-primary-900"
-        :class="!buildingWord && 'opacity-0'"
-    >
-      {{ displayedBuildingWord }}
-    </div>
-
     <svg class="absolute pointer-events-none" :width :height>
       <line
           v-for="(line, index) in activeLines"
@@ -47,7 +40,10 @@ import { useEventListener } from '@/composables/event-listener.composable.ts';
 
 const props = defineProps<{ letters: string[] }>();
 const showBonusAnimation = defineModel<boolean>('showBonusAnimation', { required: true });
-const emit = defineEmits<{ 'test-word': [word: string] }>();
+const emit = defineEmits<{
+  'test-word': [word: string];
+  'update-built-word': [word: string];
+}>();
 
 const wordContainer = ref<HTMLElement | null>(null);
 const { height, width } = useReactiveSizes();
@@ -58,13 +54,7 @@ defineExpose({ shuffle });
 const buildingWord = ref<string>('');
 const animating = ref(false);
 
-const displayedBuildingWord = ref<string>('');
-watch(buildingWord, w => {
-  // allow word to still be there to fade out
-  if (w.length) {
-    displayedBuildingWord.value = w;
-  }
-});
+watch(buildingWord, w => emit('update-built-word', w));
 
 type Position = Omit<LetterPosition, 'letter'>;
 
