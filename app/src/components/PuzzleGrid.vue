@@ -88,42 +88,56 @@ const hasEmptyCells = (rowIndex: number, colIndex: number): [boolean, boolean] =
   localGrid.value.some(row => row[colIndex] === 0)
 ]);
 
+
+function parseSelectedRowAndCol(row: number, col: number, isDoubleClick: boolean, isRowValid: boolean, isColValid: boolean) {
+  if (isDoubleClick) {
+    // dobule click => try to swap row/col
+    if (selectedRow.value === row && isColValid) {
+      return [-1, col];
+    }
+
+    if (selectedCol.value === col && isRowValid) {
+      return [row, -1];
+    }
+
+  } else {
+    if (row === 0 && isColValid) {
+      return [-1, col];
+    }
+
+    if (col === 0 && isRowValid) {
+      return [row, -1];
+    }
+
+    if (isRowValid) {
+      return [row, -1];
+    }
+
+    if (isColValid) {
+      return [-1, col];
+    }
+  }
+
+  return [-1, -1];
+}
+
 function handleCellClick(rowIndex: number, colIndex: number) {
   if (!props.buyMode) return;
 
   const [hasEmptyInRow, hasEmptyInCol] = hasEmptyCells(rowIndex, colIndex);
   const isDoubleClick = lastClickedCell[0] === rowIndex && lastClickedCell[1] === colIndex;
 
-  if (isDoubleClick) {
-    // dobule click => try to swap row/col
-    if (selectedRow.value === rowIndex && hasEmptyInCol) {
-      selectedRow.value = -1;
-      selectedCol.value = colIndex;
-    } else if (selectedCol.value === colIndex && hasEmptyInRow) {
-      selectedCol.value = -1;
-      selectedRow.value = rowIndex;
-    }
-  } else {
-    // Single click behavior
-    if (rowIndex === 0 && hasEmptyInCol) {
-      selectedRow.value = -1;
-      selectedCol.value = colIndex;
-    } else if (colIndex === 0 && hasEmptyInRow) {
-      selectedCol.value = -1;
-      selectedRow.value = rowIndex;
-    } else if (hasEmptyInRow) {
-      selectedCol.value = -1;
-      selectedRow.value = rowIndex;
-    } else if (hasEmptyInCol) {
-      selectedRow.value = -1;
-      selectedCol.value = colIndex;
-    }
+  let [r, c] = parseSelectedRowAndCol(rowIndex, colIndex, isDoubleClick, hasEmptyInRow, hasEmptyInCol);
+
+  if (r === selectedRow.value && c === selectedCol.value) {
+    [r, c] = parseSelectedRowAndCol(rowIndex, colIndex, !isDoubleClick, hasEmptyInRow, hasEmptyInCol);
   }
+
+  selectedRow.value = r;
+  selectedCol.value = c;
 
   lastClickedCell = [rowIndex, colIndex];
 
-  if (selectedRow.value !== -1 || selectedCol.value !== -1) {
-    emit('selected', selectedRow.value, selectedCol.value);
-  }
+  emit('selected', selectedRow.value, selectedCol.value);
 }
 </script>

@@ -1,40 +1,14 @@
 <template>
   <div class="flex flex-col">
     <WinMessage v-model="showNextLevelAnimation"/>
-    <div
-        class="fixed size-full inset-0 z-50 bg-black/75 transition-all duration-500 flex justify-center"
-        :class="showBuySelector ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-     />
+    <BuySelector
+        v-model="showBuySelector"
+        :grid
+        :available-bonus-word-points="availableBonusWordPoints"
+        @buy="c => buyCells(c)"
+        ref="buyModeSelectScreen"
+    />
 
-    <div
-        class="fixed inset-0 z-[52] transition-all duration-500"
-        :class="showBuySelector ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-    >
-      <div class="flex flex-col h-full">
-        <h1 class="text-4xl font-bold text-white text-center mt-20">BUY</h1>
-        <p v-if="affectedCells.length" class="text-xl text-white text-center mt-4">
-          PRICE: ${{ affectedCells.length * 2 }}
-        </p>
-        <div class="flex flex-col items-center justify-center flex-grow gap-6">
-          <div
-              @click="buySelection"
-              class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition-colors duration-200"
-          >
-            <Transition name="button-slide">
-              <span v-if="!affectedCells.length">SELECT</span>
-              <span v-else-if="!canAfford" class="text-red-300">CANNOT AFFORD</span>
-              <span v-else>BUY</span>
-            </Transition>
-          </div>
-          <div
-              @click="stopBuy"
-              class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg cursor-pointer transition-colors duration-200"
-          >
-            CANCEL
-          </div>
-        </div>
-      </div>
-    </div>
     <div class="bg-colors-background-50 text-text-900 min-h-screen p-2">
       <!-- DEBUG! -->
       <button @click="reset" class="fixed bg-colors-primary-500 text-colors-background-50 p-2 rounded-md">RESET</button>
@@ -56,7 +30,8 @@
         <div class="flex-1">
           <KeepAlive>
             <PuzzleGrid
-                class="mt-4 relative z-[51]"
+                class="mt-4 relative z-[51] transition-opacity duration-500"
+                :class="showBuySelector && 'opacity-80'"
                 :grid
                 :buy-mode="showBuySelector"
                 @selected="buyModeSelect"
@@ -86,14 +61,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
-import { type Cell, usePuzzle, WordTestResult } from '@/composables/puzzle.composable.ts';
+import { usePuzzle, WordTestResult } from '@/composables/puzzle.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import { useTheme } from '@/composables/theme.composable.ts';
 import WinMessage from '@/components/WinMessage.vue';
 import Actions from '@/components/Actions.vue';
+import BuySelector from '@/components/BuySelector.vue';
 
 // RULES:
 // Word length >= 3 characters
@@ -101,9 +77,12 @@ import Actions from '@/components/Actions.vue';
 // Words can branch into others, but may not overlap: 2 words on the same axis must have at least 1 cell between them.
 
 const showBonusAnimation = ref(false);
-const shouldShuffle = ref(false);
 const showNextLevelAnimation = ref(false);
+
+const shouldShuffle = ref(false);
+
 const showBuySelector = ref(false);
+const buyModeSelectScreen = ref<typeof BuySelector | null>(null);
 
 const puzzleIndex = useLocalStorage('puzzle-index', 0);
 
@@ -164,38 +143,11 @@ const startBuy = () => {
   showBuySelector.value = true;
 };
 
-const stopBuy = () => {
-  showBuySelector.value = false;
-  currentlySelected.value = [-1, -1];
-  affectedCells.value = [];
-};
-
-const currentlySelected = ref<[number, number]>([-1, -1]);
-const affectedCells = ref<Array<[number, number]>>([]);
-
-const canAfford = computed(() => availableBonusWordPoints.value >= affectedCells.value.length * 2);
-
 const buyModeSelect = (row: number, col: number) => {
-  currentlySelected.value = [row, col];
-
-  const flattenedGrid: Array<[number, number]> = grid.value
-      .flatMap((row, rowIndex) => row.map((cell, colIndex) => <[number, number, Cell]>[rowIndex, colIndex, cell]))
-      .filter(([, , cell]) => cell === 0)
-      .map(([rowIndex, colIndex]) => [rowIndex, colIndex]);
-
-  if (row !== -1) {
-    affectedCells.value = flattenedGrid.filter(([r]) => r === row);
-  } else if (col !== -1) {
-    affectedCells.value = flattenedGrid.filter(([, c]) => c === col);
+  if (buyModeSelectScreen.value) {
+    buyModeSelectScreen.value.buyModeSelect(row, col);
   } else {
-    affectedCells.value = [];
-  }
-};
-
-const buySelection = () => {
-  if (canAfford.value) {
-    showBuySelector.value = false;
-    buyCells(affectedCells.value);
+    console.warn('buy mode select screen ref is null');
   }
 };
 
