@@ -36,14 +36,14 @@ const emit = defineEmits<{
   buy: []
 }>();
 
-const updateLocalCounterSingle = () => {
+function updateLocalCounterSingle() {
   if (localBonusPoints.value !== props.availableBonusWordPoints) {
     setTimeout(() => {
-      // whatever
+// whatever
       localBonusPoints.value += shouldIncrement.value ? 1 : -1;
     }, transitionSpeed.value / 2);
   }
-};
+}
 
 watch(() => props.availableBonusWordPoints, v => {
   const diff = v - localBonusPoints.value;

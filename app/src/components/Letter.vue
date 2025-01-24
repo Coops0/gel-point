@@ -61,7 +61,7 @@ const emit = defineEmits<{
 const uniqueId = useId();
 const element = useTemplateRef<HTMLElement>(uniqueId);
 
-const onPointerMove = (event: MouseEvent) => {
+function onPointerMove(event: MouseEvent) {
   const el = element.value;
   if (!el || !props.active) {
     moveToOffsetTarget.value = [0, 0];
@@ -77,17 +77,17 @@ const onPointerMove = (event: MouseEvent) => {
   y = lerp(y, localPos.value[1], 0.1) / modifier;
 
   moveToOffsetTarget.value = [x, y];
-};
+}
 
-const onPointerUp = () => {
+function onPointerUp() {
   moveToOffsetTarget.value = [0, 0];
-};
+}
 
-const moveToOffset = () => {
+function moveToOffset() {
   const [targetX, targetY] = moveToOffsetTarget.value;
   const [x, y] = dragOffset.value;
   dragOffset.value = [lerp(x, targetX, 0.1), lerp(y, targetY, 0.1)];
-};
+}
 
 const moveToOffsetInterval = ref<number | null>(null);
 

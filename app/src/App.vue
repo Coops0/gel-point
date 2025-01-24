@@ -118,7 +118,7 @@ function testWord(word: string) {
   }
 }
 
-const reset = () => {
+function reset() {
   if (puzzleIndex.value === 0) {
     puzzleIndex.value = 1;
   }
@@ -128,28 +128,28 @@ const reset = () => {
     grid.value = [];
     puzzleIndex.value = 0;
   });
-};
+}
 
-const debugChangeBonus = () => {
+function debugChangeBonus() {
   const amount = Math.floor(Math.random() * 10);
   availableBonusWordPoints.value += Math.random() > 0.5 ? amount : -amount;
-};
+}
 
-const shuffle = () => {
+function shuffle() {
   shouldShuffle.value = true;
-};
+}
 
-const startBuy = () => {
+function startBuy() {
   showBuySelector.value = true;
-};
+}
 
-const buyModeSelect = (row: number, col: number) => {
+function buyModeSelect(row: number, col: number) {
   if (buyModeSelectScreen.value) {
     buyModeSelectScreen.value.buyModeSelect(row, col);
   } else {
     console.warn('buy mode select screen ref is null');
   }
-};
+}
 
 // need to load theme to apply colors to document
 // noinspection JSUnusedGlobalSymbols

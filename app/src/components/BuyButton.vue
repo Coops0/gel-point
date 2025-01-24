@@ -17,7 +17,6 @@ defineProps<{
 }>();
 </script>
 
-
 <style scoped>
 .button-slide-enter-active,
 .button-slide-leave-active {

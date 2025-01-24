@@ -10,11 +10,11 @@
   >
     <div class="flex flex-col h-full">
       <h1 class="text-4xl font-bold text-white text-center mt-20">BUY</h1>
-      <p v-if="affectedCells.length" class="text-xl text-white text-center mt-4">
-        PRICE: ${{ affectedCells.length * 2 }}
+      <p v-show="affectedCells.length" class="text-xl text-white text-center mt-4 animate-pulse">
+        PRICE: {{ affectedCells.length * 2 }}
       </p>
       <div class="flex flex-col items-center justify-center flex-grow gap-6">
-        <BuyButton :can-afford="canAfford" :has-selection="!!affectedCells.length"/>
+        <BuyButton :can-afford="canAfford" :has-selection="!!affectedCells.length" @click="buySelection"/>
         <div
             @click="cancel"
             class="px-6 py-3 mt-36 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
@@ -44,13 +44,13 @@ const emit = defineEmits<{
 
 defineExpose({ buyModeSelect });
 
-const cancel = () => {
+function cancel() {
   active.value = false;
   setTimeout(() => {
     currentlySelected.value = [-1, -1];
     affectedCells.value = [];
   }, 500);
-};
+}
 
 const currentlySelected = ref<[number, number]>([-1, -1]);
 const affectedCells = ref<Array<[number, number]>>([]);
@@ -74,11 +74,14 @@ function buyModeSelect(row: number, col: number) {
   }
 }
 
-const buySelection = () => {
+function buySelection() {
   if (canAfford.value) {
     active.value = false;
     emit('buy', affectedCells.value);
   }
-};
+}
 
+function onClickOutsideSelector(event: MouseEvent) {
+
+}
 </script>
