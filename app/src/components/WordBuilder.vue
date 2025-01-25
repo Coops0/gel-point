@@ -9,7 +9,7 @@
           :x2="line.end.x + width/2 + CIRCLE_CENTER_OFFSET"
           :y2="line.end.y + height/2 + CIRCLE_CENTER_OFFSET"
           class="animated-line stroke-primary-600"
-          stroke-width="6"
+          stroke-width="8"
       />
     </svg>
 
@@ -127,3 +127,18 @@ function endTouch() {
 useEventListener('pointerup', endTouch, { passive: true });
 useEventListener('touchend', endTouch, { passive: true });
 </script>
+
+<style scoped>
+@keyframes lineDraw {
+  to {
+    stroke-dashoffset: 0;
+    stroke-width: 12;
+  }
+}
+
+.animated-line {
+  animation: lineDraw 250ms ease forwards;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
+</style>

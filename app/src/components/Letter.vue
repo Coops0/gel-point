@@ -1,18 +1,21 @@
 <template>
-  <!-- todo expand bounding box -->
   <div :style="{ transform }"
-       class="absolute flex items-center justify-center text-xl font-bold size-16
-               transition-colors duration-200 rounded-full select-none cursor-pointer
-               bg-accent-400 text-background-50 active:bg-accent-500 shadow-lg"
-       :class="[
-          active && '!bg-accent-600 ring-primary-400 ring-4',
-          animating && 'animate-bonus'
-        ]"
+       class="absolute flex items-center justify-center size-24 rounded-full group"
        @pointerdown.prevent="event => emit('start-touch', event)"
        @pointerenter.prevent="event => emit('hover', event)"
        :ref="uniqueId"
   >
-    {{ letter }}
+    <div
+        class="absolute flex items-center justify-center text-xl font-bold size-16
+               transition-colors duration-100 rounded-full select-none cursor-pointer
+               bg-accent-400 text-background-50 group-active:bg-accent-500 shadow-lg pointer-events-none"
+        :class="[
+          active && '!bg-accent-600 ring-primary-400 ring-4',
+          animating && 'animate-bonus'
+        ]"
+    >
+      {{ letter }}
+    </div>
   </div>
 </template>
 
@@ -100,3 +103,36 @@ useInterval(() => {
   dragOffset.value = [lerp(x, targetX, 0.1), lerp(y, targetY, 0.1)];
 }, 15);
 </script>
+
+<style scoped>
+@keyframes bonusAnimation {
+  0% {
+    filter: brightness(1) blur(0);
+    box-shadow: 0 0 0 0 var(--color-primary-400);
+  }
+
+  15% {
+    filter: brightness(1.4) blur(1px);
+    box-shadow: 0 0 7px 4px var(--color-primary-600);
+  }
+
+  30% {
+    filter: brightness(1.1) blur(0);
+    box-shadow: 0 0 3px 2px var(--color-primary-500);
+  }
+
+  50% {
+    filter: brightness(1.05) blur(0);
+    box-shadow: 0 0 2px 1px var(--color-primary-300);
+  }
+
+  100% {
+    filter: brightness(1) blur(0);
+    box-shadow: 0 0 0 0 var(--color-primary-400);
+  }
+}
+
+.animate-bonus {
+  animation: bonusAnimation 1.4s ease forwards;
+}
+</style>
