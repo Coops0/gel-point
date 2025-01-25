@@ -2,7 +2,6 @@ import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import vueDevTools from 'vite-plugin-vue-devtools';
 import tailwindcss from '@tailwindcss/vite';
 
 const host = process.env.TAURI_DEV_HOST;
@@ -15,7 +14,7 @@ export default defineConfig({
         strictPort: true,
         // if the host Tauri is expecting is set, use it
         host: host || false,
-        port: 5173,
+        port: 5173
     },
     envPrefix: ['VITE_', 'TAURI_ENV_*'],
     build: {
@@ -31,7 +30,6 @@ export default defineConfig({
     },
     plugins: [
         vue(),
-        vueDevTools(),
         tailwindcss()
     ],
     resolve: {

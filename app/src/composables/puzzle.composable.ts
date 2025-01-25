@@ -72,11 +72,11 @@ export const usePuzzle = (puzzleIndex: Ref<number>, allWords: Ref<string[]>, puz
         return hasWon() ? WordTestResult.Win : WordTestResult.Found;
     };
 
-    watch(puzzleIndex, async pi => {
-        puzzle.value = puzzles.value.length > pi ? puzzles.value[pi] : null;
+    const setPuzzle = () => {
+        puzzle.value = (puzzles.value.length > puzzleIndex.value) ? puzzles.value[puzzleIndex.value] : null;
 
         if (!puzzle.value) {
-            console.warn(`puzzle ${pi} was not found`);
+            console.warn(`puzzle ${puzzleIndex.value} was not found`);
             return;
         }
 
@@ -91,7 +91,9 @@ export const usePuzzle = (puzzleIndex: Ref<number>, allWords: Ref<string[]>, puz
                 row.map(cell => cell === -1 ? -1 : 0)
             );
         }
-    }, { immediate: true });
+    }
+
+    watch(puzzleIndex, () => setPuzzle());
 
     /// @returns If sale resulted in a game win
     const buyCells = (cells: Array<[number, number]>): boolean => {
@@ -116,5 +118,6 @@ export const usePuzzle = (puzzleIndex: Ref<number>, allWords: Ref<string[]>, puz
         availableBonusWordPoints: readonly(availableBonusWordPoints),
         testWord,
         isLoaded,
+        setPuzzle
     };
 };

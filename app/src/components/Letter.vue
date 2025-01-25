@@ -1,4 +1,5 @@
 <template>
+  <!-- todo expand bounding box -->
   <div :style="{ transform }"
        class="absolute flex items-center justify-center text-xl font-bold size-16
                transition-colors duration-200 rounded-full select-none cursor-pointer
@@ -75,7 +76,7 @@ useEventListener(
       const rect = el.getBoundingClientRect();
       let [x, y] = [event.clientX - rect.x, event.clientY - rect.y];
 
-      const modifier = props.lastSelected ? 80 : 300;
+      const modifier = props.lastSelected ? 30 : 60;
 
       x = lerp(x, localPos.value[0], 0.1) / modifier;
       y = lerp(y, localPos.value[1], 0.1) / modifier;

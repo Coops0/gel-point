@@ -63,7 +63,11 @@ function updateGrid(newGrid: Grid) {
 
   const updates = newGrid
       .flatMap((row, rowIndex) => row.map((cell, cellIndex) => <[number, number, Cell]>[rowIndex, cellIndex, cell]))
-      .filter(([row, col, cell]) => localGrid.value[row][col] !== cell);
+      .filter(([row, col, cell]) =>
+          localGrid.value.length >= newGrid.length &&
+          localGrid.value[row].length >= newGrid[row].length &&
+          localGrid.value[row][col] !== cell
+      );
 
   if (updates.length === 0) {
     updateTasks = [];

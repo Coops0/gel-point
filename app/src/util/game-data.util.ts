@@ -9,6 +9,6 @@ export interface StaticPuzzle {
 export async function fetchGameData(words: Ref<string[]>, puzzles: Ref<StaticPuzzle[]>) {
     const { words: rawWords, puzzles: rawPuzzles } = await invoke<{ words: string; puzzles: string }>('get_game_data');
 
-    words.value = rawWords.split(',');
+    words.value = rawWords.split('\n');
     puzzles.value = JSON.parse(rawPuzzles);
 }

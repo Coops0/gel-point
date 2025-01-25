@@ -8,17 +8,19 @@ use tokio::try_join;
 pub struct CachedData {
     pub words: String,
     pub puzzles: String
-    // pub game_state: String
 }
 
 pub struct Paths {
     cache_dir: PathBuf
-    // data_dir: PathBuf
 }
 
 impl Paths {
     pub fn new(path_resolver: &PathResolver<Wry>) -> tauri::Result<Self> {
         Ok(Self { cache_dir: path_resolver.app_cache_dir()? })
+    }
+
+    pub fn cache_dir(&self) -> &Path {
+        &self.cache_dir
     }
 
     pub fn words(&self) -> PathBuf {
@@ -31,7 +33,7 @@ impl Paths {
 }
 
 async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
-    let local_bytes = tokio::fs::read(path).await?;
+    let local_bytes = tokio::fs::read(path).await.unwrap_or_default();
     let mut hasher = Sha256::new();
     hasher.update(&local_bytes);
 
@@ -47,7 +49,7 @@ async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
     #[cfg(debug_assertions)]
     let remote_hash = hash.clone();
 
-    if hash == remote_hash {
+    if hash == remote_hash && !local_bytes.is_empty() {
         return String::from_utf8(local_bytes).map_err(Into::into);
     }
 

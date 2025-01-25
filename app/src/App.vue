@@ -20,6 +20,8 @@
         <div class="text-primary-400 text-sm">you did all the puzzles. now wait for me to add more.</div>
       </div>
       <div v-else class="flex flex-col h-screen">
+        <!-- compensate for dynamic island -->
+        <div class="h-12" />
         <div class="flex justify-center items-center gap-4">
           <div class="text-primary-400">LEVEL {{ puzzleIndex + 1 }}</div>
         </div>
@@ -101,7 +103,8 @@ const {
   testWord: testWordResult,
   availableBonusWordPoints,
   isLoaded,
-  buyCells
+  buyCells,
+  setPuzzle
 } = usePuzzle(puzzleIndex, allWords, puzzles);
 
 function goToNextLevel() {
@@ -171,5 +174,6 @@ useEventListener(
 );
 
 loadTheme();
-fetchGameData(allWords, puzzles);
+
+fetchGameData(allWords, puzzles).then(() => setPuzzle());
 </script>
