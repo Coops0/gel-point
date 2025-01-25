@@ -1,7 +1,7 @@
 import type { ComputedRef, Ref } from 'vue';
-import { computed, ref, watch } from 'vue';
-import { useWords } from '@/composables/words.composable.ts';
+import { computed, readonly, ref, watch } from 'vue';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
+import type { StaticPuzzle } from '@/util/game-data.util.ts';
 
 export type Cell = string | 0 | -1;
 export type Grid = Cell[][];
@@ -14,27 +14,9 @@ export enum WordTestResult {
     Win
 }
 
-interface StaticPuzzle {
-    words: string[];
-    grid: string[];
-}
 
-const cachedPuzzles = ref<StaticPuzzle[]>([]);
-
-async function fetchPuzzle(index: number): Promise<StaticPuzzle> {
-    if (cachedPuzzles.value.length < index + 1) {
-        // TODO this needs to be tauri command
-        cachedPuzzles.value = await fetch('/puzzles.json')
-            .then(res => res.json());
-    }
-
-    return cachedPuzzles.value[index];
-}
-
-export const usePuzzle = (puzzleIndex: Ref<number>) => {
+export const usePuzzle = (puzzleIndex: Ref<number>, allWords: Ref<string[]>, puzzles: Ref<StaticPuzzle[]>) => {
     const puzzle = ref<StaticPuzzle | null>(null);
-
-    const allWords = useWords();
 
     const staticGrid = ref<Grid>([]);
     const activeGrid = useLocalStorage<Grid>('active-grid', []);
@@ -91,22 +73,20 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
     };
 
     watch(puzzleIndex, async pi => {
-        puzzle.value = await fetchPuzzle(pi);
+        puzzle.value = puzzles.value.length > pi ? puzzles.value[pi] : null;
 
         if (!puzzle.value) {
-            if (pi + 1 <= cachedPuzzles.value.length) {
-                console.warn(`puzzle ${pi} was not found`);
-            }
+            console.warn(`puzzle ${pi} was not found`);
             return;
         }
 
-        const hasCachedPuzzle = staticGrid.value.length === 0 && activeGrid.value.length > 0;
+        const hasStartedPuzzle = staticGrid.value.length === 0 && activeGrid.value.length > 0;
 
         staticGrid.value = (<string[]>puzzle.value.grid).map(row =>
             row.split('').map(cell => cell === '0' ? -1 : cell)
         );
 
-        if (!hasCachedPuzzle) {
+        if (!hasStartedPuzzle) {
             activeGrid.value = staticGrid.value.map(row =>
                 row.map(cell => cell === -1 ? -1 : 0)
             );
@@ -133,9 +113,8 @@ export const usePuzzle = (puzzleIndex: Ref<number>) => {
         grid: activeGrid,
         buyCells,
         letters,
-        availableBonusWordPoints, // todo change back
+        availableBonusWordPoints: readonly(availableBonusWordPoints),
         testWord,
         isLoaded,
-        totalPuzzles: computed(() => cachedPuzzles.value.length),
     };
 };

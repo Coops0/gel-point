@@ -20,6 +20,7 @@
 <script setup lang="ts">
 import GhostButton from '@/components/GhostButton.vue';
 import { ref, watch } from 'vue';
+import { impactFeedback } from '@tauri-apps/plugin-haptics';
 
 const props = defineProps<{
   availableBonusWordPoints: number;
@@ -37,8 +38,8 @@ const emit = defineEmits<{
 function updateLocalCounterSingle() {
   if (localBonusPoints.value !== props.availableBonusWordPoints) {
     setTimeout(() => {
-// whatever
       localBonusPoints.value += shouldIncrement.value ? 1 : -1;
+      impactFeedback('medium');
     }, transitionSpeed.value / 2);
   }
 }

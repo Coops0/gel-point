@@ -29,7 +29,7 @@
       <input type="number" v-model.number="width"/>
       <input type="number" v-model.number="height"/>
       <button @click="() => copy()">Copy</button>
-      <p>{{ letters.size }} letters</p>
+      <p>{{ [...letters].join(' ') }}</p>
     </div>
   </div>
 </template>

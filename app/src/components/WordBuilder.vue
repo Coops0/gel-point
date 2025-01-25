@@ -37,6 +37,7 @@ import {
   useLetterAlignment
 } from '@/composables/letter-alignment.composable.ts';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
+import { selectionFeedback } from '@tauri-apps/plugin-haptics';
 
 const props = defineProps<{ letters: string[] }>();
 const emit = defineEmits<{
@@ -93,6 +94,8 @@ function showBonusAnimation() {
 function startTouch(event: PointerEvent, letter: string) {
   buildingWord.value = letter;
   (<Element>event.target)?.releasePointerCapture(event.pointerId);
+
+  selectionFeedback();
 }
 
 function hover(_event: PointerEvent, letter: string) {
@@ -105,7 +108,11 @@ function hover(_event: PointerEvent, letter: string) {
     buildingWord.value += letter;
   } else if (index === len - 2) {
     buildingWord.value = buildingWord.value.slice(0, -1);
+  } else {
+    return;
   }
+
+  selectionFeedback();
 }
 
 function endTouch() {

@@ -26,6 +26,7 @@
 <script setup lang="ts">
 import { ref, toRaw, watch } from 'vue';
 import type { Cell, Grid } from '@/composables/puzzle.composable';
+import { impactFeedback } from '@tauri-apps/plugin-haptics';
 
 const props = defineProps<{
   grid: Grid;
@@ -75,6 +76,9 @@ function updateGrid(newGrid: Grid) {
       .map(([row, col, cell]) =>
           setTimeout(() => {
             localGrid.value[row][col] = cell;
+
+            impactFeedback('light');
+
             // 50(|row - startRow|) + 100(|col - startCol|)
           }, Math.abs(row - startRow) * 50 + Math.abs(col - startCol) * 100)
       );

@@ -22,20 +22,18 @@ pub fn run() {
         )
         .plugin(tauri_plugin_haptics::init())
         .plugin(tauri_plugin_http::init())
-        .invoke_handler(tauri::generate_handler![get_cache])
+        .invoke_handler(tauri::generate_handler![get_game_data])
         .setup(|app| {
             let paths = Paths::new(app.path())?;
 
             let scope = app.fs_scope();
             scope.allow_file(paths.words())?;
             scope.allow_file(paths.puzzles())?;
-            // scope.allow_file(paths.game_state())?;
 
             let state = tauri::async_runtime::block_on(async move {
                 let (words, puzzles) = memoized_fetch_cache(&paths).await?;
-                // let game_state = try_load_game_state(&paths).await?;
 
-                Ok::<CachedData, anyhow::Error>(CachedData { words, puzzles /*, game_state*/ })
+                Ok::<CachedData, anyhow::Error>(CachedData { words, puzzles })
             })?;
 
             if !app.manage(state) {
@@ -49,6 +47,6 @@ pub fn run() {
 }
 
 #[tauri::command]
-async fn get_cache(state: State<'_, CachedData>) -> tauri::Result<&CachedData> {
+async fn get_game_data(state: State<'_, CachedData>) -> tauri::Result<&CachedData> {
     Ok(state.inner())
 }

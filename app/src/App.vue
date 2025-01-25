@@ -10,14 +10,11 @@
     />
 
     <div class="bg-background-50 text-text-900 min-h-screen p-2">
-      <!-- DEBUG! -->
-      <button @click="reset" class="fixed bg-primary-500 text-background-50 p-2 rounded-md">RESET</button>
-      <button @click="debugChangeBonus"
-              class="fixed right-0 bg-primary-500 text-background-50 p-2 rounded-md">B-+
-      </button>
-
-      <div v-if="!isLoaded"/>
-      <div v-else-if="totalPuzzles !== 0 && totalPuzzles < puzzleIndex + 1"
+      <div v-if="!isLoaded" class="flex flex-col justify-center items-center h-screen gap-4">
+        <div class="text-primary-400">loading...</div>
+        <div class="text-primary-400">todo add random motd here</div>
+      </div>
+      <div v-else-if="puzzles.length !== 0 && puzzles.length < puzzleIndex + 1"
            class="flex flex-col justify-center items-center h-screen gap-4">
         <div class="text-primary-400">good job 🎉</div>
         <div class="text-primary-400 text-sm">you did all the puzzles. now wait for me to add more.</div>
@@ -79,11 +76,11 @@ import WinMessage from '@/components/WinMessage.vue';
 import Actions from '@/components/Actions.vue';
 import BuySelector from '@/components/BuySelector.vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
+import { fetchGameData, type StaticPuzzle } from '@/util/game-data.util.ts';
+import { impactFeedback, notificationFeedback } from '@tauri-apps/plugin-haptics';
 
-// RULES:
-// Word length >= 3 characters
-// Words can be formed left, right, up, down. But have to be in a straight line, NOT in reverse, and NOT diagonally.
-// Words can branch into others, but may not overlap: 2 words on the same axis must have at least 1 cell between them.
+const allWords = ref<string[]>([]);
+const puzzles = ref<StaticPuzzle[]>([]);
 
 const showNextLevelAnimation = ref(false);
 
@@ -104,13 +101,12 @@ const {
   testWord: testWordResult,
   availableBonusWordPoints,
   isLoaded,
-  totalPuzzles,
   buyCells
-} = usePuzzle(puzzleIndex);
+} = usePuzzle(puzzleIndex, allWords, puzzles);
 
 function goToNextLevel() {
   const nextPuzzle = puzzleIndex.value + 1;
-  if (nextPuzzle <= totalPuzzles.value) {
+  if (nextPuzzle <= puzzles.value.length) {
     showNextLevelAnimation.value = true;
   }
 
@@ -123,12 +119,17 @@ function testWord(word: string) {
   switch (testWordResult(word)) {
     case WordTestResult.Bonus:
       wordBuilder.value?.showBonusAnimation?.();
+      impactFeedback('medium');
       break;
     case WordTestResult.Win:
+      notificationFeedback('success');
       goToNextLevel();
       break;
     case WordTestResult.NotFound:
+      notificationFeedback('error');
+      break;
     case WordTestResult.Found:
+      impactFeedback('rigid');
       break;
   }
 }
@@ -136,6 +137,7 @@ function testWord(word: string) {
 function buy(cells: Array<[number, number]>) {
   if (buyCells(cells)) {
     goToNextLevel();
+    notificationFeedback('success');
   }
 }
 
@@ -168,24 +170,6 @@ useEventListener(
     }
 );
 
-// TODO remove
-function reset() {
-  if (puzzleIndex.value === 0) {
-    puzzleIndex.value = 1;
-  }
-
-  // bypass batch updates
-  setTimeout(() => {
-    grid.value = [];
-    puzzleIndex.value = 0;
-  });
-}
-
-// TODO remove
-function debugChangeBonus() {
-  const amount = Math.floor(Math.random() * 10);
-  availableBonusWordPoints.value += Math.random() > 0.5 ? amount : -amount;
-}
-
 loadTheme();
+fetchGameData(allWords, puzzles);
 </script>
