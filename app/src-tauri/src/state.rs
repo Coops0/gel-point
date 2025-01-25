@@ -47,7 +47,7 @@ async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
         .to_vec();
 
     #[cfg(debug_assertions)]
-    let remote_hash = hash.clone();
+    let remote_hash = vec![0, 0, 0];
 
     if hash == remote_hash && !local_bytes.is_empty() {
         return String::from_utf8(local_bytes).map_err(Into::into);

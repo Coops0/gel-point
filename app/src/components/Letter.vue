@@ -1,6 +1,6 @@
 <template>
   <div :style="{ transform }"
-       class="absolute flex items-center justify-center size-24 rounded-full group"
+       class="absolute flex items-center justify-center size-20 rounded-full group"
        @pointerdown.prevent="event => emit('start-touch', event)"
        @pointerenter.prevent="event => emit('hover', event)"
        :ref="uniqueId"
@@ -34,6 +34,12 @@ const props = defineProps<{
   lastSelected: boolean;
 }>();
 
+const emit = defineEmits<{
+  'start-touch': [event: PointerEvent];
+  hover: [event: PointerEvent];
+  move: [x: number, y: number];
+}>();
+
 const localPos = ref([props.x, props.y]);
 
 let shuffleInterval = -1;
@@ -57,12 +63,10 @@ watch(() => [props.x, props.y], ([newX, newY]) => {
 const dragOffset = ref([0, 0]);
 const moveToOffsetTarget = ref([0, 0]);
 
-const transform = computed(() => `translate(${localPos.value[0] + dragOffset.value[0]}px, ${localPos.value[1] + dragOffset.value[1]}px)`);
+const activePosition = computed(() => [localPos.value[0] + dragOffset.value[0], localPos.value[1] + dragOffset.value[1]]);
+const transform = computed(() => `translate(${activePosition.value[0]}px, ${activePosition.value[1]}px)`);
 
-const emit = defineEmits<{
-  'start-touch': [event: PointerEvent];
-  hover: [event: PointerEvent];
-}>();
+watch(activePosition, ([x, y]) => emit('move', x, y), { deep: true });
 
 const uniqueId = useId();
 const element = useTemplateRef<HTMLElement>(uniqueId);
@@ -100,6 +104,7 @@ useEventListener(
 useInterval(() => {
   const [targetX, targetY] = moveToOffsetTarget.value;
   const [x, y] = dragOffset.value;
+
   dragOffset.value = [lerp(x, targetX, 0.1), lerp(y, targetY, 0.1)];
 }, 15);
 </script>

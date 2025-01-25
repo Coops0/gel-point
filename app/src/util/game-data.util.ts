@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core';
 export interface StaticPuzzle {
     words: string[];
     grid: string[];
+    letters: string;
 }
 
 export async function fetchGameData(words: Ref<string[]>, puzzles: Ref<StaticPuzzle[]>) {

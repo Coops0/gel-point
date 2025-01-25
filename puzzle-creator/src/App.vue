@@ -29,7 +29,7 @@
       <input type="number" v-model.number="width"/>
       <input type="number" v-model.number="height"/>
       <button @click="() => copy()">Copy</button>
-      <p>{{ [...letters].join(' ') }}</p>
+      <p>{{letters.join(' ') }}</p>
     </div>
   </div>
 </template>
@@ -49,9 +49,30 @@ const grid = ref<(string | null)[][]>(
     Array.from({ length: height.value }, () => Array.from({ length: width.value }, () => null))
 );
 
-const letters = computed(() => new Set([...grid.value.flat().filter(cell => cell !== null)]));
-
 const words = ref<Range[]>([]);
+
+const letters = computed(() => {
+  const l: string[] = [];
+
+  for (const word of words.value) {
+    const range = buildRange(word);
+    const wordLetters = range.map(([i, j]) => grid.value[i][j]).join('');
+    let wordLetterOccurrences: { [letter: string]: number } = {};
+    for (const letter of wordLetters) {
+      wordLetterOccurrences[letter] = (wordLetterOccurrences[letter] || 0) + 1;
+    }
+
+    for (const [letter, occurrences] of Object.entries(wordLetterOccurrences)) {
+      if (l.filter(l => l === letter).length < occurrences) {
+        l.push(letter);
+      }
+    }
+  }
+
+  l.sort(() => Math.random() - 0.5);
+
+  return l;
+});
 
 watch([width, height], ([w, h]) => {
   grid.value.length = h;
@@ -194,7 +215,8 @@ function copy() {
 
   const payload = {
     grid: grid.value.map(row => row.map(cell => !cell ? '0' : cell).join('')),
-    words: wordsSerialized
+    words: wordsSerialized,
+    letters: letters.value.join('')
   };
 
   console.log(payload);

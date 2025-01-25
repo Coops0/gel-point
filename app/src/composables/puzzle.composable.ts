@@ -29,23 +29,21 @@ export const usePuzzle = (puzzleIndex: Ref<number>, allWords: Ref<string[]>, puz
             const [w, ...coords] = word.split(',');
 
             const pairs = [];
-            let pair = null;
+            let pairFirstHalf = null;
 
             for (const p of coords) {
-                if (pair === null) {
-                    pair = p;
+                if (pairFirstHalf === null) {
+                    pairFirstHalf = p;
                 } else {
-                    pairs.push(<[number, number]>[+pair, +p]);
-                    pair = null;
+                    pairs.push(<[number, number]>[+pairFirstHalf, +p]);
+                    pairFirstHalf = null;
                 }
             }
 
             return [w, pairs];
         }));
 
-    const letters: ComputedRef<string[]> = computed(() =>
-        [...new Set(staticGrid.value.flat().filter(cell => cell !== -1 && cell !== 0) as string[])]
-    );
+    const letters: ComputedRef<string[]> = computed(() => puzzle.value?.letters?.split?.('') ?? []);
 
     const hasWon = () => activeGrid.value.every(row => row.every(cell => cell !== 0));
 
@@ -63,7 +61,7 @@ export const usePuzzle = (puzzleIndex: Ref<number>, allWords: Ref<string[]>, puz
 
         const newGrid = [...activeGrid.value];
 
-        for (const [col, row] of match[1]) {
+        for (const [row, col] of match[1]) {
             newGrid[row][col] = staticGrid.value[row][col] as string;
         }
 
@@ -95,7 +93,6 @@ export const usePuzzle = (puzzleIndex: Ref<number>, allWords: Ref<string[]>, puz
 
     watch(puzzleIndex, () => setPuzzle());
 
-    /// @returns If sale resulted in a game win
     const buyCells = (cells: Array<[number, number]>): boolean => {
         const newGrid = [...activeGrid.value];
 

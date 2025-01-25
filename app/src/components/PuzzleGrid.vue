@@ -64,8 +64,8 @@ function updateGrid(newGrid: Grid) {
   const updates = newGrid
       .flatMap((row, rowIndex) => row.map((cell, cellIndex) => <[number, number, Cell]>[rowIndex, cellIndex, cell]))
       .filter(([row, col, cell]) =>
-          localGrid.value.length >= newGrid.length &&
-          localGrid.value[row].length >= newGrid[row].length &&
+          localGrid.value.length > row &&
+          localGrid.value[row].length > col &&
           localGrid.value[row][col] !== cell
       );
 

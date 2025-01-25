@@ -52,7 +52,7 @@
                  @buy="() => (showBuySelector = true)"
         />
 
-        <div class="flex flex-col items-center gap-4 mb-28">
+        <div class="flex flex-col items-center gap-4 mb-42">
           <div class="relative size-fit">
             <WordBuilder
                 :letters

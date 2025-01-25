@@ -1,10 +1,8 @@
 use std::fs;
 use anyhow::Context;
 use crate::state::{memoized_fetch_cache, CachedData, Paths};
-use log::warn;
 use tauri::{Manager, State};
 use tauri_plugin_fs::FsExt;
-use tauri_plugin_log::TargetKind;
 
 mod ctx_macro_offload;
 mod state;
@@ -16,12 +14,6 @@ const BASE_API_URL: &str = "https://gel-point.cooperhanessian.com";
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
-        .plugin(
-            tauri_plugin_log::Builder::default()
-                .target(tauri_plugin_log::Target::new(TargetKind::Stdout))
-                .target(tauri_plugin_log::Target::new(TargetKind::Webview))
-                .build()
-        )
         .plugin(tauri_plugin_haptics::init())
         .plugin(tauri_plugin_http::init())
         .invoke_handler(tauri::generate_handler![get_game_data])
@@ -41,7 +33,7 @@ pub fn run() {
             }).context("failed to memoized fetch cache")?;
 
             if !app.manage(state) {
-                warn!("failed to create managed app state in setup hook");
+                eprintln!("failed to create managed app state in setup hook");
             }
 
             Ok(())
