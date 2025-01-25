@@ -13,14 +13,14 @@
       <h1 class="text-4xl font-bold text-white text-center mt-20">BUY</h1>
       <p class="text-xl text-white text-center mt-4 animate-pulse transition-opacity"
          :class="!hasSelection && 'opacity-0'">
-        PRICE: <span class="transition-colors"
+        PRICE: <span class="transition-colors font-bold"
                      :class="canAfford ? 'text-red-300' : 'text-red-500'">{{ affectedCells.length * 2 }}</span>
       </p>
-      <div class="flex flex-col items-center justify-center grow gap-6">
+      <div class="flex flex-row items-center justify-center grow gap-4">
         <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
         <div
             @click="cancel"
-            class="px-6 py-3 mt-36 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
+            class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
         >
           CANCEL
         </div>

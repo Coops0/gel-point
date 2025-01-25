@@ -9,7 +9,7 @@
           :x2="line.end.x + width/2 + CIRCLE_CENTER_OFFSET"
           :y2="line.end.y + height/2 + CIRCLE_CENTER_OFFSET"
           class="animated-line stroke-primary-600"
-          stroke-width="10"
+          stroke-width="6"
       />
     </svg>
 

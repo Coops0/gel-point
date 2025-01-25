@@ -1,8 +1,8 @@
 <template>
   <div
-      class="w-32 text-center h-12 bg-blue-600 active:bg-blue-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
+      class="w-32 text-center flex justify-center items-center h-12 bg-blue-600 active:bg-blue-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
   >
-    <span :class="contents[1]" class="absolute">{{ contents[0] }}</span>
+    <span v-text="contents[0]" :class="contents[1]" />
   </div>
 </template>
 
