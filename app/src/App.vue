@@ -17,9 +17,10 @@
       </button>
 
       <div v-if="!isLoaded"/>
-      <div v-else-if="totalPuzzles !== 0 && totalPuzzles < puzzleIndex + 1">
+      <div v-else-if="totalPuzzles !== 0 && totalPuzzles < puzzleIndex + 1"
+           class="flex flex-col justify-center items-center h-screen gap-4">
         <div class="text-primary-400">good job 🎉</div>
-        <div class="text-primary-400">you did all the puzzles. now wait for me to add more.</div>
+        <div class="text-primary-400 text-sm">you did all the puzzles. now wait for me to add more.</div>
       </div>
       <div v-else class="flex flex-col h-screen">
         <div class="flex justify-center items-center gap-4">
@@ -58,7 +59,6 @@
                 :letters
                 @test-word="testWord"
                 @update-built-word="updateBuiltWord"
-                v-model:show-bonus-animation="showBonusAnimation"
                 ref="wordBuilder"
             />
           </div>
@@ -85,7 +85,6 @@ import { useEventListener } from '@/composables/event-listener.composable.ts';
 // Words can be formed left, right, up, down. But have to be in a straight line, NOT in reverse, and NOT diagonally.
 // Words can branch into others, but may not overlap: 2 words on the same axis must have at least 1 cell between them.
 
-const showBonusAnimation = ref(false);
 const showNextLevelAnimation = ref(false);
 
 const wordBuilder = ref<null | typeof WordBuilder>(null);
@@ -123,7 +122,7 @@ function goToNextLevel() {
 function testWord(word: string) {
   switch (testWordResult(word)) {
     case WordTestResult.Bonus:
-      showBonusAnimation.value = true;
+      wordBuilder.value?.showBonusAnimation?.();
       break;
     case WordTestResult.Win:
       goToNextLevel();

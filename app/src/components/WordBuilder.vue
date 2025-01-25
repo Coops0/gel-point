@@ -39,7 +39,6 @@ import {
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 
 const props = defineProps<{ letters: string[] }>();
-const showBonusAnimation = defineModel<boolean>('showBonusAnimation', { required: true });
 const emit = defineEmits<{
   'test-word': [word: string];
   'update-built-word': [word: string];
@@ -49,7 +48,7 @@ const wordContainer = ref<HTMLElement | null>(null);
 const { height, width } = useReactiveSizes();
 const { alignedLetters, shuffle } = useLetterAlignment(toRef(() => props.letters));
 
-defineExpose({ shuffle });
+defineExpose({ shuffle, showBonusAnimation });
 
 const buildingWord = ref<string>('');
 const animating = ref(false);
@@ -77,16 +76,19 @@ const activeLines = computed(() => {
   return lines;
 });
 
-watch(showBonusAnimation, show => {
-  if (show) {
-    animating.value = true;
-    setTimeout(() => {
-      animating.value = false;
-    }, 5000);
+let previousBonusAnimationTask = -1;
+
+function showBonusAnimation() {
+  if (previousBonusAnimationTask !== -1) {
+    clearTimeout(previousBonusAnimationTask);
   }
 
-  showBonusAnimation.value = false;
-});
+  animating.value = true;
+
+  previousBonusAnimationTask = setTimeout(() => {
+    animating.value = false;
+  }, 5000);
+}
 
 function startTouch(event: PointerEvent, letter: string) {
   buildingWord.value = letter;
