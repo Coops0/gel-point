@@ -13,8 +13,7 @@
           :class="{
             'bg-secondary-400 text-background-50': cell !== 0 && cell !== -1,
             'bg-secondary-200': cell === 0,
-            'ring-3 ring-accent-600': cell === 0 && buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
-            'ring-3 ring-accent-300': cell !== 0 && buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
+            [cell === 0 ? 'ring-3 ring-accent-600' : 'ring-3 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex)
           }"
       >
         <span v-if="cell !== 0 && cell !== -1">{{ cell }}</span>
@@ -51,12 +50,22 @@ watch(() => props.buyMode, resetSelection);
 
 let updateTasks: number[] = [];
 
+const updateArrayLen = <T>(arr: T[], newLen: number) => {
+  if (arr.length < newLen) {
+    arr.push(...Array(newLen - arr.length).fill(-1));
+  } else if (arr.length > newLen) {
+    arr.length = newLen;
+  }
+};
+
 function updateGrid(newGrid: Grid) {
   if (newGrid.flat().length !== localGrid.value.flat().length) {
-    localGrid.value.length = newGrid.length;
-    localGrid.value.forEach((row, i) => {
-      row.length = newGrid[i].length;
-    });
+    const n = structuredClone(toRaw(localGrid.value));
+
+    updateArrayLen(n, newGrid.length);
+    n.forEach((row, rowIndex) => updateArrayLen(row, newGrid[rowIndex].length));
+
+    localGrid.value = n;
   }
 
   updateTasks.forEach(id => clearTimeout(id));
@@ -102,7 +111,7 @@ const hasEmptyCells = (rowIndex: number, colIndex: number): [boolean, boolean] =
 
 function parseSelectedRowAndCol(row: number, col: number, isDoubleClick: boolean, isRowValid: boolean, isColValid: boolean) {
   if (isDoubleClick) {
-    // dobule click => try to swap row/col
+    // double click => try to swap row/col
     if (selectedRow.value === row && isColValid) {
       return [-1, col];
     }

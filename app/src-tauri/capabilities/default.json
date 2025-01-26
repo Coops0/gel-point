@@ -9,9 +9,10 @@
     "core:default",
     "fs:scope-data",
     "fs:scope-cache",
-    "log:default",
     "haptics:allow-vibrate",
     "haptics:allow-selection-feedback",
+    "haptics:allow-impact-feedback",
+    "haptics:allow-notification-feedback",
     {
       "identifier": "http:default",
       "allow": [
