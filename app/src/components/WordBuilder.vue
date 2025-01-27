@@ -53,7 +53,7 @@ const { alignedLetters, shuffle } = useLetterAlignment(toRef(() => props.letters
 // used for accurate lines
 const alignedLettersOffsetPosition = ref<LetterPosition[]>([]);
 
-watch(() => props.letters, () => alignedLettersOffsetPosition.value = []);
+watch(() => props.letters, () => (alignedLettersOffsetPosition.value = []));
 
 defineExpose({ shuffle, showBonusAnimation });
 
