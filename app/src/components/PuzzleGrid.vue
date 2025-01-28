@@ -1,29 +1,31 @@
 <template>
-  <div class="flex flex-col gap-2 justify-center items-center">
+  <div class="flex flex-col justify-center items-center" :class="gapSize">
     <div
         v-for="(row, rowIndex) in localGrid"
-        :key="rowIndex"
-        class="flex flex-row gap-2"
+        :key="`${rowIndex}-${row.length}`"
+        class="flex flex-row"
+        :class="gapSize"
     >
       <div
           v-for="(cell, colIndex) in row"
-          :key="`${rowIndex}-${colIndex}`"
+          :key="`${rowIndex}-${colIndex}-${cell}`"
           @click="() => handleCellClick(rowIndex, colIndex)"
-          class="flex items-center justify-center text-2xl font-medium transition-colors size-12"
+          class="flex items-center justify-center font-medium transition-all duration-200 size-12"
           :class="{
             'bg-secondary-400 text-background-50': cell !== 0 && cell !== -1,
             'bg-secondary-200': cell === 0,
             [cell === 0 ? 'ring-3 ring-accent-600' : 'ring-3 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex)
           }"
+          :style="{ transform: `scale(${cellSize})` }"
       >
-        <span v-if="cell !== 0 && cell !== -1">{{ cell }}</span>
+        <span :class="textSize" v-if="cell !== 0 && cell !== -1">{{ cell }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, toRaw, watch } from 'vue';
+import { computed, ref, toRaw, watch } from 'vue';
 import type { Cell, Grid } from '@/composables/puzzle.composable';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';
 
@@ -40,6 +42,10 @@ defineExpose({ resetSelection });
 
 const localGrid = ref<Grid>(structuredClone(toRaw(props.grid)));
 
+const cellSize = computed(() => props.grid.flat().length > 49 ? '.85' : '1');
+const gapSize = computed(() => props.grid.flat().length > 49 ? 'gap-0.32' : 'gap-2');
+const textSize = computed(() => props.grid.flat().length > 49 ? 'text-lg' : 'text-2xl');
+
 const selectedRow = ref(-1);
 const selectedCol = ref(-1);
 
@@ -52,29 +58,32 @@ let updateTasks: number[] = [];
 
 const updateArrayLen = <T>(arr: T[], newLen: number) => {
   if (arr.length < newLen) {
-    arr.push(...Array(newLen - arr.length).fill(-1));
+    let isArray = Array.isArray(arr.find(el => typeof el !== 'undefined'));
+
+    arr.push(
+        ...Array(newLen - arr.length)
+            .fill(null)
+            .map(() => isArray ? [] : -1) as any
+    );
   } else if (arr.length > newLen) {
     arr.length = newLen;
   }
 };
 
 function updateGrid(newGrid: Grid) {
-  if (newGrid.flat().length !== localGrid.value.flat().length) {
-    const n = structuredClone(toRaw(localGrid.value));
-
-    updateArrayLen(n, newGrid.length);
-    n.forEach((row, rowIndex) => updateArrayLen(row, newGrid[rowIndex].length));
-
-    localGrid.value = n;
-  }
-
   updateTasks.forEach(id => clearTimeout(id));
+
+  if (
+      newGrid.length !== localGrid.value.length ||
+      newGrid.some((row, rowIndex) => row.length !== localGrid.value[rowIndex].length)
+  ) {
+    updateArrayLen(localGrid.value, newGrid.length);
+    localGrid.value.forEach((row, rowIndex) => updateArrayLen(row, newGrid[rowIndex].length));
+  }
 
   const updates = newGrid
       .flatMap((row, rowIndex) => row.map((cell, cellIndex) => <[number, number, Cell]>[rowIndex, cellIndex, cell]))
       .filter(([row, col, cell]) =>
-          localGrid.value.length > row &&
-          localGrid.value[row].length > col &&
           localGrid.value[row][col] !== cell
       );
 
