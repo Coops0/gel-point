@@ -10,20 +10,20 @@
     />
 
     <div class="bg-background-50 text-text-900 min-h-screen p-2">
-      <div v-if="!isLoaded" class="flex flex-col justify-center items-center h-screen gap-4">
-        <div class="text-primary-400">loading...</div>
-        <div class="text-primary-400">todo add random motd here</div>
-      </div>
-      <div v-else-if="puzzles.length !== 0 && puzzles.length < puzzleIndex + 1"
+      <div v-if="winState === 'active'"
            class="flex flex-col justify-center items-center h-screen gap-4">
         <div class="text-primary-400">good job 🎉</div>
         <div class="text-primary-400 text-sm">you did all the puzzles. now wait for me to add more.</div>
+      </div>
+      <div v-else-if="!isLoaded" class="flex flex-col justify-center items-center h-screen gap-4">
+        <div class="text-primary-400">loading...</div>
+        <div class="text-primary-400">todo add random motd here</div>
       </div>
       <div v-else class="flex flex-col h-screen">
         <!-- compensate for dynamic island -->
         <div class="h-12"/>
         <div class="flex justify-center items-center gap-4">
-          <div class="text-primary-400">LEVEL {{ puzzleIndex + 1 }}</div>
+          <div class="text-primary-400">LEVEL {{ puzzleId + 1 }}</div>
         </div>
 
         <div class="flex-1">
@@ -31,7 +31,7 @@
             <PuzzleGrid
                 class="mt-4 relative z-[51] transition-opacity duration-500"
                 :class="showBuySelector && 'opacity-80'"
-                :grid
+                :grid="grid!"
                 :buy-mode="showBuySelector"
                 @selected="(row, col) => buySelector?.select(row, col)"
                 ref="puzzleGrid"
@@ -55,7 +55,7 @@
         <div class="flex flex-col items-center gap-4 mb-42">
           <div class="relative size-fit">
             <WordBuilder
-                :letters
+                :letters="currentPuzzle!.letters"
                 @test-word="testWord"
                 @update-built-word="updateBuiltWord"
                 ref="wordBuilder"
@@ -71,21 +71,23 @@
 import { ref } from 'vue';
 import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
-import { usePuzzle, WordTestResult } from '@/composables/puzzle.composable.ts';
+import { usePuzzleManager, WordTestResult } from '@/composables/puzzle-manager.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import { loadTheme, THEMES, useTheme } from '@/composables/theme.composable.ts';
 import WinMessage from '@/components/WinMessage.vue';
 import Actions from '@/components/Actions.vue';
 import BuySelector from '@/components/BuySelector.vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
-import { fetchGameData, type StaticPuzzle } from '@/util/game-data.util.ts';
-import GhostButton from '@/components/GhostButton.vue';
 import { impactFeedback, notificationFeedback } from '@tauri-apps/plugin-haptics';
+import { type LoadLevelResult, type Puzzle, PuzzleService } from '@/services/puzzles.service.ts';
+import { WordService } from '@/services/words.service.ts';
 
+const puzzleService = new PuzzleService();
+const wordService = new WordService();
 const theme = useTheme();
 
 const allWords = ref<string[]>([]);
-const puzzles = ref<StaticPuzzle[]>([]);
+const currentPuzzle = ref<Puzzle | null>(null);
 
 const showNextLevelAnimation = ref(false);
 
@@ -98,27 +100,67 @@ const showCurrentlyBuildingWord = ref(false);
 const showBuySelector = ref(false);
 const buySelector = ref<typeof BuySelector | null>(null);
 
-const puzzleIndex = useLocalStorage('puzzle-index', 0);
+const winState = ref<'next-level' | 'active' | 'none'>('none');
+
+const puzzleId = useLocalStorage('puzzle-id', 0);
 
 const {
-  letters,
   grid,
   testWord: testWordResult,
   availableBonusWordPoints,
   isLoaded,
   buyCells,
   setPuzzle
-} = usePuzzle(puzzleIndex, allWords, puzzles);
+} = usePuzzleManager(allWords);
 
-function goToNextLevel() {
-  const nextPuzzle = puzzleIndex.value + 1;
-  if (nextPuzzle <= puzzles.value.length) {
-    showNextLevelAnimation.value = true;
+async function loadAndSetPuzzle(loadResult?: LoadLevelResult) {
+  if (!loadResult) {
+    loadResult = await puzzleService.loadPuzzle(puzzleId.value);
   }
 
+  switch (loadResult.name) {
+    case 'correct_index':
+      puzzleId.value = loadResult.index;
+      return loadAndSetPuzzle();
+    case 'finished_all_levels':
+      winState.value = 'active';
+      break;
+    case 'success':
+      if (loadResult.lastPuzzle === true) {
+        winState.value = 'next-level';
+      }
+
+      currentPuzzle.value = loadResult.puzzle;
+      setPuzzle(loadResult.puzzle);
+
+      puzzleService.loadNextPuzzle(puzzleId.value).then(r => {
+        if (!r) {
+          winState.value = 'next-level';
+        }
+      });
+
+      break;
+  }
+}
+
+async function goToNextLevel() {
+  if (winState.value === 'next-level') {
+    winState.value = 'active';
+    return;
+  }
+
+  const nextPuzzle = puzzleId.value + 1;
+  showNextLevelAnimation.value = true;
+
+  const time = new Date().getTime();
+  const loadResult = await puzzleService.loadPuzzle(nextPuzzle);
+  const waitTimeLeft = 1000 - (Date.now() - time);
+
   setTimeout(() => {
-    puzzleIndex.value = nextPuzzle;
-  }, 1000);
+    puzzleId.value = nextPuzzle;
+    showNextLevelAnimation.value = false;
+    loadAndSetPuzzle(loadResult);
+  }, Math.max(waitTimeLeft, 0));
 }
 
 function testWord(word: string) {
@@ -193,6 +235,6 @@ useEventListener(
 );
 
 loadTheme();
-
-fetchGameData(allWords, puzzles).then(() => setPuzzle());
+loadAndSetPuzzle();
+wordService.fetchWords().then(w => (allWords.value = w));
 </script>

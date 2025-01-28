@@ -1,13 +1,15 @@
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashMap, path::{Path, PathBuf}
+};
 use tauri::{path::PathResolver, Wry};
 use tokio::try_join;
 
 #[derive(Serialize, Clone)]
 pub struct CachedData {
     pub words: String,
-    pub puzzles: String
+    pub puzzles: HashMap<u32, String>
 }
 
 pub struct Paths {
@@ -28,8 +30,27 @@ impl Paths {
     }
 
     pub fn puzzles(&self) -> PathBuf {
-        self.cache_dir.join("puzzles.json")
+        self.cache_dir.join("puzzles.txt")
     }
+}
+
+#[cfg(not(debug_assertions))]
+async fn fetch_hash(route: &str) -> anyhow::Result<Vec<u8>> {
+    tauri_plugin_http::reqwest::get(format!("{}/{route}/hash", crate::BASE_API_URL))
+        .await?
+        .bytes()
+        .await
+        .map_err(Into::into)
+        .map(|r| r.to_vec())
+}
+
+#[cfg(not(debug_assertions))]
+async fn fetch_text(route: &str) -> anyhow::Result<String> {
+    tauri_plugin_http::reqwest::get(format!("{}/{route}", crate::BASE_API_URL))
+        .await?
+        .text()
+        .await
+        .map_err(Into::into)
 }
 
 async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
@@ -40,11 +61,10 @@ async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
     let hash = hasher.finalize().to_vec();
 
     #[cfg(not(debug_assertions))]
-    let remote_hash = reqwest::get(format!("{}/{route}/hash", crate::BASE_API_URL))
-        .await?
-        .bytes()
-        .await?
-        .to_vec();
+    let remote_hash = match fetch_hash {
+        Ok(h) => h,
+        Err(_) => hash
+    };
 
     #[cfg(debug_assertions)]
     let remote_hash = vec![0, 0, 0];
@@ -54,12 +74,15 @@ async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
     }
 
     #[cfg(not(debug_assertions))]
-    let text = reqwest::get(format!("{}/{route}", crate::BASE_API_URL)).await?.text().await?;
+    let Ok(text) = fetch_text(route).await
+    else {
+        return String::from_utf8(local_bytes).map_err(Into::into);
+    };
 
     #[cfg(debug_assertions)]
     let text = match route {
         "words" => include_str!("../assets/words.txt").to_string(),
-        "puzzles" => include_str!("../assets/puzzles.json").to_string(),
+        "puzzles" => include_str!("../assets/puzzles.txt").to_string(),
         _ => unreachable!()
     };
 
@@ -68,10 +91,25 @@ async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
     Ok(text)
 }
 
-pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, String)> {
+pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, HashMap<u32, String>)> {
     let words_txt = paths.words();
     let puzzles_json = paths.puzzles();
 
-    try_join!(memoize_or_fetch(&words_txt, "words"), memoize_or_fetch(&puzzles_json, "puzzles"))
-        .map_err(Into::into)
+    let (words, puzzles) = try_join!(
+        memoize_or_fetch(&words_txt, "words"),
+        memoize_or_fetch(&puzzles_json, "puzzles")
+    )?;
+
+    let puzzles = puzzles
+        .split("\n")
+        .map(|line| {
+            let mut parts = line.split(",");
+            let id: u32 =
+                parts.next().expect("puzzle id missing").parse().expect("puzzle id not a number");
+
+            (id.to_owned(), line.to_owned())
+        })
+        .collect::<HashMap<u32, String>>();
+
+    Ok((words, puzzles))
 }

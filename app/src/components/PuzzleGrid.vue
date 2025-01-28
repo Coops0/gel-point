@@ -26,8 +26,8 @@
 
 <script setup lang="ts">
 import { computed, ref, toRaw, watch } from 'vue';
-import type { Cell, Grid } from '@/composables/puzzle.composable';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';
+import type { Cell, Grid } from '@/services/puzzles.service.ts';
 
 const props = defineProps<{
   grid: Grid;

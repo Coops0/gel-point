@@ -6,6 +6,7 @@
   />
 
   <div
+      v-if="grid !== null"
       class="fixed inset-0 z-[52] transition-all duration-500 pointer-events-none"
       :class="active ? 'opacity-100' : 'opacity-0'"
   >
@@ -30,14 +31,14 @@
 </template>
 
 <script setup lang="ts">
-import type { Cell, Grid } from '@/composables/puzzle.composable.ts';
 import { computed, ref } from 'vue';
 import BuyButton from '@/components/BuyButton.vue';
+import type { Cell, Grid } from '@/services/puzzles.service.ts';
 
 const active = defineModel<boolean>({ required: true });
 
 const props = defineProps<{
-  grid: Grid,
+  grid: Grid | null,
   availableBonusWordPoints: number
 }>();
 
@@ -67,9 +68,11 @@ const canAfford = computed(() => props.availableBonusWordPoints >= (affectedCell
 defineExpose({ select, hasSelection: () => hasSelection.value });
 
 function select(row: number, col: number) {
+  if (!props.grid) return;
+
   currentlySelected.value = [row, col];
 
-  const flattenedGrid: Array<[number, number]> = props.grid
+  const flattenedGrid: Array<[number, number]> = props.grid!
       .flatMap((row, rowIndex) => row.map((cell, colIndex) => <[number, number, Cell]>[rowIndex, colIndex, cell]))
       .filter(([, , cell]) => cell === 0)
       .map(([rowIndex, colIndex]) => [rowIndex, colIndex]);
