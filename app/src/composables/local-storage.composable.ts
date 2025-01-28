@@ -13,7 +13,7 @@ export const useLocalStorage = <T = any>(
             initialLoadedValue = deserialize(rawPayload);
         }
     } catch {
-        /* empty */
+        localStorage.setItem(key, serialize(defaultValue));
     }
 
     const value = ref<T>(initialLoadedValue || defaultValue);

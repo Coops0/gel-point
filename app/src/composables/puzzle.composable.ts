@@ -11,9 +11,9 @@ export enum WordTestResult {
     NotFound,
     Found,
     Bonus,
+    BonusTheme,
     Win
 }
-
 
 export const usePuzzle = (puzzleIndex: Ref<number>, allWords: Ref<string[]>, puzzles: Ref<StaticPuzzle[]>) => {
     const puzzle = ref<StaticPuzzle | null>(null);
@@ -56,7 +56,7 @@ export const usePuzzle = (puzzleIndex: Ref<number>, allWords: Ref<string[]>, puz
 
             availableBonusWordPoints.value++;
             foundBonusWords.value = [...foundBonusWords.value, word];
-            return WordTestResult.Bonus;
+            return foundBonusWords.value.length % 30 === 0 ? WordTestResult.BonusTheme : WordTestResult.Bonus;
         }
 
         const newGrid = [...activeGrid.value];

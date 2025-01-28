@@ -17,7 +17,7 @@ serde = { version = "1.0.217", features = ["derive"] }
 tauri = { version = "2.2.5", features = [] }
 tauri-plugin-fs = "2.2.0"
 tauri-plugin-haptics = "2.2.3"
-tauri-plugin-http = "2.2.0"
+tauri-plugin-http = "2.3.0"
 tokio = { version = "1.43.0", features = ["fs"] }
 sha2 = "0.10.8"
 anyhow = "1.0.95"

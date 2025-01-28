@@ -21,7 +21,7 @@
       </div>
       <div v-else class="flex flex-col h-screen">
         <!-- compensate for dynamic island -->
-        <div class="h-12" />
+        <div class="h-12"/>
         <div class="flex justify-center items-center gap-4">
           <div class="text-primary-400">LEVEL {{ puzzleIndex + 1 }}</div>
         </div>
@@ -73,13 +73,16 @@ import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
 import { usePuzzle, WordTestResult } from '@/composables/puzzle.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
-import { loadTheme } from '@/composables/theme.composable.ts';
+import { loadTheme, THEMES, useTheme } from '@/composables/theme.composable.ts';
 import WinMessage from '@/components/WinMessage.vue';
 import Actions from '@/components/Actions.vue';
 import BuySelector from '@/components/BuySelector.vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 import { fetchGameData, type StaticPuzzle } from '@/util/game-data.util.ts';
+import GhostButton from '@/components/GhostButton.vue';
 import { impactFeedback, notificationFeedback } from '@tauri-apps/plugin-haptics';
+
+const theme = useTheme();
 
 const allWords = ref<string[]>([]);
 const puzzles = ref<StaticPuzzle[]>([]);
@@ -123,6 +126,22 @@ function testWord(word: string) {
     case WordTestResult.Bonus:
       wordBuilder.value?.showBonusAnimation?.();
       impactFeedback('medium');
+      break;
+    case WordTestResult.BonusTheme:
+      wordBuilder.value?.showBonusAnimation?.();
+      impactFeedback('medium');
+      const themeIndex = THEMES.indexOf(theme.value.name);
+
+      let nextTheme;
+      if (themeIndex === -1) {
+        nextTheme = THEMES[0];
+      } else if (themeIndex === THEMES.length - 1) {
+        nextTheme = THEMES[themeIndex];
+      } else {
+        nextTheme = THEMES[themeIndex + 1];
+      }
+
+      theme.value.name = nextTheme;
       break;
     case WordTestResult.Win:
       notificationFeedback('success');
