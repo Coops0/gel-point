@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <GhostButton class="rounded-md" variant="accent" @click="() => emit('shuffle')">♻️</GhostButton>
+    <GhostButton class="rounded-md" variant="accent" @click="() => shuffle()">♻️</GhostButton>
     <GhostButton class="rounded-md" variant="secondary" @click="() => emit('buy')">$</GhostButton>
   </div>
 </template>
@@ -32,7 +32,8 @@ const transitionSpeed = ref(0);
 
 const emit = defineEmits<{
   shuffle: [],
-  buy: []
+  buy: [],
+  'debug-next-level': []
 }>();
 
 function updateLocalCounterSingle() {
@@ -55,6 +56,16 @@ watch(() => props.availableBonusWordPoints, v => {
 
   updateLocalCounterSingle();
 });
+
+let lastShuffle = 0;
+const shuffle = () => {
+  emit('shuffle');
+  if (Date.now() - lastShuffle < 1000) {
+    emit('debug-next-level');
+  }
+
+  lastShuffle = Date.now();
+}
 </script>
 
 <style scoped>

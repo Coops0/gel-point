@@ -4,10 +4,10 @@
       <line
           v-for="(line, index) in activeLines"
           :key="index"
-          :x1="line.start.x + width/2 + CIRCLE_CENTER_OFFSET"
-          :x2="line.end.x + width/2 + CIRCLE_CENTER_OFFSET"
-          :y1="line.start.y + height/2 + CIRCLE_CENTER_OFFSET"
-          :y2="line.end.y + height/2 + CIRCLE_CENTER_OFFSET"
+          :x1="line.start.x + width/2 + circleCenterOffset"
+          :x2="line.end.x + width/2 + circleCenterOffset"
+          :y1="line.start.y + height/2 + circleCenterOffset"
+          :y2="line.end.y + height/2 + circleCenterOffset"
           class="animated-line stroke-primary-600"
           stroke-width="8"
       />
@@ -33,7 +33,6 @@ import { computed, ref, toRef, watch } from 'vue';
 import Letter from '@/components/Letter.vue';
 import { useReactiveSizes } from '@/composables/reactive-sizes.composable.ts';
 import {
-  CIRCLE_CENTER_OFFSET,
   type LetterPosition,
   useLetterAlignment
 } from '@/composables/letter-alignment.composable.ts';
@@ -49,7 +48,7 @@ const emit = defineEmits<{
 const wordContainer = ref<HTMLElement | null>(null);
 const { height, width } = useReactiveSizes();
 
-const { alignedLetters, shuffle } = useLetterAlignment(toRef(() => props.letters));
+const { alignedLetters, shuffle, circleCenterOffset } = useLetterAlignment(toRef(() => props.letters));
 // used for accurate lines
 const alignedLettersOffsetPosition = ref<LetterPosition[]>([]);
 

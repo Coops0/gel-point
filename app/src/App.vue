@@ -41,7 +41,7 @@
 
         <div
             :class="!showCurrentlyBuildingWord && 'opacity-0'"
-            class="text-center w-full fixed top-2/3 text-2xl font-bold transition-opacity text-primary-900"
+            class="text-center w-full fixed top-6/11 text-2xl font-bold transition-opacity text-primary-900"
         >
           {{ currentlyBuildingWord }}
         </div>
@@ -50,6 +50,7 @@
                  class="fixed left-2 bottom-4"
                  @buy="() => (showBuySelector = true)"
                  @shuffle="() => wordBuilder?.shuffle()"
+                 @debug-next-level="() => goToNextLevel()"
         />
 
         <div class="flex flex-col items-center gap-4 mb-42">

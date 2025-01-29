@@ -1,9 +1,9 @@
 <template>
-  <div :class="gapSize" class="flex flex-col justify-center items-center">
+  <div :class="GAP_SIZE_MAP[sizeDivisor]" class="flex flex-col justify-center items-center">
     <div
         v-for="(row, rowIndex) in localGrid"
         :key="`${rowIndex}-${row.length}`"
-        :class="gapSize"
+        :class="GAP_SIZE_MAP[sizeDivisor]"
         class="flex flex-row"
     >
       <div
@@ -14,11 +14,11 @@
             'bg-secondary-200': cell === 0,
             [cell === 0 ? 'ring-3 ring-accent-600' : 'ring-3 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex)
           }"
-          :style="{ transform: `scale(${cellSize})` }"
-          class="flex items-center justify-center font-medium transition-all duration-200 size-12"
+          :style="{ width: `${CELL_SIZE_MAP[sizeDivisor]}px`, height: `${CELL_SIZE_MAP[sizeDivisor]}px` }"
+          class="flex items-center justify-center font-medium transition-all duration-200"
           @click="() => handleCellClick(rowIndex, colIndex)"
       >
-        <span v-if="cell !== 0 && cell !== -1" :class="textSize">{{ cell }}</span>
+        <span v-if="cell !== 0 && cell !== -1" :class="TEXT_SIZE_MAP[sizeDivisor]">{{ cell }}</span>
       </div>
     </div>
   </div>
@@ -43,9 +43,30 @@ defineExpose({ resetSelection });
 
 const localGrid = ref<Grid>(clone(toRaw(props.grid)));
 
-const cellSize = computed(() => props.grid.flat().length > 49 ? '.85' : '1');
-const gapSize = computed(() => props.grid.flat().length > 49 ? 'gap-0.32' : 'gap-2');
-const textSize = computed(() => props.grid.flat().length > 49 ? 'text-xl' : 'text-2xl');
+const sizeDivisor = computed(() => {
+  const l = props.grid[0]?.length ?? 0;
+  if (l < 8) return 1;
+  if (l < 10) return 2;
+  return 3;
+});
+
+const CELL_SIZE_MAP = {
+  1: '48',
+  2: '38',
+  3: '32'
+};
+
+const GAP_SIZE_MAP = {
+  1: 'gap-2',
+  2: 'gap-1',
+  3: 'gap-0.5'
+};
+
+const TEXT_SIZE_MAP = {
+  1: 'text-2xl',
+  2: 'text-xl',
+  3: 'text-lg'
+};
 
 const selectedRow = ref(-1);
 const selectedCol = ref(-1);

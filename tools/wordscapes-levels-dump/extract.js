@@ -17,7 +17,7 @@ const puzzles = [];
 
 function go(f) {
   for (const [levelName, level] of Object.entries(f)) {
-    const id = level["a"];
+    // const id = level["a"];
     const letters = level["b"];
     // const rowCells = level["c"]; // todo check these
     // const columnCells = level["d"];
@@ -32,7 +32,7 @@ function go(f) {
       )
       .join(";");
 
-    puzzles.push(`${id}|${letters}|${words}`.toLowerCase());
+    puzzles.push(`${puzzles.length + 1}|${letters}|${words}`.toLowerCase());
   }
 }
 
