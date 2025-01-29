@@ -147,5 +147,7 @@ function parsePuzzle(puzzle: string): Puzzle {
         return { word, positions };
     });
 
-    return { grid, letters: letters.split(''), words, id };
+    const shuffledLetters = letters.split('').sort(() => Math.random() - 0.5);
+
+    return { grid, letters: shuffledLetters, words, id };
 }

@@ -17,7 +17,13 @@ export const usePuzzleManager = (allWords: Ref<string[]>) => {
 
     const activeGrid = useLocalStorage<Grid | null>('active-grid', null);
 
-    const foundBonusWords = useLocalStorage<string[]>('bonus-words', [], w => w.join(','), s => s.split(','));
+    const foundBonusWords = useLocalStorage<Set<string>>(
+        'bonus-words',
+        new Set(),
+        w => [...w].join(','),
+        s => new Set([...s.split(',')])
+    );
+
     const availableBonusWordPoints = useLocalStorage('available-bonus-word-points', 0);
 
     const hasWon = () => activeGrid.value?.every(row => row.every(cell => cell !== 0)) === true;
@@ -27,13 +33,13 @@ export const usePuzzleManager = (allWords: Ref<string[]>) => {
 
         const match = puzzle.value.words.find(w => w.word === word);
         if (!match) {
-            if (!allWords.value.includes(word) || foundBonusWords.value.includes(word)) {
+            if (!allWords.value.includes(word) || foundBonusWords.value.has(word)) {
                 return WordTestResult.NotFound;
             }
 
             availableBonusWordPoints.value++;
-            foundBonusWords.value = [...foundBonusWords.value, word];
-            return foundBonusWords.value.length % 30 === 0 ? WordTestResult.BonusTheme : WordTestResult.Bonus;
+            foundBonusWords.value.add(word);
+            return foundBonusWords.value.size % 30 === 0 ? WordTestResult.BonusTheme : WordTestResult.Bonus;
         }
 
         const newGrid = [...activeGrid.value];
