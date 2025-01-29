@@ -1,0 +1,10 @@
+[package]
+name = "gel-point-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.43.0", features = ["full"] }
+axum  = "0.8.1"
+anyhow = "1.0.95"
+sha2 = "0.10.8"

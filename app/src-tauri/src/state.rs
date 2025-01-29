@@ -56,15 +56,12 @@ async fn fetch_text(route: &str) -> anyhow::Result<String> {
 
 async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
     let local_bytes = tokio::fs::read(path).await.unwrap_or_default();
-    let mut hasher = Sha256::new();
-    hasher.update(&local_bytes);
-
-    let hash = hasher.finalize().to_vec();
+    let hash = Sha256::digest(&local_bytes).to_vec();
 
     #[cfg(not(debug_assertions))]
-    let remote_hash = match fetch_hash {
+    let remote_hash = match fetch_hash(route).await {
         Ok(h) => h,
-        Err(_) => hash
+        Err(_) => hash.clone()
     };
 
     #[cfg(debug_assertions)]
