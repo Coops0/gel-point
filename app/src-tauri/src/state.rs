@@ -1,3 +1,4 @@
+use anyhow::Context;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::{
@@ -103,13 +104,13 @@ pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, Hash
     let puzzles = puzzles
         .split("\n")
         .map(|line| {
-            let mut parts = line.split(",");
-            let id: u32 =
-                parts.next().expect("puzzle id missing").parse().expect("puzzle id not a number");
+            let mut parts = line.split("|");
+            let id: u32 = parts.next()?.parse().ok()?;
 
-            (id.to_owned(), line.to_owned())
+            Some((id.to_owned(), line.to_owned()))
         })
-        .collect::<HashMap<u32, String>>();
+        .collect::<Option<HashMap<u32, String>>>()
+        .context("failed to split puzzles")?;
 
     Ok((words, puzzles))
 }

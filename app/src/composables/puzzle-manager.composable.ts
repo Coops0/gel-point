@@ -1,7 +1,7 @@
-import { type Ref, toRaw } from 'vue';
-import { computed, readonly, ref, watch } from 'vue';
+import { computed, readonly, type Ref, ref, toRaw } from 'vue';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
-import type { Grid, Puzzle, PuzzleService } from '@/services/puzzles.service.ts';
+import type { Grid, Puzzle } from '@/services/puzzles.service.ts';
+import { clone } from '@/util';
 
 export enum WordTestResult {
     NotFound,
@@ -51,20 +51,20 @@ export const usePuzzleManager = (allWords: Ref<string[]>) => {
         const hasStartedPuzzle = isInitialLoad.value && !!activeGrid.value;
         isInitialLoad.value = false;
 
-       puzzle.value = p;
+        puzzle.value = p;
 
         if (!hasStartedPuzzle) {
-            activeGrid.value = structuredClone(toRaw(p.grid));
+            activeGrid.value = transformToActiveGrid(clone(toRaw(p.grid)));
         }
     };
 
     const buyCells = (cells: Array<[number, number]>): boolean => {
         if (!activeGrid.value || !puzzle.value) return false;
 
-        const newGrid = structuredClone(toRaw(activeGrid.value));
+        const newGrid = clone(toRaw(activeGrid.value));
 
         for (const [row, col] of cells) {
-            newGrid[row][col] = puzzle.value.grid[row][col]
+            newGrid[row][col] = puzzle.value.grid[row][col];
         }
 
         availableBonusWordPoints.value -= cells.length * 2;
@@ -84,3 +84,7 @@ export const usePuzzleManager = (allWords: Ref<string[]>) => {
         setPuzzle
     };
 };
+
+function transformToActiveGrid(grid: Grid): Grid {
+    return grid.map(row => row.map(cell => cell === 0 ? -1 : 0));
+}

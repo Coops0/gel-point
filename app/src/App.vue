@@ -2,11 +2,11 @@
   <div class="flex flex-col">
     <WinMessage v-model="showNextLevelAnimation"/>
     <BuySelector
-        v-model="showBuySelector"
-        :grid
-        :available-bonus-word-points="availableBonusWordPoints"
-        @buy="buy"
         ref="buySelector"
+        v-model="showBuySelector"
+        :available-bonus-word-points="availableBonusWordPoints"
+        :grid
+        @buy="buy"
     />
 
     <div class="bg-background-50 text-text-900 min-h-screen p-2">
@@ -23,42 +23,42 @@
         <!-- compensate for dynamic island -->
         <div class="h-12"/>
         <div class="flex justify-center items-center gap-4">
-          <div class="text-primary-400">LEVEL {{ puzzleId + 1 }}</div>
+          <div class="text-primary-400">LEVEL {{ puzzleId }}</div>
         </div>
 
         <div class="flex-1">
           <KeepAlive>
             <PuzzleGrid
-                class="mt-4 relative z-[51] transition-opacity duration-500"
+                ref="puzzleGrid"
+                :buy-mode="showBuySelector"
                 :class="showBuySelector && 'opacity-80'"
                 :grid="grid!"
-                :buy-mode="showBuySelector"
+                class="mt-4 relative z-[51] transition-opacity duration-500"
                 @selected="(row, col) => buySelector?.select(row, col)"
-                ref="puzzleGrid"
             />
           </KeepAlive>
         </div>
 
         <div
-            class="text-center w-full fixed top-2/3 text-2xl font-bold transition-opacity text-primary-900"
             :class="!showCurrentlyBuildingWord && 'opacity-0'"
+            class="text-center w-full fixed top-2/3 text-2xl font-bold transition-opacity text-primary-900"
         >
           {{ currentlyBuildingWord }}
         </div>
 
-        <Actions class="fixed left-2 bottom-4"
-                 :available-bonus-word-points="availableBonusWordPoints"
-                 @shuffle="() => wordBuilder?.shuffle()"
+        <Actions :available-bonus-word-points="availableBonusWordPoints"
+                 class="fixed left-2 bottom-4"
                  @buy="() => (showBuySelector = true)"
+                 @shuffle="() => wordBuilder?.shuffle()"
         />
 
         <div class="flex flex-col items-center gap-4 mb-42">
           <div class="relative size-fit">
             <WordBuilder
+                ref="wordBuilder"
                 :letters="currentPuzzle!.letters"
                 @test-word="testWord"
                 @update-built-word="updateBuiltWord"
-                ref="wordBuilder"
             />
           </div>
         </div>
@@ -67,8 +67,8 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue';
+<script lang="ts" setup>
+import { ref, toRaw } from 'vue';
 import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
 import { usePuzzleManager, WordTestResult } from '@/composables/puzzle-manager.composable.ts';
@@ -81,6 +81,7 @@ import { useEventListener } from '@/composables/event-listener.composable.ts';
 import { impactFeedback, notificationFeedback } from '@tauri-apps/plugin-haptics';
 import { type LoadLevelResult, type Puzzle, PuzzleService } from '@/services/puzzles.service.ts';
 import { WordService } from '@/services/words.service.ts';
+import { clone } from '@/util';
 
 const puzzleService = new PuzzleService();
 const wordService = new WordService();
@@ -118,10 +119,11 @@ async function loadAndSetPuzzle(loadResult?: LoadLevelResult) {
     loadResult = await puzzleService.loadPuzzle(puzzleId.value);
   }
 
+  winState.value = 'none';
   switch (loadResult.name) {
     case 'correct_index':
       puzzleId.value = loadResult.index;
-      return loadAndSetPuzzle();
+      return await loadAndSetPuzzle();
     case 'finished_all_levels':
       winState.value = 'active';
       break;
@@ -131,9 +133,10 @@ async function loadAndSetPuzzle(loadResult?: LoadLevelResult) {
       }
 
       currentPuzzle.value = loadResult.puzzle;
-      setPuzzle(loadResult.puzzle);
+      setPuzzle(clone(toRaw(loadResult.puzzle)));
 
       puzzleService.loadNextPuzzle(puzzleId.value).then(r => {
+        // last
         if (!r) {
           winState.value = 'next-level';
         }
@@ -233,6 +236,13 @@ useEventListener(
       }
     }
 );
+
+useEventListener('keydown', e => {
+  if (e.key === 'b') {
+    puzzleId.value = 0;
+    loadAndSetPuzzle();
+  }
+});
 
 loadTheme();
 loadAndSetPuzzle();

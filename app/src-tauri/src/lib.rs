@@ -1,5 +1,6 @@
 use crate::state::{memoized_fetch_cache, CachedData, Paths};
 use anyhow::Context;
+use log::{error, LevelFilter};
 use serde::Serialize;
 use std::{
     fs, sync::{Arc, Mutex}, time::Duration
@@ -19,6 +20,7 @@ type AppState = Arc<Mutex<Option<CachedData>>>;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_log::Builder::new().level(LevelFilter::Warn).build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_haptics::init())
         .plugin(tauri_plugin_http::init())
@@ -36,14 +38,20 @@ pub fn run() {
 
             let state = Arc::new(Mutex::new(None::<CachedData>));
             if !app.manage(Arc::clone(&state)) {
-                panic!("failed to create managed app state in setup hook");
+                return Err(Box::from("failed to create managed app state in setup hook"));
             }
 
             tauri::async_runtime::spawn(async move {
-                let (words, puzzles) =
-                    memoized_fetch_cache(&paths).await.expect("failed to get game data");
+                let (words, puzzles) = match memoized_fetch_cache(&paths).await {
+                    Ok((words, puzzles)) => (words, puzzles),
+                    Err(e) => {
+                        // for some reason tauri ignores panics in async threads
+                        error!("failed to fetch cache: {e:?}");
+                        panic!("failed to fetch cache: {e:?}");
+                    }
+                };
 
-                let mut state = state.lock().expect("failed to lock state");
+                let mut state = state.lock().unwrap();
                 *state = Some(CachedData { words, puzzles });
             });
 
@@ -86,10 +94,12 @@ async fn load_puzzle_buffered(
         .puzzles
         .iter()
         .filter(|(&puzzle_id, _)| puzzle_id >= id)
-        .map(|(_, puzzle)| puzzle);
+        .collect::<Vec<_>>();
 
-    let puzzle = viable_puzzles.next().cloned();
-    let next_puzzle = viable_puzzles.next().cloned();
+    viable_puzzles.sort_by_key(|(&puzzle_id, _)| puzzle_id);
+
+    let puzzle = viable_puzzles.first().map(|(_, puzzle)| *puzzle).cloned();
+    let next_puzzle = viable_puzzles.get(1).map(|(_, puzzle)| *puzzle).cloned();
 
     Ok(PuzzleBufferedResponse { puzzle, next_puzzle })
 }

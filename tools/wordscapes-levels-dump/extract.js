@@ -1,7 +1,5 @@
 const fs = require("fs");
 
-const f = JSON.parse(fs.readFileSync("./levels/base_level_group_1_5.json"));
-
 // "3,4,V,ATE",
 // "5,4,V,AXE",
 // "5,6,H,EAT",
@@ -15,91 +13,51 @@ const f = JSON.parse(fs.readFileSync("./levels/base_level_group_1_5.json"));
 // "6,0,V,LATEX",
 // "0,2,HB,EXALT"
 
-const grids = [];
+const puzzles = [];
 
-for (const [levelName, level] of Object.entries(f)) {
-  const id = level["a"];
-  const letters = level["b"];
-  const rowCells = level["c"]; // todo check these
-  const columnCells = level["d"];
-  const dirtyGrid = level["e"];
-  // console.log(levelName, id, letters, verticalCells, horizontalCells);
-  const grid = new Array(rowCells)
-    .fill(null)
-    .map(() => new Array(columnCells).fill(0));
+function go(f) {
+  for (const [levelName, level] of Object.entries(f)) {
+    const id = level["a"];
+    const letters = level["b"];
+    // const rowCells = level["c"]; // todo check these
+    // const columnCells = level["d"];
+    // const dirtyGrid = level["e"];
+    // console.log(levelName, id, letters, verticalCells, horizontalCells);
 
-  const words = [];
+    const words = level["e"]
+      .map((w) => w.split(","))
+      .filter((w) => w[2] !== "HB")
+      .map(
+        ([col, row, direction, word]) => `${word},${direction},${row},${col}`,
+      )
+      .join(";");
 
-  // console.log(grid);
-  for (const word of dirtyGrid) {
-    const [col, row, direction, wordStr] = word.split(",");
-    if (direction === "HB") {
-      continue;
-    }
-
-    const wordArr = wordStr.split("");
-
-    let r = parseInt(row);
-    let c = parseInt(col);
-
-    // console.log(grid, row, col);
-
-    const locations = [];
-    for (const letter of wordArr) {
-      if (r < 0 || c < 0 || typeof grid[r] === "undefined") {
-        console.warn("WTF", grid, r, c, row, col, direction, wordStr);
-        throw new Error("WTF");
-      }
-
-      grid[r][c] = letter;
-      locations.push([r, c]);
-      if (direction === "V") {
-        r++;
-      } else {
-        c++;
-      }
-    }
-
-    words.push({ word: wordStr, locations });
+    puzzles.push(`${id}|${letters}|${words}`.toLowerCase());
   }
-
-  grids.push({ grid, id, letters, words });
 }
 
-// trim and adjust indexes
-// for (const [index, grid] of grids.entries()) {
-//   for (let i = 0; i < grid.length; i++) {
-//     if (grid[i].some((row) => row.some((cell) => cell !== 0))) {
-//       continue;
-//     }
+// const transformedGrids = grids.map((g) => ({
+//   grid: g.grid.map((r) => r.join("").toLowerCase()),
+//   words: g.words.map(
+//     (w) =>
+//       w.word.toLowerCase() +
+//       "," +
+//       w.locations.map((l) => l[0] + "," + l[1]).join(","),
+//   ),
+//   letters: g.letters.toLowerCase(),
+//   id: g.id,
+// }));
 
-//     grids[index].grid = grids[index].grid.slice(0, i);
-//   }
+// console.log(grids);
+// fs.writeFileSync("./processed.json", JSON.stringify(transformedGrids, null, 2));
 
-//   for (let i = 0; i < grid.grid[0].length; i++) {
-//     if (grid.grid.every((row) => row[i] === 0)) {
-//       for (let j = 0; j < grid.grid.length; j++) {
-//         grid.grid[j] = grid.grid[j].slice(0, i);
-//       }
-//     }
-//   }
+const all = fs.readdirSync("./levels/");
+for (const file of all) {
+  if (!file.endsWith(".json") || file === "level_map.json") continue;
 
-//   grids[index].grid = grids[index].grid.map((r) =>
-//     r.map((c) => (c === 0 ? " " : c)),
-//   );
-// }
+  const f = JSON.parse(fs.readFileSync(`./levels/${file}`, "utf8"));
+  go(f);
+  console.log("PROCESSED", file);
+}
 
-const transformedGrids = grids.map((g) => ({
-  grid: g.grid.map((r) => r.join("").toLowerCase()),
-  words: g.words.map(
-    (w) =>
-      w.word.toLowerCase() +
-      "," +
-      w.locations.map((l) => l[0] + "," + l[1]).join(","),
-  ),
-  letters: g.letters.toLowerCase(),
-  id: g.id,
-}));
-
-console.log(grids);
-fs.writeFileSync("./processed.json", JSON.stringify(transformedGrids, null, 2));
+fs.writeFileSync("./puzzles.txt", puzzles.join("\n"));

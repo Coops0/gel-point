@@ -2,22 +2,22 @@
   <div class="flex flex-col gap-2">
     <div class="text-primary-800 opacity-50 h-8 w-12 text-center relative">
       <div class="absolute inset-0 overflow-hidden">
-        <Transition :name="shouldIncrement ? 'slide-down' : 'slide-up'" @leave="() => updateLocalCounterSingle()"
-                    :duration="transitionSpeed">
-          <span :key="localBonusPoints" class="absolute inset-0 transition-all ease-in-out"
-                :style="{ transitionDuration: `${transitionSpeed / 2}ms` }">
+        <Transition :duration="transitionSpeed" :name="shouldIncrement ? 'slide-down' : 'slide-up'"
+                    @leave="() => updateLocalCounterSingle()">
+          <span :key="localBonusPoints" :style="{ transitionDuration: `${transitionSpeed / 2}ms` }"
+                class="absolute inset-0 transition-all ease-in-out">
             {{ localBonusPoints }}
           </span>
         </Transition>
       </div>
     </div>
 
-    <GhostButton @click="() => emit('shuffle')" variant="accent" class="rounded-md">♻️</GhostButton>
-    <GhostButton @click="() => emit('buy')" variant="secondary" class="rounded-md">$</GhostButton>
+    <GhostButton class="rounded-md" variant="accent" @click="() => emit('shuffle')">♻️</GhostButton>
+    <GhostButton class="rounded-md" variant="secondary" @click="() => emit('buy')">$</GhostButton>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import GhostButton from '@/components/GhostButton.vue';
 import { ref, watch } from 'vue';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';

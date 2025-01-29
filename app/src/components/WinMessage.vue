@@ -1,15 +1,15 @@
 <template>
   <div class="fixed inset-0 flex items-center justify-center z-20 pointer-events-none">
     <div
-        class="text-6xl font-bold text-white/80 transition-all dur-1k"
         :class="isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'"
+        class="text-6xl font-bold text-white/80 transition-all dur-1k"
     >
       NEXT LEVEL
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref, watch } from 'vue';
 
 const animate = defineModel<boolean>({ required: true });

@@ -1,13 +1,13 @@
 <template>
   <button
-      class="px-4 py-2 rounded-md transition-all ease-out duration-150"
       :class="variantClasses"
+      class="px-4 py-2 rounded-md transition-all ease-out duration-150"
   >
     <slot/>
   </button>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed } from 'vue';
 
 const props = defineProps<{

@@ -2,11 +2,11 @@
   <div
       class="w-32 text-center flex justify-center items-center h-12 bg-blue-600 active:bg-blue-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
   >
-    <span v-text="contents[0]" :class="contents[1]" />
+    <span :class="contents[1]" v-text="contents[0]"/>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed } from 'vue';
 
 const props = defineProps<{

@@ -1,12 +1,12 @@
 <template>
-  <div class="absolute inset-0 flex items-center justify-center" ref="wordContainer">
-    <svg class="absolute pointer-events-none" :width :height>
+  <div ref="wordContainer" class="absolute inset-0 flex items-center justify-center">
+    <svg :height :width class="absolute pointer-events-none">
       <line
           v-for="(line, index) in activeLines"
           :key="index"
           :x1="line.start.x + width/2 + CIRCLE_CENTER_OFFSET"
-          :y1="line.start.y + height/2 + CIRCLE_CENTER_OFFSET"
           :x2="line.end.x + width/2 + CIRCLE_CENTER_OFFSET"
+          :y1="line.start.y + height/2 + CIRCLE_CENTER_OFFSET"
           :y2="line.end.y + height/2 + CIRCLE_CENTER_OFFSET"
           class="animated-line stroke-primary-600"
           stroke-width="8"
@@ -16,19 +16,19 @@
     <div>
       <Letter v-for="(l, letterIndex) in alignedLetters"
               :key="letterIndex.toString() + l.letter"
-              v-bind="l"
-              :animating
               :active="selectedLetterIndices.includes(letterIndex)"
+              :animating
               :last-selected="selectedLetterIndices.length > 0 && selectedLetterIndices[selectedLetterIndices.length - 1] === letterIndex"
-              @start-touch="event => startTouch(event, letterIndex)"
+              v-bind="l"
               @hover="event => hover(event, letterIndex)"
               @move="(x, y) => handleLetterMovement(letterIndex, x, y)"
+              @start-touch="event => startTouch(event, letterIndex)"
       />
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed, ref, toRef, watch } from 'vue';
 import Letter from '@/components/Letter.vue';
 import { useReactiveSizes } from '@/composables/reactive-sizes.composable.ts';

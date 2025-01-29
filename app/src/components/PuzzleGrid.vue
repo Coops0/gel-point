@@ -1,33 +1,34 @@
 <template>
-  <div class="flex flex-col justify-center items-center" :class="gapSize">
+  <div :class="gapSize" class="flex flex-col justify-center items-center">
     <div
         v-for="(row, rowIndex) in localGrid"
         :key="`${rowIndex}-${row.length}`"
-        class="flex flex-row"
         :class="gapSize"
+        class="flex flex-row"
     >
       <div
           v-for="(cell, colIndex) in row"
           :key="`${rowIndex}-${colIndex}-${cell}`"
-          @click="() => handleCellClick(rowIndex, colIndex)"
-          class="flex items-center justify-center font-medium transition-all duration-200 size-12"
           :class="{
             'bg-secondary-400 text-background-50': cell !== 0 && cell !== -1,
             'bg-secondary-200': cell === 0,
             [cell === 0 ? 'ring-3 ring-accent-600' : 'ring-3 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex)
           }"
           :style="{ transform: `scale(${cellSize})` }"
+          class="flex items-center justify-center font-medium transition-all duration-200 size-12"
+          @click="() => handleCellClick(rowIndex, colIndex)"
       >
-        <span :class="textSize" v-if="cell !== 0 && cell !== -1">{{ cell }}</span>
+        <span v-if="cell !== 0 && cell !== -1" :class="textSize">{{ cell }}</span>
       </div>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed, ref, toRaw, watch } from 'vue';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';
 import type { Cell, Grid } from '@/services/puzzles.service.ts';
+import { clone } from '@/util';
 
 const props = defineProps<{
   grid: Grid;
@@ -40,11 +41,11 @@ const emit = defineEmits<{
 
 defineExpose({ resetSelection });
 
-const localGrid = ref<Grid>(structuredClone(toRaw(props.grid)));
+const localGrid = ref<Grid>(clone(toRaw(props.grid)));
 
 const cellSize = computed(() => props.grid.flat().length > 49 ? '.85' : '1');
 const gapSize = computed(() => props.grid.flat().length > 49 ? 'gap-0.32' : 'gap-2');
-const textSize = computed(() => props.grid.flat().length > 49 ? 'text-lg' : 'text-2xl');
+const textSize = computed(() => props.grid.flat().length > 49 ? 'text-xl' : 'text-2xl');
 
 const selectedRow = ref(-1);
 const selectedCol = ref(-1);

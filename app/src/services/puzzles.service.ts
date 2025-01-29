@@ -23,20 +23,13 @@ export type LoadLevelResult =
 export class PuzzleService {
     // try to have in buffer current puzzle & next
     private puzzlesBuffer: Puzzle[] = [];
-
-    private async fetchPuzzles(levelId: number) {
-        const rawPuzzles = await invoke<FetchPuzzlesBufferedResponse>('load_puzzle_buffered', { id: levelId });
-        const puzzle = rawPuzzles.puzzle ? parsePuzzle(rawPuzzles.puzzle) : null;
-        const nextPuzzle = rawPuzzles.next_puzzle ? parsePuzzle(rawPuzzles.next_puzzle) : null;
-
-        return { puzzle, nextPuzzle };
-    }
+    private lastPuzzle: null | number = null;
 
     async loadPuzzle(levelId: number): Promise<LoadLevelResult> {
         const cachedPuzzle = this.puzzlesBuffer.find(p => p.id === levelId);
         if (cachedPuzzle) {
             this.puzzlesBuffer = this.puzzlesBuffer.filter(p => p.id >= levelId);
-            return { name: 'success', puzzle: cachedPuzzle };
+            return { name: 'success', puzzle: cachedPuzzle, lastPuzzle: this.lastPuzzle === levelId };
         }
 
         const { puzzle, nextPuzzle } = await this.fetchPuzzles(levelId);
@@ -59,7 +52,11 @@ export class PuzzleService {
         }
 
         this.puzzlesBuffer.push(puzzle);
-        if (nextPuzzle) this.puzzlesBuffer.push(nextPuzzle);
+        if (nextPuzzle) {
+            this.puzzlesBuffer.push(nextPuzzle);
+        } else {
+            this.lastPuzzle = puzzle.id;
+        }
 
         return { name: 'success', puzzle: puzzle, lastPuzzle: !nextPuzzle };
     }
@@ -73,10 +70,18 @@ export class PuzzleService {
 
         if (nextPuzzle) {
             this.puzzlesBuffer.push(nextPuzzle);
-            return true;
+            this.lastPuzzle = nextPuzzle.id;
         }
 
-        return false;
+        return !!puzzle;
+    }
+
+    private async fetchPuzzles(levelId: number) {
+        const rawPuzzles = await invoke<FetchPuzzlesBufferedResponse>('load_puzzle_buffered', { id: levelId });
+        const puzzle = rawPuzzles.puzzle ? parsePuzzle(rawPuzzles.puzzle) : null;
+        const nextPuzzle = rawPuzzles.next_puzzle ? parsePuzzle(rawPuzzles.next_puzzle) : null;
+
+        return { puzzle, nextPuzzle };
     }
 }
 
