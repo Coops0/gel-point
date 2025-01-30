@@ -10,8 +10,11 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 
+
+export type GhostVariant = 'primary' | 'secondary' | 'accent';
+
 const props = defineProps<{
-  variant: 'primary' | 'secondary' | 'accent';
+  variant: GhostVariant;
 }>();
 
 const variantClasses = computed(() => {
@@ -23,4 +26,5 @@ const variantClasses = computed(() => {
     case 'accent':
       return 'text-accent-500 active:bg-accent-500/25';
   }
-});</script>
+});
+</script>

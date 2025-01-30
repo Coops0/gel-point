@@ -1,5 +1,5 @@
 <template>
-  <div ref="wordContainer" class="absolute inset-0 flex items-center justify-center">
+  <div ref="word-container" class="absolute inset-0 flex items-center justify-center">
     <svg :height :width class="absolute pointer-events-none">
       <line
           v-for="(line, index) in activeLines"
@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, toRef, watch } from 'vue';
+import { computed, ref, toRef, useTemplateRef, watch } from 'vue';
 import Letter from '@/components/Letter.vue';
 import { useReactiveSizes } from '@/composables/reactive-sizes.composable.ts';
 import {
@@ -45,7 +45,7 @@ const emit = defineEmits<{
   'update-built-word': [word: string];
 }>();
 
-const wordContainer = ref<HTMLElement | null>(null);
+const wordContainer = useTemplateRef<HTMLElement>('word-container');
 const { height, width } = useReactiveSizes();
 
 const { alignedLetters, shuffle, circleCenterOffset } = useLetterAlignment(toRef(() => props.letters));
@@ -112,8 +112,10 @@ function hover(_event: PointerEvent, letterIndex: number) {
   const wordIndex = selectedLetterIndices.value.indexOf(letterIndex);
   if (wordIndex === -1) {
     selectedLetterIndices.value = [...selectedLetterIndices.value, letterIndex];
-  } else if (wordIndex === len - 2) {
+  } else /* if (wordIndex === len - 2) {
     selectedLetterIndices.value = selectedLetterIndices.value.slice(0, -1);
+  } */ if (len !== 1 && wordIndex !== len -1) {
+    selectedLetterIndices.value = selectedLetterIndices.value.slice(0, -wordIndex);
   } else {
     return;
   }

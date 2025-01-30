@@ -18,7 +18,7 @@ tauri = { version = "2.2.5", features = [] }
 tauri-plugin-fs = "2.2.0"
 tauri-plugin-haptics = "2.2.3"
 tauri-plugin-http = "2.3.0"
-tauri-plugin-log = "2.2.1"
+tauri-plugin-log = { version = "2.2.1", features = ["colored"] }
 log = "0.4.25"
 tokio = { version = "1.43.0", features = ["fs"] }
 sha2 = "0.10.8"

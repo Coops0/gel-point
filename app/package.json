@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@tauri-apps/plugin-haptics": "^2.2.3",
+    "@tauri-apps/plugin-log": "^2.2.1",
     "@tauri-apps/api": "^2.2.0",
     "vue": "^3.5.13"
   },

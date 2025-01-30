@@ -7,6 +7,7 @@ use std::{
 };
 use tauri::{command, generate_handler, Manager, State};
 use tauri_plugin_fs::FsExt;
+use tauri_plugin_log::{Target, TargetKind};
 use tokio::time::sleep;
 
 mod ctx_macro_offload;
@@ -20,7 +21,11 @@ type AppState = Arc<Mutex<Option<CachedData>>>;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_log::Builder::new().level(LevelFilter::Warn).build())
+        .plugin(tauri_plugin_log::Builder::new()
+            .targets([Target::new(TargetKind::Stdout), Target::new(TargetKind::Webview)])
+            .level(LevelFilter::Warn)
+            .build()
+        )
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_haptics::init())
         .plugin(tauri_plugin_http::init())

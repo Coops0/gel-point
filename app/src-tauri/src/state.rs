@@ -4,7 +4,9 @@ use sha2::{Digest, Sha256};
 use std::{
     collections::HashMap, path::{Path, PathBuf}
 };
+use std::time::Duration;
 use tauri::{path::PathResolver, Wry};
+use tauri_plugin_http::reqwest;
 use tokio::try_join;
 
 #[derive(Serialize, Clone)]
@@ -35,9 +37,17 @@ impl Paths {
     }
 }
 
+fn req_client() -> reqwest::Client {
+    reqwest::Client::builder()
+        .timeout(Duration::from_secs(1))
+        .build()
+        // TODO root certificate?
+        .unwrap()
+}
+
 #[cfg(not(debug_assertions))]
 async fn fetch_hash(route: &str) -> anyhow::Result<Vec<u8>> {
-    tauri_plugin_http::reqwest::get(format!("{}/{route}/hash", crate::BASE_API_URL))
+    req_client().get(format!("{}/{route}/hash", crate::BASE_API_URL))
         .await?
         .bytes()
         .await
@@ -47,7 +57,7 @@ async fn fetch_hash(route: &str) -> anyhow::Result<Vec<u8>> {
 
 #[cfg(not(debug_assertions))]
 async fn fetch_text(route: &str) -> anyhow::Result<String> {
-    tauri_plugin_http::reqwest::get(format!("{}/{route}", crate::BASE_API_URL))
+    req_client().get(format!("{}/{route}", crate::BASE_API_URL))
         .await?
         .text()
         .await

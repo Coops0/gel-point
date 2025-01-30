@@ -1,7 +1,7 @@
 <template>
   <div :ref="uniqueId"
        :style="{ transform }"
-       class="absolute flex items-center justify-center size-20 rounded-full group"
+       class="absolute flex items-center justify-center size-18 rounded-full group"
        @pointerdown.prevent="event => emit('start-touch', event)"
        @pointerenter.prevent="event => emit('hover', event)"
   >

@@ -248,7 +248,7 @@
             --theme-accent-950: #130612;
         }
 
-        body.dark {
+        body[data-theme="cotton-candy"].dark {
             --theme-text-50: #070a13;
             --theme-text-100: #0e1425;
             --theme-text-200: #1b294b;
@@ -310,6 +310,4 @@
             --theme-accent-950: #f9ecf7;
         }
     }
-
-
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col">
-    <WinMessage v-model="showNextLevelAnimation"/>
+    <WinMessage v-model="showNextLevelAnimation" :class="!showBuySelector && 'z-[52]'"/>
     <BuySelector
         ref="buySelector"
         v-model="showBuySelector"
@@ -40,7 +40,7 @@
         </div>
 
         <div
-            :class="!showCurrentlyBuildingWord && 'opacity-0'"
+            :class="{ 'opacity-0': !showCurrentlyBuildingWord, 'z-[52]': !showBuySelector }"
             class="text-center w-full fixed top-6/11 text-2xl font-bold transition-opacity text-primary-900"
         >
           {{ currentlyBuildingWord }}
@@ -50,7 +50,15 @@
                  class="fixed left-2 bottom-4"
                  @buy="() => (showBuySelector = true)"
                  @shuffle="() => wordBuilder?.shuffle()"
-                 @debug-next-level="() => goToNextLevel()"
+                 @debug-next-level="() => {goToNextLevel(); unlockNextTheme();}"
+        />
+
+        <ThemeSelector class="fixed right-2 bottom-4"
+                       @change-theme="t => setTheme(t)"
+                       @clear-unread="() => showNewlyUnlockedIndicator = false"
+                       :show-unread="showNewlyUnlockedIndicator"
+                       :earned="earnedThemes"
+                       :current-theme="theme"
         />
 
         <div class="flex flex-col items-center gap-4 mb-42">
@@ -74,7 +82,7 @@ import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
 import { usePuzzleManager, WordTestResult } from '@/composables/puzzle-manager.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
-import { loadTheme, THEMES, useTheme } from '@/composables/theme.composable.ts';
+import { useTheme } from '@/composables/theme.composable.ts';
 import WinMessage from '@/components/WinMessage.vue';
 import Actions from '@/components/Actions.vue';
 import BuySelector from '@/components/BuySelector.vue';
@@ -83,10 +91,11 @@ import { impactFeedback, notificationFeedback } from '@tauri-apps/plugin-haptics
 import { type LoadLevelResult, type Puzzle, PuzzleService } from '@/services/puzzles.service.ts';
 import { WordService } from '@/services/words.service.ts';
 import { clone } from '@/util';
+import ThemeSelector from '@/components/ThemeSelector.vue';
 
 const puzzleService = new PuzzleService();
 const wordService = new WordService();
-const theme = useTheme();
+const { theme, loadTheme, unlockNextTheme, showNewlyUnlockedIndicator, earnedThemes, setTheme } = useTheme();
 
 const allWords = ref<string[]>([]);
 const currentPuzzle = ref<Puzzle | null>(null);
@@ -120,6 +129,9 @@ async function loadAndSetPuzzle(loadResult?: LoadLevelResult) {
     loadResult = await puzzleService.loadPuzzle(puzzleId.value);
   }
 
+  // noinspection ES6MissingAwait
+  console.log(`load and set puzzle result ~> ${JSON.stringify(loadResult)}`);
+
   winState.value = 'none';
   switch (loadResult.name) {
     case 'correct_index':
@@ -150,6 +162,7 @@ async function loadAndSetPuzzle(loadResult?: LoadLevelResult) {
 async function goToNextLevel() {
   if (winState.value === 'next-level') {
     winState.value = 'active';
+    console.log('hit active win state');
     return;
   }
 
@@ -176,18 +189,7 @@ function testWord(word: string) {
     case WordTestResult.BonusTheme:
       wordBuilder.value?.showBonusAnimation?.();
       impactFeedback('medium');
-      const themeIndex = THEMES.indexOf(theme.value.name);
-
-      let nextTheme;
-      if (themeIndex === -1) {
-        nextTheme = THEMES[0];
-      } else if (themeIndex === THEMES.length - 1) {
-        nextTheme = THEMES[themeIndex];
-      } else {
-        nextTheme = THEMES[themeIndex + 1];
-      }
-
-      theme.value.name = nextTheme;
+      unlockNextTheme();
       break;
     case WordTestResult.Win:
       notificationFeedback('success');
@@ -247,5 +249,6 @@ useEventListener('keydown', e => {
 
 loadTheme();
 loadAndSetPuzzle();
+
 wordService.fetchWords().then(w => (allWords.value = w));
 </script>
