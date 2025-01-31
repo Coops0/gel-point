@@ -61,7 +61,7 @@
                        :current-theme="theme"
         />
 
-        <div class="flex flex-col items-center gap-4 mb-42">
+        <div class="flex flex-col items-center mb-42">
           <div class="relative size-fit">
             <WordBuilder
                 ref="wordBuilder"
@@ -129,9 +129,6 @@ async function loadAndSetPuzzle(loadResult?: LoadLevelResult) {
     loadResult = await puzzleService.loadPuzzle(puzzleId.value);
   }
 
-  // noinspection ES6MissingAwait
-  console.log(`load and set puzzle result ~> ${JSON.stringify(loadResult)}`);
-
   winState.value = 'none';
   switch (loadResult.name) {
     case 'correct_index':
@@ -162,14 +159,13 @@ async function loadAndSetPuzzle(loadResult?: LoadLevelResult) {
 async function goToNextLevel() {
   if (winState.value === 'next-level') {
     winState.value = 'active';
-    console.log('hit active win state');
     return;
   }
 
   const nextPuzzle = puzzleId.value + 1;
   showNextLevelAnimation.value = true;
 
-  const time = new Date().getTime();
+  const time = Date.now();
   const loadResult = await puzzleService.loadPuzzle(nextPuzzle);
   const waitTimeLeft = 1000 - (Date.now() - time);
 

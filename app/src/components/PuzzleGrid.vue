@@ -12,7 +12,7 @@
           :class="{
             'bg-secondary-400 text-background-50': cell !== 0 && cell !== -1,
             'bg-secondary-200': cell === 0,
-            [cell === 0 ? 'ring-3 ring-accent-600' : 'ring-3 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex)
+            [cell === 0 ? 'ring-2 ring-accent-600' : 'ring-2 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex)
           }"
           :style="{ width: `${CELL_SIZE_MAP[sizeDivisor]}px`, height: `${CELL_SIZE_MAP[sizeDivisor]}px` }"
           class="flex items-center justify-center font-medium transition-all duration-200"

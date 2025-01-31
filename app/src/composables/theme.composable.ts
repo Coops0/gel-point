@@ -2,6 +2,10 @@ import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import { onMounted, readonly, watch } from 'vue';
 
 export const THEMES = ['grapefruit', 'cotton-candy'] as const;
+export const THEME_EMOJIS = {
+    grapefruit: '🍇',
+    'cotton-candy': '🍬'
+} as const;
 
 export const earnedThemes = useLocalStorage<(typeof THEMES[number])[]>('earned-themes', ['grapefruit']);
 export const showNewlyUnlockedIndicator = useLocalStorage<boolean>('show-newly-unlocked-theme-indicator', false);

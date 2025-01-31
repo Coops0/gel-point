@@ -2,17 +2,16 @@
   <div class="flex flex-col gap-2">
     <PopoutMenu
         v-if="themeItems.length !== 0"
-        class="mb-10"
         variant="accent"
         :items="themeItems"
         @select="t => changeTheme(t as unknown as Theme['name'])"
         @start="() => emit('clear-unread')"
     >
-      <div :class="showUnread ? 'animate-ping opacity-100' : 'opacity-0'" class="transition-opacity">
-        <div class="absolute w-4 h-4 bg-primary-500 rounded-full"/>
-      </div>
+      <div
+          :class="showUnread ? 'animate-ping opacity-100' : 'opacity-0'"
+          class="transition-opacity fixed w-2 h-2 bg-primary-500 rounded-full" />
 
-      {{ currentTheme.name[0] }}
+      {{ THEME_EMOJIS[currentTheme.name] }}
     </PopoutMenu>
 
     <PopoutMenu
@@ -26,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { type Theme, THEMES } from '@/composables/theme.composable.ts';
+import { type Theme, THEME_EMOJIS, THEMES } from '@/composables/theme.composable.ts';
 import PopoutMenu, { type PopoutItem } from '@/components/PopoutMenu.vue';
 import { computed } from 'vue';
 
@@ -61,7 +60,7 @@ function changeDarkMode(key: Theme['dark']) {
 const themeItems = computed<PopoutItem[]>(() => props.earned
     .filter(t => t !== props.currentTheme.name)
     .map(t => ({
-      label: t,
+      label: THEME_EMOJIS[t],
       key: t,
       variant: 'primary'
     }))
