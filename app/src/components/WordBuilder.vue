@@ -4,10 +4,10 @@
       <line
           v-for="(line, index) in activeLines"
           :key="index"
-          :x1="line.start.x + width/2 + circleCenterOffset"
-          :x2="line.end.x + width/2 + circleCenterOffset"
-          :y1="line.start.y + height/2 + circleCenterOffset"
-          :y2="line.end.y + height/2 + circleCenterOffset"
+          :x1="line.start.x + width/2 + circleXCenterOffset"
+          :x2="line.end.x + width/2 + circleXCenterOffset"
+          :y1="line.start.y + height/2 + circleYCenterOffset"
+          :y2="line.end.y + height/2 + circleYCenterOffset"
           class="animated-line stroke-primary-600"
           stroke-width="8"
       />
@@ -31,7 +31,7 @@
 <script lang="ts" setup>
 import { computed, ref, toRef, useTemplateRef, watch } from 'vue';
 import Letter from '@/components/Letter.vue';
-import { useReactiveSizes } from '@/composables/reactive-sizes.composable.ts';
+import { useWindowSize } from '@/composables/reactive-sizes.composable.ts';
 import {
   type LetterPosition,
   useLetterAlignment
@@ -46,9 +46,9 @@ const emit = defineEmits<{
 }>();
 
 const wordContainer = useTemplateRef<HTMLElement>('word-container');
-const { height, width } = useReactiveSizes();
+const { height, width } = useWindowSize();
 
-const { alignedLetters, shuffle, circleCenterOffset } = useLetterAlignment(toRef(() => props.letters));
+const { alignedLetters, shuffle, circleXCenterOffset, circleYCenterOffset } = useLetterAlignment(toRef(() => props.letters), width);
 // used for accurate lines
 const alignedLettersOffsetPosition = ref<LetterPosition[]>([]);
 

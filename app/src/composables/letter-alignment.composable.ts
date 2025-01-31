@@ -7,20 +7,21 @@ export interface LetterPosition<E = string> {
 }
 
 const nudgeToZero = (value: number, threshold = 0.01): number => Math.abs(value) < threshold ? 0 : +value.toFixed(6);
-const assignPositions = <E = string>(l: E[], circleRadius: number, circleCenterOffset: number): LetterPosition<E>[] => {
+const assignPositions = <E = string>(l: E[], circleRadius: number, circleXCenterOffset: number, circleYCenterOffset: number): LetterPosition<E>[] => {
     return l.map((letter, i) => {
         const step = i / l.length;
-        const angle = step * Math.PI * 2 - (Math.PI / 2);
+        const angle = Math.PI * (2 * step - (1 / 2));
 
+        // (x-h)^2+(y-k)^2=r^2
         return {
-            x: nudgeToZero((Math.cos(angle) * circleRadius)) - circleCenterOffset,
-            y: nudgeToZero((Math.sin(angle) * circleRadius)) - circleCenterOffset,
+            x: circleXCenterOffset + nudgeToZero((Math.cos(angle) * circleRadius)),
+            y: circleYCenterOffset + nudgeToZero((Math.sin(angle) * circleRadius)),
             letter
         };
     });
 };
 
-export const useLetterAlignment = (letters: Ref<string[]>) => {
+export const useLetterAlignment = (letters: Ref<string[]>, windowWidth: Ref<number>) => {
     const circleRadius = computed(() => {
         const l = letters.value.length;
         if (l <= 5) return 70;
@@ -28,14 +29,15 @@ export const useLetterAlignment = (letters: Ref<string[]>) => {
         return 120;
     });
 
-    const circleCenterOffset = computed(() => Math.sqrt(circleRadius.value) * 2);
+    const circleXCenterOffset = computed(() => windowWidth.value / 2);
+    const circleYCenterOffset = ref(100);
 
-    const alignedLetters = ref(assignPositions(letters.value, circleRadius.value, circleCenterOffset.value));
+    const alignedLetters = ref(assignPositions(letters.value, circleRadius.value, circleXCenterOffset.value, circleYCenterOffset.value));
 
-    watch(letters, l => (alignedLetters.value = assignPositions(l, circleRadius.value, circleCenterOffset.value)));
+    watch(letters, l => (alignedLetters.value = assignPositions(l, circleRadius.value, circleXCenterOffset.value, circleYCenterOffset.value)));
 
     const shuffle = () => {
-        const original: Array<[string, number]> =  [...alignedLetters.value].map((l, i) => [l.letter, i]);
+        const original: Array<[string, number]> = [...alignedLetters.value].map((l, i) => [l.letter, i]);
 
         let shuffledLetters = [...original];
 
@@ -49,12 +51,12 @@ export const useLetterAlignment = (letters: Ref<string[]>) => {
             }
         }
 
-        const shuffledLetterPositions = assignPositions(shuffledLetters, circleRadius.value, circleCenterOffset.value);
+        const shuffledLetterPositions = assignPositions(shuffledLetters, circleRadius.value, circleXCenterOffset.value, circleYCenterOffset.value);
         shuffledLetterPositions.sort((a, b) => a.letter[1] - b.letter[1]);
 
         // adjust array indices back to original
-        alignedLetters.value = shuffledLetterPositions.map(l => ({ ...l, letter: letters.value[l.letter[1]] }))
+        alignedLetters.value = shuffledLetterPositions.map(l => ({ ...l, letter: letters.value[l.letter[1]] }));
     };
 
-    return { alignedLetters, shuffle, circleRadius, circleCenterOffset };
+    return { alignedLetters, shuffle, circleRadius, circleXCenterOffset, circleYCenterOffset };
 };

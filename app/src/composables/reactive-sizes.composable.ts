@@ -1,24 +1,18 @@
 import { onMounted, type Ref, ref, watch } from 'vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 
-export const useReactiveSizes = (
-    wordContainer: Ref<HTMLElement | null> | null = null
-) => {
-    const width = ref(400);
-    const height = ref(600);
+export const useWindowSize = () => {
+    const width = ref(window.innerWidth);
+    const height = ref(window.innerHeight);
 
     const updateDimensions = () => {
-        width.value = wordContainer?.value?.clientWidth ?? window.innerWidth;
-        height.value = wordContainer?.value?.clientHeight ?? window.innerHeight;
+        width.value = window.innerWidth;
+        height.value = window.innerHeight;
     };
 
     useEventListener('resize', () => updateDimensions());
 
     onMounted(() => updateDimensions());
-
-    if (wordContainer) {
-        watch(wordContainer, () => updateDimensions(), { immediate: true });
-    }
 
     return { width, height };
 };
