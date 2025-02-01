@@ -6,7 +6,6 @@ export interface LetterPosition<E = string> {
     letter: E;
 }
 
-const nudgeToZero = (value: number, threshold = 0.01): number => Math.abs(value) < threshold ? 0 : +value.toFixed(6);
 const assignPositions = <E = string>(l: E[], circleRadius: number, circleXCenterOffset: number, circleYCenterOffset: number): LetterPosition<E>[] => {
     return l.map((letter, i) => {
         const step = i / l.length;
@@ -14,8 +13,8 @@ const assignPositions = <E = string>(l: E[], circleRadius: number, circleXCenter
 
         // (x-h)^2+(y-k)^2=r^2
         return {
-            x: circleXCenterOffset + nudgeToZero((Math.cos(angle) * circleRadius)),
-            y: circleYCenterOffset + nudgeToZero((Math.sin(angle) * circleRadius)),
+            x: (Math.cos(angle)) * circleRadius + (circleXCenterOffset / 2) + 65,
+            y: (Math.sin(angle) * circleRadius) - circleYCenterOffset,
             letter
         };
     });
@@ -30,7 +29,7 @@ export const useLetterAlignment = (letters: Ref<string[]>, windowWidth: Ref<numb
     });
 
     const circleXCenterOffset = computed(() => windowWidth.value / 2);
-    const circleYCenterOffset = ref(100);
+    const circleYCenterOffset = ref(200);
 
     const alignedLetters = ref(assignPositions(letters.value, circleRadius.value, circleXCenterOffset.value, circleYCenterOffset.value));
 

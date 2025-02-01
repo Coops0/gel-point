@@ -61,8 +61,8 @@
                        :current-theme="theme"
         />
 
-        <div class="flex flex-col items-center mb-42">
-          <div class="relative size-fit">
+        <div>
+          <div class="relative">
             <WordBuilder
                 ref="wordBuilder"
                 :letters="currentPuzzle!.letters"

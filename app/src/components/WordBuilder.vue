@@ -1,19 +1,19 @@
 <template>
-  <div ref="word-container" class="absolute inset-0 flex items-center justify-center">
+  <div class="absolute inset-0 flex items-center justify-center">
     <svg :height :width class="absolute pointer-events-none">
       <line
           v-for="(line, index) in activeLines"
           :key="index"
-          :x1="line.start.x + width/2 + circleXCenterOffset"
-          :x2="line.end.x + width/2 + circleXCenterOffset"
-          :y1="line.start.y + height/2 + circleYCenterOffset"
-          :y2="line.end.y + height/2 + circleYCenterOffset"
+          :x1="line.start.x - circleXCenterOffset/2 + 150"
+          :x2="line.end.x - circleXCenterOffset/2 + 150"
+          :y1="line.start.y + height/2 + 40"
+          :y2="line.end.y + height/2 + 40"
           class="animated-line stroke-primary-600"
           stroke-width="8"
       />
     </svg>
 
-    <div>
+    <div class="w-full">
       <Letter v-for="(l, letterIndex) in alignedLetters"
               :key="letterIndex.toString() + l.letter"
               :active="selectedLetterIndices.includes(letterIndex)"
@@ -29,13 +29,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, toRef, useTemplateRef, watch } from 'vue';
+import { computed, ref, toRef, watch } from 'vue';
 import Letter from '@/components/Letter.vue';
 import { useWindowSize } from '@/composables/reactive-sizes.composable.ts';
-import {
-  type LetterPosition,
-  useLetterAlignment
-} from '@/composables/letter-alignment.composable.ts';
+import { type LetterPosition, useLetterAlignment } from '@/composables/letter-alignment.composable.ts';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 import { selectionFeedback } from '@tauri-apps/plugin-haptics';
 
@@ -45,10 +42,14 @@ const emit = defineEmits<{
   'update-built-word': [word: string];
 }>();
 
-const wordContainer = useTemplateRef<HTMLElement>('word-container');
 const { height, width } = useWindowSize();
 
-const { alignedLetters, shuffle, circleXCenterOffset, circleYCenterOffset } = useLetterAlignment(toRef(() => props.letters), width);
+const {
+  alignedLetters,
+  shuffle,
+  circleXCenterOffset,
+  circleYCenterOffset
+} = useLetterAlignment(toRef(() => props.letters), width);
 // used for accurate lines
 const alignedLettersOffsetPosition = ref<LetterPosition[]>([]);
 
@@ -114,7 +115,7 @@ function hover(_event: PointerEvent, letterIndex: number) {
     selectedLetterIndices.value = [...selectedLetterIndices.value, letterIndex];
   } else /* if (wordIndex === len - 2) {
     selectedLetterIndices.value = selectedLetterIndices.value.slice(0, -1);
-  } */ if (len !== 1 && wordIndex !== len -1) {
+  } */ if (len !== 1 && wordIndex !== len - 1) {
     selectedLetterIndices.value = selectedLetterIndices.value.slice(0, -wordIndex);
   } else {
     return;

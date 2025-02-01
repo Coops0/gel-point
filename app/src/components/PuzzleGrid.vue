@@ -29,6 +29,9 @@ import { computed, ref, toRaw, watch } from 'vue';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';
 import type { Cell, Grid } from '@/services/puzzles.service.ts';
 import { clone } from '@/util';
+import { useWindowSize } from '@/composables/reactive-sizes.composable.ts';
+
+const { width } = useWindowSize();
 
 const props = defineProps<{
   grid: Grid;
@@ -48,6 +51,19 @@ const sizeDivisor = computed(() => {
   if (l < 8) return 1;
   if (l < 10) return 2;
   return 3;
+});
+
+// todo
+const cellSize = computed(() => {
+  for (let i = 32; i < 96; i++) {
+    const s = (props.grid[0]?.length ?? 0) + 16; // 16 = 1rem gap
+
+    if (width.value < i * s) {
+      return i - 1;
+    }
+  }
+
+  throw new Error('unreachable');
 });
 
 const CELL_SIZE_MAP = {
