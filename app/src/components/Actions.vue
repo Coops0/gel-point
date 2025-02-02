@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-2">
     <div class="text-primary-800 opacity-50 h-8 w-12 text-center relative">
-      <div class="absolute inset-0 overflow-hidden">
+      <div class="absolute inset-0 overflow-hidden" @click="() => cheatCodeButtonInput(0)">
         <Transition :duration="transitionSpeed" :name="shouldIncrement ? 'slide-down' : 'slide-up'"
                     @leave="() => updateLocalCounterSingle()">
           <span :key="localBonusPoints" :style="{ transitionDuration: `${transitionSpeed / 2}ms` }"
@@ -12,8 +12,8 @@
       </div>
     </div>
 
-    <GhostButton class="rounded-md" variant="accent" @click="() => shuffle()">♻️</GhostButton>
-    <GhostButton class="rounded-md" variant="secondary" @click="() => emit('buy')">$</GhostButton>
+    <GhostButton class="rounded-md" variant="accent" @click="() => clickShuffle()">♻️</GhostButton>
+    <GhostButton class="rounded-md" variant="secondary" @click="() => clickBuy()">$</GhostButton>
   </div>
 </template>
 
@@ -33,7 +33,7 @@ const transitionSpeed = ref(0);
 const emit = defineEmits<{
   shuffle: [],
   buy: [],
-  'debug-next-level': []
+  'active-cheat-code': []
 }>();
 
 function updateLocalCounterSingle() {
@@ -57,14 +57,52 @@ watch(() => props.availableBonusWordPoints, v => {
   updateLocalCounterSingle();
 });
 
-let lastShuffle = 0;
-const shuffle = () => {
-  emit('shuffle');
-  if (Date.now() - lastShuffle < 1000) {
-    emit('debug-next-level');
+function clickShuffle() {
+  if (!cheatCodeButtonInput(1)) {
+    emit('shuffle');
+  }
+}
+
+function clickBuy() {
+  if (!cheatCodeButtonInput(2)) {
+    emit('buy');
+  }
+}
+
+const CHEAT_CODE_SEQUENCE = [0, 1, 1, 0, 2];
+let cheatCodeSequence = <number[]>[];
+
+let lastInput = 0;
+
+function cheatCodeButtonInput(index: number): boolean {
+  if (lastInput !== 0 && Date.now() - lastInput > 1000) {
+    cheatCodeSequence = [];
+    lastInput = 0;
+    return false;
   }
 
-  lastShuffle = Date.now();
+  cheatCodeSequence.push(index);
+
+  if (cheatCodeSequence.length < CHEAT_CODE_SEQUENCE.length) {
+    return false;
+  }
+
+  let match = true;
+  for (let i = 1; i <= CHEAT_CODE_SEQUENCE.length; i++) {
+    if (cheatCodeSequence[cheatCodeSequence.length - i] !== CHEAT_CODE_SEQUENCE[CHEAT_CODE_SEQUENCE.length - i]) {
+      match = false;
+      break;
+    }
+  }
+
+  if (match) {
+    cheatCodeSequence = [];
+    lastInput = 0;
+    emit('active-cheat-code');
+    return true;
+  }
+
+  return false;
 }
 </script>
 

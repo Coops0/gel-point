@@ -24,7 +24,7 @@
               :variant="item.variant"
               :class="item.key === hoveredItem && 'bg-primary-500/25'"
               :data-popup-key="item.key"
-              ref="item-refs"
+              :ref="itemRefIds"
           >
             {{ item.label }}
           </GhostButton>
@@ -37,7 +37,7 @@
         :variant
         class="px-4 py-2 rounded-md transition-all ease-out duration-150"
         @pointerdown.prevent="event => beginHold(event)"
-        ref="popoutElement"
+        :ref="popoutId"
     >
       <slot/>
     </GhostButton>
@@ -46,7 +46,7 @@
 
 <script lang="ts" setup>
 import GhostButton, { type GhostVariant } from '@/components/GhostButton.vue';
-import { computed, ref, useTemplateRef } from 'vue';
+import { onMounted, ref, useId, useTemplateRef, watch } from 'vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 
 const VERTICAL_PADDING = 8;
@@ -71,25 +71,27 @@ const emit = defineEmits<{
 
 type Key = typeof props.items[number]['key'];
 
-const popoutElement = ref<typeof GhostButton | null>(null);
-const itemRefs = useTemplateRef<(typeof GhostButton)[]>('item-refs');
+const popoutId = useId();
+const popoutElement = useTemplateRef<typeof GhostButton>(popoutId);
 
-const elementPosition = computed<{ x: number; y: number; height: number; width: number; } | null>(() => {
+const itemRefIds = useId();
+const itemRefs = useTemplateRef<(typeof GhostButton)[]>(itemRefIds);
+
+const elementPosition = ref<{ x: number; y: number; height: number; width: number; } | null>(null);
+
+const alignedItems = ref<Array<PopoutItem & { x: number; y: number }>>([]);
+
+function recalculatePositions() {
   const rect = popoutElement.value?.$el?.getBoundingClientRect();
   if (!rect) return null;
 
-  return ({ x: rect.x, y: rect.y, height: rect.height, width: rect.width });
-});
-
-const alignedItems = computed(() => {
-  const pos = elementPosition.value;
-  if (!pos) return [];
+  elementPosition.value = ({ x: rect.x, y: rect.y, height: rect.height, width: rect.width });
 
   let below = 0;
   let above = 0;
 
-  return props.items.map(item => {
-    let x = pos.x;
+  alignedItems.value = props.items.map(item => {
+    let x = rect.x;
     if (props.dynamicSized) {
       const rect = itemRefs.value
           ?.map(i => i.$el)
@@ -97,13 +99,13 @@ const alignedItems = computed(() => {
           ?.getBoundingClientRect();
 
       if (rect) {
-        x += (pos.width - rect.width);
+        x += (rect.width - rect.width);
       }
     }
 
     const y = item.below ?
-        VERTICAL_PADDING + pos.y + (pos.height * ++below) :
-        pos.y - VERTICAL_PADDING - (pos.height * ++above);
+        VERTICAL_PADDING + rect.y + (rect.height * ++below) :
+        rect.y - VERTICAL_PADDING - (rect.height * ++above);
 
     return ({
       ...item,
@@ -111,7 +113,7 @@ const alignedItems = computed(() => {
       y
     });
   });
-});
+}
 
 const isHolding = ref(false);
 const hoveredItem = ref<Key | null>(null);
@@ -178,4 +180,10 @@ useEventListener('pointermove', event => {
     hoveredItem.value = key as Key;
   }
 });
+
+onMounted(() => recalculatePositions());
+
+watch(() => props.items, () => recalculatePositions(), { deep: true });
+watch(popoutElement, () => recalculatePositions());
+watch(itemRefs, () => recalculatePositions());
 </script>

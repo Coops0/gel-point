@@ -14,7 +14,7 @@
             'bg-secondary-200': cell === 0,
             [cell === 0 ? 'ring-2 ring-accent-600' : 'ring-2 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex)
           }"
-          :style="{ width: `${CELL_SIZE_MAP[sizeDivisor]}px`, height: `${CELL_SIZE_MAP[sizeDivisor]}px` }"
+          :style="{ width: `${cellSize}px`, height: `${cellSize}px` }"
           class="flex items-center justify-center font-medium transition-all duration-200"
           @click="() => handleCellClick(rowIndex, colIndex)"
       >

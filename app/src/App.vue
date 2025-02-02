@@ -50,7 +50,7 @@
                  class="fixed left-2 bottom-4"
                  @buy="() => (showBuySelector = true)"
                  @shuffle="() => wordBuilder?.shuffle()"
-                 @debug-next-level="() => {goToNextLevel(); unlockNextTheme();}"
+                 @active-cheat-code="() => activateCheatCode()"
         />
 
         <ThemeSelector class="fixed right-2 bottom-4"
@@ -73,6 +73,7 @@
         </div>
       </div>
     </div>
+    <input ref="cheatCodeInputElement" v-model="cheatCodeInput" @keydown.enter="() => submitCheatCode()" class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10" :class="!showCheatCodeInput && 'hidden'"/>
   </div>
 </template>
 
@@ -82,7 +83,7 @@ import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
 import { usePuzzleManager, WordTestResult } from '@/composables/puzzle-manager.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
-import { useTheme } from '@/composables/theme.composable.ts';
+import { THEMES, useTheme } from '@/composables/theme.composable.ts';
 import WinMessage from '@/components/WinMessage.vue';
 import Actions from '@/components/Actions.vue';
 import BuySelector from '@/components/BuySelector.vue';
@@ -104,6 +105,10 @@ const showNextLevelAnimation = ref(false);
 
 const wordBuilder = ref<null | typeof WordBuilder>(null);
 const puzzleGrid = ref<null | typeof PuzzleGrid>(null);
+
+const cheatCodeInputElement = ref<HTMLInputElement | null>(null);
+const cheatCodeInput = ref('');
+const showCheatCodeInput = ref(true);
 
 const currentlyBuildingWord = ref('');
 const showCurrentlyBuildingWord = ref(false);
@@ -213,6 +218,36 @@ function updateBuiltWord(word: string) {
   }
 
   showCurrentlyBuildingWord.value = !!word.length;
+}
+
+function activateCheatCode() {
+  cheatCodeInput.value = '';
+  showCheatCodeInput.value = true;
+  cheatCodeInputElement.value?.focus({ preventScroll: true });
+}
+
+function submitCheatCode() {
+  showCheatCodeInput.value = false;
+  const code = cheatCodeInput.value.toLowerCase();
+
+  const [name, ...args] = code.split(' ');
+  switch (name) {
+    case 'noobdog':
+      goToNextLevel();
+      break;
+    case 'plsgoto':
+      if (args.length === 1) {
+        puzzleId.value = +args[0];
+        loadAndSetPuzzle();
+      }
+      break;
+    case 'unlockallthemes':
+      THEMES.forEach(() => unlockNextTheme());
+      break;
+    case 'reload':
+      loadAndSetPuzzle();
+      break;
+  }
 }
 
 // detect if click outside of buy selector, close it

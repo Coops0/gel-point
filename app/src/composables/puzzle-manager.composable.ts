@@ -60,7 +60,7 @@ export const usePuzzleManager = (allWords: Ref<string[]>) => {
         puzzle.value = p;
 
         if (!hasStartedPuzzle) {
-            activeGrid.value = transformToActiveGrid(clone(toRaw(p.grid)));
+            resetGrid();
         }
     };
 
@@ -78,6 +78,10 @@ export const usePuzzleManager = (allWords: Ref<string[]>) => {
 
         return hasWon();
     };
+
+    const resetGrid = () => {
+        activeGrid.value = transformToActiveGrid(clone(toRaw(puzzle.value!.grid)));
+    }
 
     const isLoaded = computed(() => puzzle.value !== null && activeGrid.value !== null);
 

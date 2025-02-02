@@ -115,8 +115,8 @@ function hover(_event: PointerEvent, letterIndex: number) {
     selectedLetterIndices.value = [...selectedLetterIndices.value, letterIndex];
   } else /* if (wordIndex === len - 2) {
     selectedLetterIndices.value = selectedLetterIndices.value.slice(0, -1);
-  } */ if (len !== 1 && wordIndex !== len - 1) {
-    selectedLetterIndices.value = selectedLetterIndices.value.slice(0, -wordIndex);
+  } */ if (len !== 1) {
+    selectedLetterIndices.value = selectedLetterIndices.value.slice(0, wordIndex + 1);
   } else {
     return;
   }
