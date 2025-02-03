@@ -66,7 +66,7 @@
             <WordBuilder
                 ref="wordBuilder"
                 :letters="currentPuzzle!.letters"
-                @test-word="testWord"
+                @test-word="word => testWord(word)"
                 @update-built-word="updateBuiltWord"
             />
           </div>
@@ -106,7 +106,6 @@ const puzzleService = new PuzzleService();
 const wordService = new WordService();
 const { theme, loadTheme, unlockNextTheme, showNewlyUnlockedIndicator, earnedThemes, setTheme } = useTheme();
 
-const allWords = ref<string[]>([]);
 const currentPuzzle = ref<Puzzle | null>(null);
 
 const showNextLevelAnimation = ref(false);
@@ -137,7 +136,7 @@ const {
   isLoaded,
   buyCells,
   setPuzzle
-} = usePuzzleManager(allWords);
+} = usePuzzleManager(wordService);
 
 async function loadAndSetPuzzle(loadResult?: LoadLevelResult) {
   if (!loadResult) {
@@ -191,26 +190,26 @@ async function goToNextLevel() {
   }, Math.max(waitTimeLeft, 0));
 }
 
-function testWord(word: string) {
-  switch (testWordResult(word)) {
+async function testWord(word: string) {
+  switch (await testWordResult(word)) {
     case WordTestResult.Bonus:
       wordBuilder.value?.showBonusAnimation?.();
-      impactFeedback('medium');
+      await impactFeedback('medium');
       break;
     case WordTestResult.BonusTheme:
       wordBuilder.value?.showBonusAnimation?.();
-      impactFeedback('medium');
+      await impactFeedback('medium');
       unlockNextTheme();
       break;
     case WordTestResult.Win:
-      notificationFeedback('success');
-      goToNextLevel();
+      await notificationFeedback('success');
+      await goToNextLevel();
       break;
     case WordTestResult.NotFound:
-      notificationFeedback('error');
+      await notificationFeedback('error');
       break;
     case WordTestResult.Found:
-      impactFeedback('rigid');
+      await impactFeedback('rigid');
       break;
   }
 }
@@ -288,6 +287,4 @@ useEventListener(
 
 loadTheme();
 loadAndSetPuzzle();
-
-wordService.fetchWords().then(w => (allWords.value = w));
 </script>

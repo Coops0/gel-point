@@ -1,8 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
 export class WordService {
-    async fetchWords(): Promise<string[]> {
-        return await invoke<string>('load_words')
-            .then(l => l.split('\n'));
+    async testWord(word: string): Promise<boolean> {
+        return await invoke<string>('test_word', { word });
     }
 }

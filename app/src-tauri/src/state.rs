@@ -2,17 +2,28 @@ use anyhow::Context;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::{
-    collections::HashMap, path::{Path, PathBuf}
+    collections::HashMap, path::{Path, PathBuf}, time::Duration
 };
-use std::time::Duration;
 use tauri::{path::PathResolver, Wry};
 use tauri_plugin_http::reqwest;
 use tokio::try_join;
 
 #[derive(Serialize, Clone)]
 pub struct CachedData {
-    pub words: String,
+    pub words: Vec<String>,
     pub puzzles: HashMap<u32, String>
+}
+
+impl CachedData {
+    pub fn find_word(&self, word: &str) -> bool {
+        let target_len = word.len();
+        let partition = self.words.partition_point(|w| w.len() < target_len);
+        let same_length = self.words[partition..].partition_point(|w| w.len() == target_len);
+
+        self.words[partition..partition + same_length]
+            .binary_search_by(|w| w.as_str().cmp(word))
+            .is_ok()
+    }
 }
 
 pub struct Paths {
@@ -47,7 +58,8 @@ fn req_client() -> reqwest::Client {
 
 #[cfg(not(debug_assertions))]
 async fn fetch_hash(route: &str) -> anyhow::Result<Vec<u8>> {
-    req_client().get(format!("{}/{route}/hash", crate::BASE_API_URL))
+    req_client()
+        .get(format!("{}/{route}/hash", crate::BASE_API_URL))
         .send()
         .await?
         .bytes()
@@ -58,7 +70,8 @@ async fn fetch_hash(route: &str) -> anyhow::Result<Vec<u8>> {
 
 #[cfg(not(debug_assertions))]
 async fn fetch_text(route: &str) -> anyhow::Result<String> {
-    req_client().get(format!("{}/{route}", crate::BASE_API_URL))
+    req_client()
+        .get(format!("{}/{route}", crate::BASE_API_URL))
         .send()
         .await?
         .text()
@@ -103,11 +116,11 @@ async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
 
 pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, HashMap<u32, String>)> {
     let words_txt = paths.words();
-    let puzzles_json = paths.puzzles();
+    let puzzles_txt = paths.puzzles();
 
     let (words, puzzles) = try_join!(
         memoize_or_fetch(&words_txt, "words"),
-        memoize_or_fetch(&puzzles_json, "puzzles")
+        memoize_or_fetch(&puzzles_txt, "puzzles")
     )?;
 
     let puzzles = puzzles

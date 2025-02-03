@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::{
     fs, sync::{Arc, Mutex}, time::Duration
 };
-use tauri::{command, generate_handler, Manager, State};
+use tauri::{command, generate_handler, ipc::Response, path::BaseDirectory, Manager, State};
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::{Target, TargetKind};
 use tokio::time::sleep;
@@ -21,17 +21,19 @@ type AppState = Arc<Mutex<Option<CachedData>>>;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_log::Builder::new()
-            .targets([Target::new(TargetKind::Stdout), Target::new(TargetKind::Webview)])
-            .level(LevelFilter::Warn)
-            .build()
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .targets([Target::new(TargetKind::Stdout), Target::new(TargetKind::Webview)])
+                .level(LevelFilter::Warn)
+                .build()
         )
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_haptics::init())
         .plugin(tauri_plugin_http::init())
-        .invoke_handler(generate_handler![load_words, load_puzzle_buffered])
+        .invoke_handler(generate_handler![test_word, load_puzzle_buffered])
         .setup(|app| {
-            let paths = Paths::new(app.path()).context("failed to init paths struct")?;
+            let path = app.path();
+            let paths = Paths::new(path).context("failed to init paths struct")?;
 
             let _ = fs::create_dir_all(paths.cache_dir());
 
@@ -40,6 +42,17 @@ pub fn run() {
             scope
                 .allow_file(paths.puzzles())
                 .context("failed to allow puzzles file via fs_scope")?;
+
+            if !paths.puzzles().exists() {
+                let bundled_puzzles =
+                    path.resolve("./assets/puzzles.txt", BaseDirectory::Resource)?;
+                let _ = fs::copy(&bundled_puzzles, paths.puzzles());
+            }
+
+            if !paths.words().exists() {
+                let bundled_words = path.resolve("./assets/words.txt", BaseDirectory::Resource)?;
+                let _ = fs::copy(&bundled_words, paths.words());
+            }
 
             let state = Arc::new(Mutex::new(None::<CachedData>));
             if !app.manage(Arc::clone(&state)) {
@@ -56,6 +69,12 @@ pub fn run() {
                     }
                 };
 
+                let words = words
+                    .to_lowercase()
+                    .split("\n")
+                    .map(ToOwned::to_owned)
+                    .collect::<Vec<_>>();
+
                 let mut state = state.lock().unwrap();
                 *state = Some(CachedData { words, puzzles });
             });
@@ -67,13 +86,13 @@ pub fn run() {
 }
 
 #[command]
-async fn load_words(state: State<'_, AppState>) -> Result<String, ()> {
+async fn test_word(state: State<'_, AppState>, word: String) -> Result<bool, ()> {
     while state.lock().unwrap().is_none() {
         sleep(Duration::from_millis(100)).await;
     }
 
     let state = state.lock().unwrap();
-    Ok(state.as_ref().unwrap().words.clone())
+    Ok(state.as_ref().unwrap().find_word(&word))
 }
 
 #[derive(Serialize)]

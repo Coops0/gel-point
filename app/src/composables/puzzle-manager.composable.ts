@@ -2,6 +2,7 @@ import { computed, readonly, type Ref, ref, toRaw } from 'vue';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import type { Grid, Puzzle } from '@/services/puzzles.service.ts';
 import { clone } from '@/util';
+import type { WordService } from '@/services/words.service.ts';
 
 export enum WordTestResult {
     NotFound,
@@ -11,7 +12,7 @@ export enum WordTestResult {
     Win
 }
 
-export const usePuzzleManager = (allWords: Ref<string[]>) => {
+export const usePuzzleManager = (wordService: WordService) => {
     const isInitialLoad = ref(true);
     const puzzle = ref<Puzzle | null>(null);
 
@@ -28,12 +29,12 @@ export const usePuzzleManager = (allWords: Ref<string[]>) => {
 
     const hasWon = () => activeGrid.value?.every(row => row.every(cell => cell !== 0)) === true;
 
-    const testWord = (word: string): WordTestResult => {
+    const testWord = async (word: string): Promise<WordTestResult> => {
         if (!activeGrid.value || !puzzle.value) return WordTestResult.NotFound;
 
         const match = puzzle.value.words.find(w => w.word === word);
         if (!match) {
-            if (!allWords.value.includes(word) || foundBonusWords.value.has(word)) {
+            if (foundBonusWords.value.has(word) || !(await wordService.testWord(word))) {
                 return WordTestResult.NotFound;
             }
 
