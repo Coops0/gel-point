@@ -48,6 +48,7 @@ fn req_client() -> reqwest::Client {
 #[cfg(not(debug_assertions))]
 async fn fetch_hash(route: &str) -> anyhow::Result<Vec<u8>> {
     req_client().get(format!("{}/{route}/hash", crate::BASE_API_URL))
+        .send()
         .await?
         .bytes()
         .await
@@ -58,6 +59,7 @@ async fn fetch_hash(route: &str) -> anyhow::Result<Vec<u8>> {
 #[cfg(not(debug_assertions))]
 async fn fetch_text(route: &str) -> anyhow::Result<String> {
     req_client().get(format!("{}/{route}", crate::BASE_API_URL))
+        .send()
         .await?
         .text()
         .await

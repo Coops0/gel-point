@@ -21,5 +21,8 @@ export const MOTDS = [
     'I got rejected from UMD',
     'Walt Whitman High School future graduate',
     'I should probably spend my time writing rhymes in the dentist\'s office; that\'s killing two birds in one stone',
-    
+    'Please hire me www.cooperhanessian.com',
+    'LOOK AT US, WE\'RE IN LOVE',
+    'Teach Me Empathy',
+    'Thanks JetBrains'
 ] as const;
