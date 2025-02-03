@@ -1,60 +1,75 @@
-Create an 8x8 word puzzle using only these letters: B O R I N.
-Rules:
+# Word Puzzle Generator Requirements
 
-Words must be 3+ letters
-Words can only go left-to-right or top-to-bottom (no backwards or diagonal)
-Every word after the first must share at least one letter with another word (they must intersect)
-Words on the same line/column must have at least one empty space between them
-Words can only use the given letters
+## Core Components
 
-*** NO FLOATING WORDS!!! ***
-E.x.
+### 1. Grid Management
+- Square grid with customizable dimensions
+- Must track:
+  - Letter placement coordinates
+  - Word intersections
+  - Empty spaces
+- Grid representation: 2D array of characters/empty cells
 
-000B000
-000R000
-000I000
-000B000
-000N000
+### 2. Word Processing
+- Input: Word file of a ton of words seperated by new lines
 
-And you try to use RIB as a word there, even though it's squished between 2 other letters
+### 3. Placement Algorithm
+- Initial placement:
+  - Center word horizontally
+  - Calculate optimal starting position
+- Subsequent placements:
+  - Find all valid intersections with existing words
+  - Track direction (horizontal/vertical)
+  - Store coordinates (row,col)
+  - Validate letter overlaps
+  - Ensure grid boundary compliance
 
-// OTHER RULES
-// Word length >= 3 characters
-// Words can be formed left, right, up, down. But have to be in a straight line, NOT in reverse, and NOT diagonally.
-// Words can branch into others, but may not overlap: 2 words on the same axis must have at least 1 cell between them.
+### 4. Configuration Interface
+interface PuzzleConfig {
+    minWords: number        // Minimum words per puzzle
+    maxWords: number        // Maximum words per puzzle
+    minWordLength: number   // Shortest allowed word
+    maxWordLength: number   // Longest allowed word
+    maxGridSize: number     // Grid dimensions
+    minLetters: number      // Minimum unique letters
+    maxLetters: number      // Maximum unique letters
+}
 
-Give me the puzzle in this exact format:
-```json
-  {
-    "grid": [
-      "0000a",
-      "00set",
-      "00e0e",
-      "00a00",
-      "0eta0"
-    ],
-    "words": [
-      "ate,4,0,4,1,4,2",
-      "eta,1,4,2,4,3,4",
-      "set,2,1,3,1,4,1",
-      "seat,2,1,2,2,2,3,2,4"
-    ]
-  }
-```
-Optimize for:
+### 5. Output Format
+Format: id|letters|wordPlacements
+Example: 1|abcdef|cat,h,5,5;dog,v,5,7;bat,h,7,5
+Components:
+- id: Unique puzzle identifier
+- letters: All unique letters used
+- wordPlacements: semicolon-separated list of:
+  - word: the actual word
+  - direction: h/v
+  - row: starting row
+  - col: starting column
 
-Maximum number of words
-Maximum intersections between words
-Good mix of word lengths (3+ letters)
+### 6. Validation Rules
+- Word placement:
+  - No out-of-bounds letters
+  - Valid intersections only
+  - No adjacent non-intersecting words
+- Letter constraints:
+  - Total unique letters within bounds
+  - No invalid character combinations
+- Puzzle completeness:
+  - Minimum word count met
+  - All words connected
 
+### 7. Error Handling
+Must handle:
+- Invalid word lists
+- Failed placement attempts
+- Letter count violations
+- Grid size constraints
+- Connection validation
+- Format verification
 
-THE WORDS SHOULD NOT BE SUPER UNCOMMON/DIFFICULT TO GUESS: They should be NO harder than for example, like a wordle puzzle word.
-
-NO CAPITAL LETTERS ANYWHERE
-
-NEED TO USE INDEXES STARTING AT 0, AGAIN, PAY CLOSE ATTENTION TO THE EXAMPLE
-
-TAKE ADVANTAGE OF THE GRID SPACE PROVIDED TO YOU
-
-**No nonsense combinations**!!!!!!!
-THE GRID & WORD PATH MUST BE VALID!!!! MOST IMPORTANT!!!
+This specification ensures generated puzzles are:
+- Playable
+- Properly connected
+- Within specified constraints
+- Following Word Scapes-style gameplay mechanics

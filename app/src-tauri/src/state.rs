@@ -40,11 +40,11 @@ impl Paths {
     }
 
     pub fn words(&self) -> PathBuf {
-        self.cache_dir.join("words.txt")
+        self.cache_dir.join("words.data")
     }
 
     pub fn puzzles(&self) -> PathBuf {
-        self.cache_dir.join("puzzles.txt")
+        self.cache_dir.join("puzzles.data")
     }
 }
 
@@ -104,8 +104,8 @@ async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
 
     #[cfg(debug_assertions)]
     let text = match route {
-        "words" => include_str!("../assets/words.txt").to_string(),
-        "puzzles" => include_str!("../assets/puzzles.txt").to_string(),
+        "words" => include_str!("../assets/words.data").to_string(),
+        "puzzles" => include_str!("../assets/puzzles.data").to_string(),
         _ => unreachable!()
     };
 
@@ -115,12 +115,12 @@ async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
 }
 
 pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, HashMap<u32, String>)> {
-    let words_txt = paths.words();
-    let puzzles_txt = paths.puzzles();
+    let words_data = paths.words();
+    let puzzles_data = paths.puzzles();
 
     let (words, puzzles) = try_join!(
-        memoize_or_fetch(&words_txt, "words"),
-        memoize_or_fetch(&puzzles_txt, "puzzles")
+        memoize_or_fetch(&words_data, "words"),
+        memoize_or_fetch(&puzzles_data, "puzzles")
     )?;
 
     let puzzles = puzzles

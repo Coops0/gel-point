@@ -34,8 +34,8 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "assets/puzzles.txt",
-      "assets/words.txt"
+      "assets/puzzles.data",
+      "assets/words.data"
     ]
   }
 }

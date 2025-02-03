@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .word {
+            font-size: 100px;
+            font-weight: bold;
+            color: #000;
+            text-transform: uppercase;
+            font-family: 'Arial', sans-serif;
+        }
+    </style>
+</head>
+<body>
+<textarea > </textarea>
+
+<div class="container">
+    <div class="word"></div>
+</div>
+
+<script>
+	const word = document.querySelector('.word');
+	const input = document.querySelector('textarea');
+
+	let words = [];
+	let verified = [];
+
+	function setWord() {
+		word.textContent = words[0].toString();
+	}
+
+	function saveWord(save) {
+		if (save) {
+			verified.push(words.shift());
+		} else {
+			words.shift();
+		}
+	}
+
+	document.addEventListener('keydown', e => {
+		if (!words.length) {
+			if (e.key === 'Enter') {
+				let tempWords = input.value.replaceAll(' ', '').split('\n');
+				if (tempWords[0].includes(',')) {
+					verified = tempWords[0].split(',');
+					tempWords = tempWords.splice(1);
+				}
+
+				words = tempWords;
+				input.style.display = 'none';
+				setWord();
+			}
+			return;
+		}
+
+		if (e.key === 's') {
+			const payload = `${ verified.join(',') }\n${ words.join('\n') }`;
+			try {
+				navigator.clipboard.writeText(payload);
+			} catch {
+				input.style.display = 'block';
+				input.value = payload;
+			}
+			return;
+		}
+
+		if (e.key === 'Enter') {
+			saveWord(true);
+		} else if (e.key === ' ') {
+			saveWord(false);
+		} else {
+			return;
+		}
+
+		setWord();
+	});
+
+</script>
+</body>
+</html>
