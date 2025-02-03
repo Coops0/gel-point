@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::{
     fs, sync::{Arc, Mutex}, time::Duration
 };
-use tauri::{command, generate_handler, ipc::Response, path::BaseDirectory, Manager, State};
+use tauri::{command, generate_handler, path::BaseDirectory, Manager, State};
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::{Target, TargetKind};
 use tokio::time::sleep;
@@ -69,11 +69,8 @@ pub fn run() {
                     }
                 };
 
-                let words = words
-                    .to_lowercase()
-                    .split("\n")
-                    .map(ToOwned::to_owned)
-                    .collect::<Vec<_>>();
+                let words =
+                    words.to_lowercase().split("\n").map(ToOwned::to_owned).collect::<Vec<_>>();
 
                 let mut state = state.lock().unwrap();
                 *state = Some(CachedData { words, puzzles });

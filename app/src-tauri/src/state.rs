@@ -16,9 +16,9 @@ pub struct CachedData {
 
 impl CachedData {
     pub fn find_word(&self, word: &str) -> bool {
-        let target_len = word.len();
-        let partition = self.words.partition_point(|w| w.len() < target_len);
-        let same_length = self.words[partition..].partition_point(|w| w.len() == target_len);
+        let len = word.len();
+        let partition = self.words.partition_point(|w| w.len() < len);
+        let same_length = self.words[partition..].partition_point(|w| w.len() == len);
 
         self.words[partition..partition + same_length]
             .binary_search_by(|w| w.as_str().cmp(word))
