@@ -64,6 +64,7 @@
 
 @layer base {
     :root {
+        /*<editor-fold desc="clrs">*/
         --theme-text-50: #ebe9fc;
         --theme-text-100: #d7d2f9;
         --theme-text-200: #afa6f2;
@@ -75,7 +76,6 @@
         --theme-text-800: #160d59;
         --theme-text-900: #0b062d;
         --theme-text-950: #050316;
-
         --theme-background-50: #ebebfa;
         --theme-background-100: #d6d6f5;
         --theme-background-200: #adadeb;
@@ -87,7 +87,6 @@
         --theme-background-800: #141452;
         --theme-background-900: #0a0a29;
         --theme-background-950: #050514;
-
         --theme-primary-50: #eaeafb;
         --theme-primary-100: #d6d4f7;
         --theme-primary-200: #ada9ef;
@@ -99,7 +98,6 @@
         --theme-primary-800: #141056;
         --theme-primary-900: #0a082b;
         --theme-primary-950: #050415;
-
         --theme-secondary-50: #e7e5ff;
         --theme-secondary-100: #cfccff;
         --theme-secondary-200: #9e99ff;
@@ -111,7 +109,6 @@
         --theme-secondary-800: #050066;
         --theme-secondary-900: #030033;
         --theme-secondary-950: #01001a;
-
         --theme-accent-50: #e6e5ff;
         --theme-accent-100: #ceccff;
         --theme-accent-200: #9c99ff;
@@ -123,6 +120,7 @@
         --theme-accent-800: #030066;
         --theme-accent-900: #020033;
         --theme-accent-950: #01001a;
+        /*</editor-fold>*/
 
         body.dark {
             --theme-text-50: #050316;
@@ -136,7 +134,6 @@
             --theme-text-800: #ada5f3;
             --theme-text-900: #d6d2f9;
             --theme-text-950: #eae9fc;
-
             --theme-background-50: #050514;
             --theme-background-100: #0a0a29;
             --theme-background-200: #141452;
@@ -148,7 +145,6 @@
             --theme-background-800: #adadeb;
             --theme-background-900: #d6d6f5;
             --theme-background-950: #ebebfa;
-
             --theme-primary-50: #050415;
             --theme-primary-100: #0a082b;
             --theme-primary-200: #141056;
@@ -160,7 +156,6 @@
             --theme-primary-800: #ada9ef;
             --theme-primary-900: #d6d4f7;
             --theme-primary-950: #eaeafb;
-
             --theme-secondary-50: #01001a;
             --theme-secondary-100: #030033;
             --theme-secondary-200: #050066;
@@ -172,7 +167,6 @@
             --theme-secondary-800: #9e99ff;
             --theme-secondary-900: #cfccff;
             --theme-secondary-950: #e7e5ff;
-
             --theme-accent-50: #01001a;
             --theme-accent-100: #020033;
             --theme-accent-200: #030066;
@@ -308,6 +302,246 @@
             --theme-accent-800: #e6b3e0;
             --theme-accent-900: #f2d9f0;
             --theme-accent-950: #f9ecf7;
+        }
+
+        body[data-theme="lilac"] {
+            --theme-text-50: #edeef7;
+            --theme-text-100: #dcdeef;
+            --theme-text-200: #b8bde0;
+            --theme-text-300: #959cd0;
+            --theme-text-400: #717bc1;
+            --theme-text-500: #4e59b1;
+            --theme-text-600: #3e488e;
+            --theme-text-700: #2f366a;
+            --theme-text-800: #1f2447;
+            --theme-text-900: #101223;
+            --theme-text-950: #080912;
+
+            --theme-background-50: #edeff8;
+            --theme-background-100: #dadff1;
+            --theme-background-200: #b5bee3;
+            --theme-background-300: #909ed5;
+            --theme-background-400: #6b7dc7;
+            --theme-background-500: #465db9;
+            --theme-background-600: #384a94;
+            --theme-background-700: #2a386f;
+            --theme-background-800: #1c254a;
+            --theme-background-900: #0e1325;
+            --theme-background-950: #070912;
+
+            --theme-primary-50: #edeff8;
+            --theme-primary-100: #dbdff0;
+            --theme-primary-200: #b6bee2;
+            --theme-primary-300: #929ed3;
+            --theme-primary-400: #6d7dc5;
+            --theme-primary-500: #495db6;
+            --theme-primary-600: #3a4a92;
+            --theme-primary-700: #2c386d;
+            --theme-primary-800: #1d2549;
+            --theme-primary-900: #0f1324;
+            --theme-primary-950: #070912;
+
+            --theme-secondary-50: #f0edf8;
+            --theme-secondary-100: #e2dbf0;
+            --theme-secondary-200: #c4b7e1;
+            --theme-secondary-300: #a792d3;
+            --theme-secondary-400: #896ec4;
+            --theme-secondary-500: #6c4ab5;
+            --theme-secondary-600: #563b91;
+            --theme-secondary-700: #412c6d;
+            --theme-secondary-800: #2b1e48;
+            --theme-secondary-900: #160f24;
+            --theme-secondary-950: #0b0712;
+
+            --theme-accent-50: #f2edf8;
+            --theme-accent-100: #e6dbf0;
+            --theme-accent-200: #ccb7e1;
+            --theme-accent-300: #b292d3;
+            --theme-accent-400: #996ec4;
+            --theme-accent-500: #7f4ab5;
+            --theme-accent-600: #663b91;
+            --theme-accent-700: #4c2c6d;
+            --theme-accent-800: #331e48;
+            --theme-accent-900: #190f24;
+            --theme-accent-950: #0d0712;
+        }
+
+        body[data-theme="lilac"].dark {
+            --theme-text-50: #080912;
+            --theme-text-100: #101223;
+            --theme-text-200: #202346;
+            --theme-text-300: #2f356a;
+            --theme-text-400: #3f478d;
+            --theme-text-500: #4f59b0;
+            --theme-text-600: #727ac0;
+            --theme-text-700: #959bd0;
+            --theme-text-800: #b9bcdf;
+            --theme-text-900: #dcdeef;
+            --theme-text-950: #edeef7;
+
+            --theme-background-50: #080a12;
+            --theme-background-100: #0f1424;
+            --theme-background-200: #1f2947;
+            --theme-background-300: #2e3d6b;
+            --theme-background-400: #3d528f;
+            --theme-background-500: #4d66b3;
+            --theme-background-600: #7085c2;
+            --theme-background-700: #94a3d1;
+            --theme-background-800: #b8c2e0;
+            --theme-background-900: #dbe0f0;
+            --theme-background-950: #edf0f7;
+
+            --theme-primary-50: #070912;
+            --theme-primary-100: #0f1324;
+            --theme-primary-200: #1d2549;
+            --theme-primary-300: #2c386d;
+            --theme-primary-400: #3a4a92;
+            --theme-primary-500: #495db6;
+            --theme-primary-600: #6d7dc5;
+            --theme-primary-700: #929ed3;
+            --theme-primary-800: #b6bee2;
+            --theme-primary-900: #dbdff0;
+            --theme-primary-950: #edeff8;
+
+            --theme-secondary-50: #0b0712;
+            --theme-secondary-100: #160f24;
+            --theme-secondary-200: #2b1e48;
+            --theme-secondary-300: #412c6d;
+            --theme-secondary-400: #563b91;
+            --theme-secondary-500: #6c4ab5;
+            --theme-secondary-600: #896ec4;
+            --theme-secondary-700: #a792d3;
+            --theme-secondary-800: #c4b7e1;
+            --theme-secondary-900: #e2dbf0;
+            --theme-secondary-950: #f0edf8;
+
+            --theme-accent-50: #0d0712;
+            --theme-accent-100: #190f24;
+            --theme-accent-200: #331e48;
+            --theme-accent-300: #4c2c6d;
+            --theme-accent-400: #663b91;
+            --theme-accent-500: #7f4ab5;
+            --theme-accent-600: #996ec4;
+            --theme-accent-700: #b292d3;
+            --theme-accent-800: #ccb7e1;
+            --theme-accent-900: #e6dbf0;
+            --theme-accent-950: #f2edf8;
+        }
+
+        body[data-theme="chromatic"] {
+            --theme-text-50: #f5f0f0;
+            --theme-text-100: #ebe2e0;
+            --theme-text-200: #d7c5c1;
+            --theme-text-300: #c3a8a2;
+            --theme-text-400: #ae8b84;
+            --theme-text-500: #9a6e65;
+            --theme-text-600: #7b5851;
+            --theme-text-700: #5d423c;
+            --theme-text-800: #3e2c28;
+            --theme-text-900: #1f1614;
+            --theme-text-950: #0f0b0a;
+            --theme-background-50: #f5efef;
+            --theme-background-100: #ecdfdf;
+            --theme-background-200: #d9bfbf;
+            --theme-background-300: #c69f9f;
+            --theme-background-400: #b38080;
+            --theme-background-500: #9f6060;
+            --theme-background-600: #804d4d;
+            --theme-background-700: #603939;
+            --theme-background-800: #402626;
+            --theme-background-900: #201313;
+            --theme-background-950: #100a0a;
+            --theme-primary-50: #f5f1f0;
+            --theme-primary-100: #eae3e1;
+            --theme-primary-200: #d6c7c2;
+            --theme-primary-300: #c1aaa4;
+            --theme-primary-400: #ac8e86;
+            --theme-primary-500: #987267;
+            --theme-primary-600: #795b53;
+            --theme-primary-700: #5b443e;
+            --theme-primary-800: #3d2e29;
+            --theme-primary-900: #1e1715;
+            --theme-primary-950: #0f0b0a;
+            --theme-secondary-50: #f5f5f0;
+            --theme-secondary-100: #eaeae1;
+            --theme-secondary-200: #d5d6c2;
+            --theme-secondary-300: #c0c1a4;
+            --theme-secondary-400: #abac86;
+            --theme-secondary-500: #969867;
+            --theme-secondary-600: #787953;
+            --theme-secondary-700: #5a5b3e;
+            --theme-secondary-800: #3c3d29;
+            --theme-secondary-900: #1e1e15;
+            --theme-secondary-950: #0f0f0a;
+            --theme-accent-50: #f3f5f0;
+            --theme-accent-100: #e7eae1;
+            --theme-accent-200: #cfd6c2;
+            --theme-accent-300: #b7c1a4;
+            --theme-accent-400: #9fac86;
+            --theme-accent-500: #879867;
+            --theme-accent-600: #6c7953;
+            --theme-accent-700: #515b3e;
+            --theme-accent-800: #363d29;
+            --theme-accent-900: #1b1e15;
+            --theme-accent-950: #0d0f0a;
+        }
+
+        body[data-theme="chromatic"].dark {
+            --theme-text-50: #0f0a0a;
+            --theme-text-100: #1f1414;
+            --theme-text-200: #3d2929;
+            --theme-text-300: #5c3d3d;
+            --theme-text-400: #7a5252;
+            --theme-text-500: #996666;
+            --theme-text-600: #ad8585;
+            --theme-text-700: #c2a3a3;
+            --theme-text-800: #d6c2c2;
+            --theme-text-900: #ebe0e0;
+            --theme-text-950: #f5f0f0;
+            --theme-background-50: #0f0a0a;
+            --theme-background-100: #1f1414;
+            --theme-background-200: #3d2929;
+            --theme-background-300: #5c3d3d;
+            --theme-background-400: #7a5252;
+            --theme-background-500: #996666;
+            --theme-background-600: #ad8585;
+            --theme-background-700: #c2a3a3;
+            --theme-background-800: #d6c2c2;
+            --theme-background-900: #ebe0e0;
+            --theme-background-950: #f5f0f0;
+            --theme-primary-50: #0f0b0a;
+            --theme-primary-100: #1e1715;
+            --theme-primary-200: #3d2e29;
+            --theme-primary-300: #5b443e;
+            --theme-primary-400: #795b53;
+            --theme-primary-500: #987267;
+            --theme-primary-600: #ac8e86;
+            --theme-primary-700: #c1aaa4;
+            --theme-primary-800: #d6c7c2;
+            --theme-primary-900: #eae3e1;
+            --theme-primary-950: #f5f1f0;
+            --theme-secondary-50: #0f0f0a;
+            --theme-secondary-100: #1e1e15;
+            --theme-secondary-200: #3c3d29;
+            --theme-secondary-300: #5a5b3e;
+            --theme-secondary-400: #787953;
+            --theme-secondary-500: #969867;
+            --theme-secondary-600: #abac86;
+            --theme-secondary-700: #c0c1a4;
+            --theme-secondary-800: #d5d6c2;
+            --theme-secondary-900: #eaeae1;
+            --theme-secondary-950: #f5f5f0;
+            --theme-accent-50: #0d0f0a;
+            --theme-accent-100: #1b1e15;
+            --theme-accent-200: #363d29;
+            --theme-accent-300: #515b3e;
+            --theme-accent-400: #6c7953;
+            --theme-accent-500: #879867;
+            --theme-accent-600: #9fac86;
+            --theme-accent-700: #b7c1a4;
+            --theme-accent-800: #cfd6c2;
+            --theme-accent-900: #e7eae1;
+            --theme-accent-950: #f3f5f0;
         }
     }
 }

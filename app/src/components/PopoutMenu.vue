@@ -48,6 +48,7 @@
 import GhostButton, { type GhostVariant } from '@/components/GhostButton.vue';
 import { onMounted, ref, useId, useTemplateRef, watch } from 'vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
+import { useInterval } from '@/composables/interval.composable.ts';
 
 const VERTICAL_PADDING = 8;
 
@@ -55,7 +56,6 @@ export interface PopoutItem {
   label: string;
   variant: GhostVariant;
   key: string;
-  below?: boolean;
 }
 
 const props = defineProps<{
@@ -87,7 +87,6 @@ function recalculatePositions() {
 
   elementPosition.value = ({ x: rect.x, y: rect.y, height: rect.height, width: rect.width });
 
-  let below = 0;
   let above = 0;
 
   alignedItems.value = props.items.map(item => {
@@ -103,9 +102,7 @@ function recalculatePositions() {
       }
     }
 
-    const y = item.below ?
-        VERTICAL_PADDING + rect.y + (rect.height * ++below) :
-        rect.y - VERTICAL_PADDING - (rect.height * ++above);
+    const y = rect.y - VERTICAL_PADDING - (rect.height * ++above);
 
     return ({
       ...item,
@@ -182,8 +179,8 @@ useEventListener('pointermove', event => {
 });
 
 onMounted(() => recalculatePositions());
-
 watch(() => props.items, () => recalculatePositions(), { deep: true });
 watch(popoutElement, () => recalculatePositions());
 watch(itemRefs, () => recalculatePositions());
+useInterval(recalculatePositions, 1500); // I don't know why but it keeps glitching out
 </script>

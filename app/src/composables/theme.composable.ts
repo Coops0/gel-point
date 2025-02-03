@@ -1,10 +1,12 @@
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import { onMounted, readonly, watch } from 'vue';
 
-export const THEMES = ['grapefruit', 'cotton-candy'] as const;
+export const THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic'] as const;
 export const THEME_EMOJIS = {
-    grapefruit: '🍇',
-    'cotton-candy': '🍬'
+    'grapefruit': '🍇',
+    'cotton-candy': '🍬',
+    'lilac': '🪻',
+    'chromatic': '🗿'
 } as const;
 
 export const earnedThemes = useLocalStorage<(typeof THEMES[number])[]>('earned-themes', ['grapefruit']);
@@ -47,7 +49,7 @@ const unlockNextTheme = (): boolean => {
     }
 
     return false;
-}
+};
 
 export const useTheme = () => {
     return {

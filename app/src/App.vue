@@ -17,7 +17,7 @@
       </div>
       <div v-else-if="!isLoaded" class="flex flex-col justify-center items-center h-screen gap-4">
         <div class="text-primary-400">loading...</div>
-        <div class="text-primary-400">todo add random motd here</div>
+        <div class="text-primary-400">{{ motd }}</div>
       </div>
       <div v-else class="flex flex-col h-screen">
         <!-- compensate for dynamic island -->
@@ -73,7 +73,14 @@
         </div>
       </div>
     </div>
-    <input ref="cheatCodeInputElement" v-model="cheatCodeInput" @keydown.enter="() => submitCheatCode()" class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10" :class="!showCheatCodeInput && 'hidden'"/>
+    <input
+        ref="cheatCodeInputElement"
+        v-model="cheatCodeInput"
+        @keydown.enter="() => submitCheatCode()"
+        class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10"
+        :class="!showCheatCodeInput && 'hidden'"
+        autocomplete="off"
+    />
   </div>
 </template>
 
@@ -93,6 +100,7 @@ import { type LoadLevelResult, type Puzzle, PuzzleService } from '@/services/puz
 import { WordService } from '@/services/words.service.ts';
 import { clone } from '@/util';
 import ThemeSelector from '@/components/ThemeSelector.vue';
+import { MOTDS } from '@/util/motds.util.ts';
 
 const puzzleService = new PuzzleService();
 const wordService = new WordService();
@@ -119,6 +127,8 @@ const buySelector = ref<typeof BuySelector | null>(null);
 const winState = ref<'next-level' | 'active' | 'none'>('none');
 
 const puzzleId = useLocalStorage('puzzle-id', 0);
+
+const motd = MOTDS[Math.floor(Math.random() * MOTDS.length)];
 
 const {
   grid,
@@ -247,7 +257,12 @@ function submitCheatCode() {
     case 'reload':
       loadAndSetPuzzle();
       break;
+    default:
+      notificationFeedback('error');
+      return;
   }
+
+  impactFeedback('light');
 }
 
 // detect if click outside of buy selector, close it
@@ -270,13 +285,6 @@ useEventListener(
       }
     }
 );
-
-useEventListener('keydown', e => {
-  if (e.key === 'b') {
-    puzzleId.value = 0;
-    loadAndSetPuzzle();
-  }
-});
 
 loadTheme();
 loadAndSetPuzzle();

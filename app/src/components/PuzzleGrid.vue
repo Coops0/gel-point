@@ -1,9 +1,9 @@
 <template>
-  <div :class="GAP_SIZE_MAP[sizeDivisor]" class="flex flex-col justify-center items-center">
+  <div class="flex flex-col justify-center items-center" :style="{ gap: `${gapSize}px` }">
     <div
         v-for="(row, rowIndex) in localGrid"
         :key="`${rowIndex}-${row.length}`"
-        :class="GAP_SIZE_MAP[sizeDivisor]"
+        :style="{ gap: `${gapSize}px` }"
         class="flex flex-row"
     >
       <div
@@ -18,7 +18,7 @@
           class="flex items-center justify-center font-medium transition-all duration-200"
           @click="() => handleCellClick(rowIndex, colIndex)"
       >
-        <span v-if="cell !== 0 && cell !== -1" :class="TEXT_SIZE_MAP[sizeDivisor]">{{ cell }}</span>
+        <span v-if="cell !== 0 && cell !== -1" :style="{ fontSize: `${textSize}px` }">{{ cell }}</span>
       </div>
     </div>
   </div>
@@ -46,43 +46,38 @@ defineExpose({ resetSelection });
 
 const localGrid = ref<Grid>(clone(toRaw(props.grid)));
 
-const sizeDivisor = computed(() => {
-  const l = props.grid[0]?.length ?? 0;
-  if (l < 8) return 1;
-  if (l < 10) return 2;
-  return 3;
+const colSize = computed(() => props.grid[0]?.length ?? 0);
+
+const gapSize = computed(() => {
+  const s = colSize.value;
+  if (s > 10) return 4;
+  if (s > 8) return 8;
+  if (s > 6) return 10;
+  return 12;
 });
 
-// todo
 const cellSize = computed(() => {
-  for (let i = 32; i < 96; i++) {
-    const s = (props.grid[0]?.length ?? 0) + 16; // 16 = 1rem gap
+  const c = colSize.value;
+  const g = gapSize.value;
 
-    if (width.value < i * s) {
+  for (let i = 24; i < 48; i++) {
+    if (width.value < c * (i + g)) {
       return i - 1;
     }
   }
 
-  throw new Error('unreachable');
+  return 48;
 });
 
-const CELL_SIZE_MAP = {
-  1: '48',
-  2: '38',
-  3: '32'
-};
+const textSize = computed(() => {
+  const s = colSize.value;
+  // 18-24px
 
-const GAP_SIZE_MAP = {
-  1: 'gap-2',
-  2: 'gap-1',
-  3: 'gap-0.5'
-};
-
-const TEXT_SIZE_MAP = {
-  1: 'text-2xl',
-  2: 'text-xl',
-  3: 'text-lg'
-};
+  if (s > 10) return 16;
+  if (s > 8) return 18;
+  if (s > 6) return 20;
+  return 22;
+});
 
 const selectedRow = ref(-1);
 const selectedCol = ref(-1);
