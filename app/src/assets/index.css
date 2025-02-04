@@ -540,7 +540,7 @@
 
 @font-face {
     font-family: "Shippori Antique B1";
-    src: url("../../public/fonts/ShipporiAntiqueB1-Regular.ttf") format("truetype");
+    src: url("/fonts/ShipporiAntiqueB1-Regular.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: auto;
