@@ -15,11 +15,16 @@
         <div class="text-primary-400">good job 🎉</div>
         <div class="text-primary-400 text-sm">you did all the puzzles. now wait for me to add more.</div>
       </div>
-      <div v-else-if="!isLoaded" class="flex flex-col justify-center items-center h-screen gap-4">
-        <div class="text-primary-400">loading...</div>
-        <div class="text-primary-400">{{ motd }}</div>
+      <div v-if="winState !== 'active'" :class="isLoaded ? 'opacity-0' : 'opacity-100'"
+           class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999] transition-all duration-200 pointer-events-none">
+        <div class="flex flex-col justify-center items-center h-screen gap-4 z-[999] pointer-events-none">
+
+          <div class="text-primary-400">loading...</div>
+          <div class="text-primary-400">{{ motd }}</div>
+        </div>
       </div>
-      <div v-else class="flex flex-col h-screen">
+
+      <div v-if="winState !== 'active' && isLoaded" class="flex flex-col h-screen">
         <!-- compensate for dynamic island -->
         <div class="h-12"/>
         <div class="flex justify-center items-center gap-4">

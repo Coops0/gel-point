@@ -13,8 +13,8 @@ static mut PUZZLES: String = String::new();
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     unsafe {
-        WORDS = fs::read_to_string("./words.txt").await.context("no words file found")?;
-        PUZZLES = fs::read_to_string("./puzzles.txt").await.context("no puzzles file found")?;
+        WORDS = fs::read_to_string("./words.data").await.context("no words.data file found")?;
+        PUZZLES = fs::read_to_string("./puzzles.data").await.context("no puzzles.data file found")?;
 
         WORDS_HASH = Sha256::digest(&WORDS).to_vec();
         PUZZLES_HASH = Sha256::digest(&PUZZLES).to_vec();

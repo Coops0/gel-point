@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 
 async function r() {
   const words = await fs
-    .readFile("./words.txt", { encoding: "utf-8" })
+    .readFile("../app/src-tauri/assets/words.data", { encoding: "utf-8" })
     .then((w) => w.split("\n"));
 
   const w = words
