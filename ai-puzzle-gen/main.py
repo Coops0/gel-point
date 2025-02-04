@@ -51,6 +51,8 @@ class PuzzleDataset(Dataset):
 class PuzzleGenerator(nn.Module):
     def __init__(self, vocab_size, max_letters=8, max_words=12, hidden_dim=256):
         super().__init__()
+        self.max_letters = max_letters
+        self.max_words = max_words
         self.encoder = nn.Sequential(
             nn.Linear(vocab_size * max_letters, hidden_dim),
             nn.ReLU(),
