@@ -94,7 +94,26 @@ def train_model(model, train_loader, device, epochs=100):
         if (epoch + 1) % 10 == 0:
             print(f'Epoch {epoch+1}, Loss: {total_loss/len(train_loader):.4f}')
 
-def generate_puzzle(model, char_to_idx, idx_to_char, max_letters=8, temperature=0.8, device='cuda'):
+def load_wordlist():
+    with open('wordlist.txt', 'r') as f:
+        return set(word.strip().lower() for word in f)
+
+def get_valid_words(letters, wordlist):
+    valid = set()
+    letters_count = defaultdict(int)
+    for c in letters:
+        letters_count[c] += 1
+
+    for word in wordlist:
+        if len(word) >= 3 and len(word) <= len(letters):
+            word_count = defaultdict(int)
+            for c in word:
+                word_count[c] += 1
+            if all(word_count[c] <= letters_count[c] for c in word_count):
+                valid.add(word)
+    return valid
+
+def generate_puzzle(model, char_to_idx, idx_to_char, wordlist, max_letters=8, temperature=0.8, device='cuda'):
     model.eval()
     with torch.no_grad():
         available_letters = list(char_to_idx.keys())
@@ -108,12 +127,8 @@ def generate_puzzle(model, char_to_idx, idx_to_char, max_letters=8, temperature=
         output = model(x)
         output = output.cpu().numpy()[0]
 
-        words = []
-        for word_prob in output:
-            if np.random.random() < temperature:
-                word = ''.join([puzzle_letters[i] for i, p in enumerate(word_prob) if p > 0.5])
-                if len(word) >= 3:
-                    words.append(word)
+        letters_str = ''.join(puzzle_letters[:6])
+        valid_words = get_valid_words(letters_str, wordlist)
 
         return ''.join(puzzle_letters[:6]), words
 
@@ -131,7 +146,15 @@ def load_model(path='puzzle_model.pt'):
     model.load_state_dict(checkpoint['model_state_dict'])
     return model, checkpoint['char_to_idx'], checkpoint['idx_to_char']
 
+def download_wordlist():
+    import urllib.request
+    url = "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
+    urllib.request.urlretrieve(url, "wordlist.txt")
+
 def main():
+    if not os.path.exists("wordlist.txt"):
+        download_wordlist()
+    wordlist = load_wordlist()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model_path = 'puzzle_model.pt'
 
@@ -150,7 +173,7 @@ def main():
         model.to(device)
 
     for i in range(5):
-        letters, words = generate_puzzle(model, char_to_idx, idx_to_char, device=device)
+        letters, words = generate_puzzle(model, char_to_idx, idx_to_char, wordlist, device=device)
         print(f"\nPuzzle {i+1}:")
         print(f"Letters: {letters}")
         print(f"Possible words: {', '.join(words)}")
