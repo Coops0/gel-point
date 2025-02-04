@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col">
-    <WinMessage v-model="showNextLevelAnimation" :class="!showBuySelector && 'z-[52]'"/>
+    <WinMessage ref="winMessage" :class="!showBuySelector && 'z-[52]'"/>
     <BuySelector
         ref="buySelector"
         v-model="showBuySelector"
@@ -46,7 +46,7 @@
 
         <div
             :class="{ 'opacity-0': !showCurrentlyBuildingWord, 'z-[52]': !showBuySelector }"
-            class="text-center w-full fixed top-6/11 text-2xl font-bold transition-opacity text-primary-900"
+            class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900"
         >
           {{ currentlyBuildingWord }}
         </div>
@@ -73,6 +73,7 @@
                 :letters="currentPuzzle!.letters"
                 @test-word="word => testWord(word)"
                 @update-built-word="updateBuiltWord"
+                v-bind="highestLetterPosition"
             />
           </div>
         </div>
@@ -82,7 +83,7 @@
         ref="cheatCodeInputElement"
         v-model="cheatCodeInput"
         @keydown.enter="() => submitCheatCode()"
-        class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10"
+        class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10 text-text-900"
         :class="!showCheatCodeInput && 'hidden'"
         autocomplete="off"
     />
@@ -106,6 +107,7 @@ import { WordService } from '@/services/words.service.ts';
 import { clone } from '@/util';
 import ThemeSelector from '@/components/ThemeSelector.vue';
 import { MOTDS } from '@/util/motds.util.ts';
+import type { LetterPosition } from '@/composables/letter-alignment.composable.ts';
 
 const puzzleService = new PuzzleService();
 const wordService = new WordService();
@@ -113,8 +115,7 @@ const { theme, loadTheme, unlockNextTheme, showNewlyUnlockedIndicator, earnedThe
 
 const currentPuzzle = ref<Puzzle | null>(null);
 
-const showNextLevelAnimation = ref(false);
-
+const winMessage = ref<typeof WinMessage | null>(null);
 const wordBuilder = ref<null | typeof WordBuilder>(null);
 const puzzleGrid = ref<null | typeof PuzzleGrid>(null);
 
@@ -182,7 +183,7 @@ async function goToNextLevel() {
   }
 
   const nextPuzzle = puzzleId.value + 1;
-  showNextLevelAnimation.value = true;
+  winMessage.value?.showMessage();
 
   const time = Date.now();
   const loadResult = await puzzleService.loadPuzzle(nextPuzzle);
@@ -190,7 +191,7 @@ async function goToNextLevel() {
 
   setTimeout(() => {
     puzzleId.value = nextPuzzle;
-    showNextLevelAnimation.value = false;
+    winMessage.value?.hideMessage();
     loadAndSetPuzzle(loadResult);
   }, Math.max(waitTimeLeft, 0));
 }
@@ -237,11 +238,13 @@ function updateBuiltWord(word: string) {
 function activateCheatCode() {
   cheatCodeInput.value = '';
   showCheatCodeInput.value = true;
-  cheatCodeInputElement.value?.focus({ preventScroll: true });
+  requestAnimationFrame(() => cheatCodeInputElement.value?.focus());
 }
 
 function submitCheatCode() {
-  showCheatCodeInput.value = false;
+  cheatCodeInputElement.value?.blur();
+  requestAnimationFrame(() => (showCheatCodeInput.value = false));
+
   const code = cheatCodeInput.value.toLowerCase();
 
   const [name, ...args] = code.split(' ');

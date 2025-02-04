@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 
 const MESSAGES = [
   'NEXT LEVEL',
@@ -23,18 +23,31 @@ const MESSAGES = [
   'OK'
 ] as const;
 
-const animate = defineModel<boolean>({ required: true });
+defineExpose({ showMessage, hideMessage});
 
 const message = ref('NEXT LEVEL');
 const isVisible = ref(false);
 
-watch(animate, a => {
-  if (a) {
-    message.value = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
-    isVisible.value = true;
-    setTimeout(() => {
-      isVisible.value = false;
-    }, 3000);
+let hideTask = -1;
+
+function showMessage() {
+  if (hideTask !== -1) return;
+
+  message.value = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+  isVisible.value = true;
+
+  hideTask = setTimeout(() => {
+    isVisible.value = false;
+    hideTask = -1;
+  }, 3000);
+}
+
+function hideMessage() {
+  if (hideTask !== -1) {
+    clearTimeout(hideTask);
+    hideTask = -1;
   }
-}, { immediate: true });
+
+  isVisible.value = false;
+}
 </script>
