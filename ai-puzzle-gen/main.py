@@ -97,23 +97,28 @@ def train_model(model, train_loader, device, epochs=100):
 def generate_puzzle(model, dataset, device, temperature=0.8):
     model.eval()
     with torch.no_grad():
+        # Generate base letters
+        available_letters = list(dataset.char_to_idx.keys())
+        puzzle_letters = np.random.choice(available_letters, size=dataset.max_letters)
+
+        # Create input tensor
         x = torch.zeros(1, dataset.max_letters, len(dataset.char_to_idx))
-        for i in range(dataset.max_letters):
-            idx = np.random.randint(len(dataset.char_to_idx))
-            x[0, i, idx] = 1
+        for i, letter in enumerate(puzzle_letters):
+            x[0, i, dataset.char_to_idx[letter]] = 1
 
         x = x.to(device)
         output = model(x)
         output = output.cpu().numpy()[0]
 
+        # Convert probabilities to words using available letters
         words = []
         for word_prob in output:
             if np.random.random() < temperature:
-                word = ''.join(['1' if p > 0.5 else '0' for p in word_prob])
-                if '1' in word:
+                word = ''.join([puzzle_letters[i] for i, p in enumerate(word_prob) if p > 0.5])
+                if len(word) >= 3:  # Only keep words of reasonable length
                     words.append(word)
 
-        return words
+        return ''.join(puzzle_letters[:6]), words  # Return letters and possible words
 
 def save_model(model, dataset, path='puzzle_model.pt'):
     torch.save({
@@ -145,9 +150,11 @@ def main():
         model, char_to_idx, idx_to_char = load_model(model_path)
         model.to(device)
 
-    for _ in range(5):
-        puzzle = generate_puzzle(model, dataset, device)
-        print(f"Generated puzzle: {puzzle}")
+    for i in range(5):
+        letters, words = generate_puzzle(model, dataset, device)
+        print(f"\nPuzzle {i+1}:")
+        print(f"Letters: {letters}")
+        print(f"Possible words: {', '.join(words)}")
 
 if __name__ == "__main__":
     main()
