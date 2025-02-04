@@ -1,4 +1,4 @@
-import { computed, readonly, type Ref, ref, toRaw } from 'vue';
+import { computed, readonly, ref, toRaw } from 'vue';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import type { Grid, Puzzle } from '@/services/puzzles.service.ts';
 import { clone } from '@/util';
@@ -82,7 +82,7 @@ export const usePuzzleManager = (wordService: WordService) => {
 
     const resetGrid = () => {
         activeGrid.value = transformToActiveGrid(clone(toRaw(puzzle.value!.grid)));
-    }
+    };
 
     const isLoaded = computed(() => puzzle.value !== null && activeGrid.value !== null);
 

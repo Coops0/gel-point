@@ -105,8 +105,8 @@ function canPlaceWithoutExceedingUnique(
     const unique = grid.getUniqueLetters();
 
     for (let i = 0; i < word.length; i++) {
-        let r = isHorizontal ? startRow : startRow + i;
-        let c = isHorizontal ? startCol + i : startCol;
+        const r = isHorizontal ? startRow : startRow + i;
+        const c = isHorizontal ? startCol + i : startCol;
         if (grid.getCell(r, c) === null) {
             unique.add(word[i]);
         }
@@ -269,10 +269,9 @@ function placeWord(
     // For each letter in the word to be placed,
     // try to find a matching letter on the grid and then attempt placement.
     for (let letterIndex = 0; letterIndex < word.length; letterIndex++) {
-        const letter = word[letterIndex];
         for (let row = 0; row < grid.size; row++) {
             for (let col = 0; col < grid.size; col++) {
-                if (grid.getCell(row, col) === letter) {
+                if (grid.getCell(row, col) === word[letterIndex]) {
                     const placement = tryPlacementAt(grid, word, row, col, letterIndex, maxUnique);
                     if (placement) {
                         return placement;
@@ -285,8 +284,32 @@ function placeWord(
 }
 
 /**
+ * Computes the bounding box of all placed letters in the grid.
+ * Returns the minimum and maximum row and column that contain a letter.
+ */
+function computeBoundingBox(grid: Grid): { minRow: number; maxRow: number; minCol: number; maxCol: number } {
+    let minRow = grid.size,
+        minCol = grid.size,
+        maxRow = 0,
+        maxCol = 0;
+    for (let r = 0; r < grid.size; r++) {
+        for (let c = 0; c < grid.size; c++) {
+            if (grid.getCell(r, c) !== null) {
+                if (r < minRow) minRow = r;
+                if (c < minCol) minCol = c;
+                if (r > maxRow) maxRow = r;
+                if (c > maxCol) maxCol = c;
+            }
+        }
+    }
+    return { minRow, maxRow, minCol, maxCol };
+}
+
+/**
  * Generate the output string in the format:
  * id|letters|word,direction,row,col;word,direction,row,col;...
+ *
+ * Note: The placements passed in here should already be cropped.
  */
 function generateOutput(id: number, placements: WordPlacement[], grid: Grid): string {
     // Collect all unique letters from the grid.
@@ -350,10 +373,19 @@ function generatePuzzle(rawWords: string, config: PuzzleConfig, puzzleId: number
         );
     }
 
-    // Optionally, print the grid for debugging:
-    // grid.print();
+    // --- Crop the grid ---
+    // Compute the bounding box of all placed letters.
+    const { minRow, minCol } = computeBoundingBox(grid);
+    // Adjust each placement so that the smallest row and column become 0.
+    const croppedPlacements = placements.map(p => ({
+        ...p,
+        row: p.row - minRow,
+        col: p.col - minCol,
+    }));
 
-    return generateOutput(puzzleId, placements, grid);
+    // Optionally, for debugging, you can build and print a cropped grid.
+    // For brevity, we pass the original grid to generateOutput (unique letters remain unchanged).
+    return generateOutput(puzzleId, croppedPlacements, grid);
 }
 
 // ----------------------
@@ -361,7 +393,7 @@ function generatePuzzle(rawWords: string, config: PuzzleConfig, puzzleId: number
 // ----------------------
 
 // Read words from file (adjust path as needed)
-const sampleWords = fs.readFileSync('../app/src-tauri/assets/words.data', 'utf-8');
+const sampleWords = fs.readFileSync('./progress.manual.txt', 'utf-8');
 
 // Define a configuration.
 const config: PuzzleConfig = {

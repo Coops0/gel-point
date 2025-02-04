@@ -198,12 +198,12 @@ async function testWord(word: string) {
       break;
     case WordTestResult.BonusTheme:
       wordBuilder.value?.showBonusAnimation?.();
-      await impactFeedback('medium');
       unlockNextTheme();
+      await impactFeedback('medium');
       break;
     case WordTestResult.Win:
-      await notificationFeedback('success');
       await goToNextLevel();
+      await notificationFeedback('success');
       break;
     case WordTestResult.NotFound:
       await notificationFeedback('error');

@@ -1,6 +1,6 @@
 name: gel-point
 options:
-  bundleIdPrefix: me.cooper.gel-point
+  bundleIdPrefix: com.cooperhanessian.gel-point
   deploymentTarget:
     iOS: 13.0
 fileGroups: [../../src]
@@ -11,7 +11,7 @@ settingGroups:
   app:
     base:
       PRODUCT_NAME: gel-point
-      PRODUCT_BUNDLE_IDENTIFIER: me.cooper.gel-point
+      PRODUCT_BUNDLE_IDENTIFIER: com.cooperhanessian.gel-point
 targetTemplates:
   app:
     type: application
