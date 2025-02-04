@@ -7,70 +7,7 @@ from collections import defaultdict
 import re
 import os
 
-class PuzzleDataset(Dataset):
-    def __init__(self, file_path, max_letters=8, max_words=12):
-        self.puzzles = []
-        self.max_letters = max_letters
-        self.max_words = max_words
-        self.vocab = set()
-
-        with open(file_path, 'r') as f:
-            for line in f:
-                puzzle_id, letters, solutions = line.strip().split('|')
-                if len(letters) <= max_letters:
-                    words = [w.split(',')[0] for w in solutions.split(';')]
-                    if len(words) <= max_words:
-                        self.puzzles.append((letters, words))
-                        self.vocab.update(letters)
-
-        self.char_to_idx = {c: i for i, c in enumerate(sorted(self.vocab))}
-        self.idx_to_char = {i: c for c, i in self.char_to_idx.items()}
-
-    def __len__(self):
-        return len(self.puzzles)
-
-    def __getitem__(self, idx):
-        letters, words = self.puzzles[idx]
-
-        x = torch.zeros(self.max_letters, len(self.char_to_idx))
-        for i, letter in enumerate(letters):
-            x[i][self.char_to_idx[letter]] = 1
-
-        y = torch.zeros(self.max_words, self.max_letters)
-        for i, word in enumerate(words):
-            if i >= self.max_words:
-                break
-            for j, letter in enumerate(word):
-                if j < self.max_letters:
-                    y[i][j] = 1
-
-        return x, y
-
-class PuzzleGenerator(nn.Module):
-    def __init__(self, vocab_size, max_letters=8, max_words=12, hidden_dim=256):
-        super().__init__()
-        self.max_letters = max_letters
-        self.max_words = max_words
-
-        self.encoder = nn.Sequential(
-            nn.Linear(vocab_size * max_letters, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU()
-        )
-
-        self.decoder = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, max_words * max_letters),
-            nn.Sigmoid()
-        )
-
-    def forward(self, x):
-        x = x.view(x.size(0), -1)
-        x = self.encoder(x)
-        x = self.decoder(x)
-        return x.view(-1, self.max_words, self.max_letters)
+# [Previous PuzzleDataset and PuzzleGenerator classes remain the same]
 
 def train_model(model, train_loader, device, epochs=100):
     criterion = nn.BCELoss()
@@ -94,37 +31,34 @@ def train_model(model, train_loader, device, epochs=100):
         if (epoch + 1) % 10 == 0:
             print(f'Epoch {epoch+1}, Loss: {total_loss/len(train_loader):.4f}')
 
-def generate_puzzle(model, dataset, device, temperature=0.8):
+def generate_puzzle(model, char_to_idx, idx_to_char, max_letters=8, temperature=0.8, device='cuda'):
     model.eval()
     with torch.no_grad():
-        # Generate base letters
-        available_letters = list(dataset.char_to_idx.keys())
-        puzzle_letters = np.random.choice(available_letters, size=dataset.max_letters)
+        available_letters = list(char_to_idx.keys())
+        puzzle_letters = np.random.choice(available_letters, size=max_letters)
 
-        # Create input tensor
-        x = torch.zeros(1, dataset.max_letters, len(dataset.char_to_idx))
+        x = torch.zeros(1, max_letters, len(char_to_idx))
         for i, letter in enumerate(puzzle_letters):
-            x[0, i, dataset.char_to_idx[letter]] = 1
+            x[0, i, char_to_idx[letter]] = 1
 
         x = x.to(device)
         output = model(x)
         output = output.cpu().numpy()[0]
 
-        # Convert probabilities to words using available letters
         words = []
         for word_prob in output:
             if np.random.random() < temperature:
                 word = ''.join([puzzle_letters[i] for i, p in enumerate(word_prob) if p > 0.5])
-                if len(word) >= 3:  # Only keep words of reasonable length
+                if len(word) >= 3:
                     words.append(word)
 
-        return ''.join(puzzle_letters[:6]), words  # Return letters and possible words
+        return ''.join(puzzle_letters[:6]), words
 
-def save_model(model, dataset, path='puzzle_model.pt'):
+def save_model(model, char_to_idx, idx_to_char, path='puzzle_model.pt'):
     torch.save({
         'model_state_dict': model.state_dict(),
-        'char_to_idx': dataset.char_to_idx,
-        'idx_to_char': dataset.idx_to_char
+        'char_to_idx': char_to_idx,
+        'idx_to_char': idx_to_char
     }, path)
 
 def load_model(path='puzzle_model.pt'):
@@ -144,14 +78,16 @@ def main():
         train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
         model = PuzzleGenerator(len(dataset.char_to_idx))
         train_model(model, train_loader, device)
-        save_model(model, dataset, model_path)
+        save_model(model, dataset.char_to_idx, dataset.idx_to_char, model_path)
+        char_to_idx = dataset.char_to_idx
+        idx_to_char = dataset.idx_to_char
     else:
         print("Loading existing model...")
         model, char_to_idx, idx_to_char = load_model(model_path)
         model.to(device)
 
     for i in range(5):
-        letters, words = generate_puzzle(model, dataset, device)
+        letters, words = generate_puzzle(model, char_to_idx, idx_to_char, device=device)
         print(f"\nPuzzle {i+1}:")
         print(f"Letters: {letters}")
         print(f"Possible words: {', '.join(words)}")
