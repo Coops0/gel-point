@@ -53,8 +53,10 @@ class PuzzleGenerator(nn.Module):
         super().__init__()
         self.max_letters = max_letters
         self.max_words = max_words
+        self.input_size = vocab_size * max_letters  # Calculate total input size
+        
         self.encoder = nn.Sequential(
-            nn.Linear(vocab_size * max_letters, hidden_dim),
+            nn.Linear(self.input_size, hidden_dim),  # Fixed input dimension
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU()
@@ -67,11 +69,13 @@ class PuzzleGenerator(nn.Module):
         )
 
     def forward(self, x):
-        x = x.view(x.size(0), -1)
+        batch_size = x.size(0)
+        x = x.view(batch_size, -1)  # Flatten while preserving batch dimension
         x = self.encoder(x)
         x = self.decoder(x)
-        return x.view(-1, self.max_words, self.max_letters)
+        return x.view(batch_size, self.max_words, self.max_letters)  # Reshape output
 
+# Rest of the code remains the same
 def train_model(model, train_loader, device, epochs=50):
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
