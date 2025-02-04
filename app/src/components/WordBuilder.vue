@@ -36,6 +36,7 @@ import { type LetterPosition, useLetterAlignment } from '@/composables/letter-al
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 import { selectionFeedback } from '@tauri-apps/plugin-haptics';
 
+const highestLetterPosition = defineModel<LetterPosition | null>({ required: true });
 const props = defineProps<{ letters: string[] }>();
 const emit = defineEmits<{
   'test-word': [word: string];
@@ -50,6 +51,17 @@ const {
   circleXCenterOffset,
   circleYCenterOffset
 } = useLetterAlignment(toRef(() => props.letters), width);
+
+watch(alignedLetters, a => {
+  highestLetterPosition.value = a.reduce((acc, cur) => {
+    if (Math.abs(cur.y) > Math.abs(acc.y)) {
+      return cur;
+    }
+
+    return acc;
+  }, { x: 0, y: 0, letter: '' });
+}, { immediate: true, deep: true });
+
 // used for accurate lines
 const alignedLettersOffsetPosition = ref<LetterPosition[]>([]);
 
