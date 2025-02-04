@@ -7,7 +7,70 @@ from collections import defaultdict
 import re
 import os
 
-# [Previous PuzzleDataset and PuzzleGenerator classes remain the same]
+class PuzzleDataset(Dataset):
+    def __init__(self, file_path, max_letters=8, max_words=12):
+        self.puzzles = []
+        self.max_letters = max_letters
+        self.max_words = max_words
+        self.vocab = set()
+
+        with open(file_path, 'r') as f:
+            for line in f:
+                puzzle_id, letters, solutions = line.strip().split('|')
+                if len(letters) <= max_letters:
+                    words = [w.split(',')[0] for w in solutions.split(';')]
+                    if len(words) <= max_words:
+                        self.puzzles.append((letters, words))
+                        self.vocab.update(letters)
+
+        self.char_to_idx = {c: i for i, c in enumerate(sorted(self.vocab))}
+        self.idx_to_char = {i: c for c, i in self.char_to_idx.items()}
+
+    def __len__(self):
+        return len(self.puzzles)
+
+    def __getitem__(self, idx):
+        letters, words = self.puzzles[idx]
+
+        x = torch.zeros(self.max_letters, len(self.char_to_idx))
+        for i, letter in enumerate(letters):
+            x[i][self.char_to_idx[letter]] = 1
+
+        y = torch.zeros(self.max_words, self.max_letters)
+        for i, word in enumerate(words):
+            if i >= self.max_words:
+                break
+            for j, letter in enumerate(word):
+                if j < self.max_letters:
+                    y[i][j] = 1
+
+        return x, y
+
+class PuzzleGenerator(nn.Module):
+    def __init__(self, vocab_size, max_letters=8, max_words=12, hidden_dim=256):
+        super().__init__()
+        self.max_letters = max_letters
+        self.max_words = max_words
+
+        self.encoder = nn.Sequential(
+            nn.Linear(vocab_size * max_letters, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU()
+        )
+
+        self.decoder = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, max_words * max_letters),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        x = x.view(x.size(0), -1)
+        x = self.encoder(x)
+        x = self.decoder(x)
+        return x.view(-1, self.max_words, self.max_letters)
 
 def train_model(model, train_loader, device, epochs=100):
     criterion = nn.BCELoss()
