@@ -53,10 +53,13 @@ class PuzzleGenerator(nn.Module):
         super().__init__()
         self.max_letters = max_letters
         self.max_words = max_words
-        self.input_size = vocab_size * max_letters  # Calculate total input size
+        self.vocab_size = vocab_size
+        
+        # Calculate correct input size: max_letters * vocab_size
+        input_size = max_letters * vocab_size
         
         self.encoder = nn.Sequential(
-            nn.Linear(self.input_size, hidden_dim),  # Fixed input dimension
+            nn.Linear(input_size, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU()
@@ -69,13 +72,15 @@ class PuzzleGenerator(nn.Module):
         )
 
     def forward(self, x):
+        # x shape: [batch_size, max_letters, vocab_size]
         batch_size = x.size(0)
-        x = x.view(batch_size, -1)  # Flatten while preserving batch dimension
+        # Flatten: [batch_size, max_letters * vocab_size]
+        x = x.reshape(batch_size, self.max_letters * self.vocab_size)
         x = self.encoder(x)
         x = self.decoder(x)
-        return x.view(batch_size, self.max_words, self.max_letters)  # Reshape output
+        # Reshape output to [batch_size, max_words, max_letters]
+        return x.reshape(batch_size, self.max_words, self.max_letters)
 
-# Rest of the code remains the same
 def train_model(model, train_loader, device, epochs=50):
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -125,11 +130,22 @@ def generate_puzzle(model, char_to_idx, idx_to_char, wordlist, max_letters=6, de
         return puzzle_letters, list(valid_words)
 
 def save_model(model, char_to_idx, idx_to_char, path='puzzle_model.pt'):
-    torch.save({'model_state_dict': model.state_dict(), 'char_to_idx': char_to_idx, 'idx_to_char': idx_to_char}, path)
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'char_to_idx': char_to_idx,
+        'idx_to_char': idx_to_char,
+        'max_letters': model.max_letters,
+        'max_words': model.max_words,
+        'vocab_size': model.vocab_size
+    }, path)
 
 def load_model(path='puzzle_model.pt'):
     checkpoint = torch.load(path)
-    model = PuzzleGenerator(len(checkpoint['char_to_idx']))
+    model = PuzzleGenerator(
+        vocab_size=checkpoint['vocab_size'],
+        max_letters=checkpoint['max_letters'],
+        max_words=checkpoint['max_words']
+    )
     model.load_state_dict(checkpoint['model_state_dict'])
     return model, checkpoint['char_to_idx'], checkpoint['idx_to_char']
 
