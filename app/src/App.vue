@@ -92,7 +92,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, toRaw, watch } from 'vue';
+import { ref, toRaw } from 'vue';
 import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
 import { usePuzzleManager, WordTestResult } from '@/composables/puzzle-manager.composable.ts';
@@ -127,7 +127,6 @@ const showCheatCodeInput = ref(true);
 const currentlyBuildingWord = ref('');
 const showCurrentlyBuildingWord = ref(false);
 const highestLetterPosition = ref<LetterPosition | null>(null);
-watch(highestLetterPosition, v => console.log(v), { deep: true, immediate: true });
 
 const showBuySelector = ref(false);
 const buySelector = ref<typeof BuySelector | null>(null);

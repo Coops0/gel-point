@@ -15,7 +15,7 @@
             [cell === 0 ? 'ring-2 ring-accent-600' : 'ring-2 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex)
           }"
           :style="{ width: `${cellSize}px`, height: `${cellSize}px` }"
-          class="flex items-center justify-center font-medium transition-all duration-200"
+          class="flex items-center justify-center font-medium transition-all duration-500"
           @click="() => handleCellClick(rowIndex, colIndex)"
       >
         <span v-if="cell !== 0 && cell !== -1" :style="{ fontSize: `${textSize}px` }">{{ cell }}</span>
