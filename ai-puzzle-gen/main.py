@@ -4,8 +4,8 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from collections import defaultdict
-import re
 import os
+import random
 
 class PuzzleDataset(Dataset):
     def __init__(self, file_path, max_letters=8, max_words=12):
@@ -16,7 +16,10 @@ class PuzzleDataset(Dataset):
 
         with open(file_path, 'r') as f:
             for line in f:
-                puzzle_id, letters, solutions = line.strip().split('|')
+                parts = line.strip().split('|')
+                if len(parts) < 3:
+                    continue
+                puzzle_id, letters, solutions = parts
                 if len(letters) <= max_letters:
                     words = [w.split(',')[0] for w in solutions.split(';')]
                     if len(words) <= max_words:
@@ -31,7 +34,6 @@ class PuzzleDataset(Dataset):
 
     def __getitem__(self, idx):
         letters, words = self.puzzles[idx]
-
         x = torch.zeros(self.max_letters, len(self.char_to_idx))
         for i, letter in enumerate(letters):
             x[i][self.char_to_idx[letter]] = 1
@@ -49,16 +51,12 @@ class PuzzleDataset(Dataset):
 class PuzzleGenerator(nn.Module):
     def __init__(self, vocab_size, max_letters=8, max_words=12, hidden_dim=256):
         super().__init__()
-        self.max_letters = max_letters
-        self.max_words = max_words
-
         self.encoder = nn.Sequential(
             nn.Linear(vocab_size * max_letters, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU()
         )
-
         self.decoder = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
@@ -72,106 +70,78 @@ class PuzzleGenerator(nn.Module):
         x = self.decoder(x)
         return x.view(-1, self.max_words, self.max_letters)
 
-def train_model(model, train_loader, device, epochs=100):
+def train_model(model, train_loader, device, epochs=50):
     criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters())
-
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
     model.to(device)
     for epoch in range(epochs):
         total_loss = 0
         for batch_x, batch_y in train_loader:
-            batch_x = batch_x.to(device)
-            batch_y = batch_y.to(device)
-
+            batch_x, batch_y = batch_x.to(device), batch_y.to(device)
             optimizer.zero_grad()
             output = model(batch_x)
             loss = criterion(output, batch_y)
             loss.backward()
             optimizer.step()
-
             total_loss += loss.item()
-
         if (epoch + 1) % 10 == 0:
             print(f'Epoch {epoch+1}, Loss: {total_loss/len(train_loader):.4f}')
 
-def load_wordlist():
-    with open('wordlist.txt', 'r') as f:
+def load_wordlist(filepath='wordlist.txt'):
+    if not os.path.exists(filepath):
+        import urllib.request
+        url = "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
+        urllib.request.urlretrieve(url, filepath)
+    with open(filepath, 'r') as f:
         return set(word.strip().lower() for word in f)
 
 def get_valid_words(letters, wordlist):
     valid = set()
-    letters_count = defaultdict(int)
-    for c in letters:
-        letters_count[c] += 1
-
+    letter_count = defaultdict(int, {c: letters.count(c) for c in letters})
     for word in wordlist:
-        if len(word) >= 3 and len(word) <= len(letters):
-            word_count = defaultdict(int)
-            for c in word:
-                word_count[c] += 1
-            if all(word_count[c] <= letters_count[c] for c in word_count):
+        if 3 <= len(word) <= len(letters):
+            word_count = defaultdict(int, {c: word.count(c) for c in word})
+            if all(word_count[c] <= letter_count[c] for c in word_count):
                 valid.add(word)
     return valid
 
-def generate_puzzle(model, char_to_idx, idx_to_char, wordlist, max_letters=8, temperature=0.8, device='cuda'):
+def generate_puzzle(model, char_to_idx, idx_to_char, wordlist, max_letters=6, device='cpu'):
     model.eval()
     with torch.no_grad():
         available_letters = list(char_to_idx.keys())
-        puzzle_letters = np.random.choice(available_letters, size=max_letters)
-
+        puzzle_letters = ''.join(random.sample(available_letters, max_letters))
         x = torch.zeros(1, max_letters, len(char_to_idx))
         for i, letter in enumerate(puzzle_letters):
             x[0, i, char_to_idx[letter]] = 1
-
         x = x.to(device)
-        output = model(x)
-        output = output.cpu().numpy()[0]
-
-        letters_str = ''.join(puzzle_letters[:6])
-        valid_words = get_valid_words(letters_str, wordlist)
-
-        return ''.join(puzzle_letters[:6]), words
+        output = model(x).cpu().numpy()[0]
+        valid_words = get_valid_words(puzzle_letters, wordlist)
+        return puzzle_letters, list(valid_words)
 
 def save_model(model, char_to_idx, idx_to_char, path='puzzle_model.pt'):
-    torch.save({
-        'model_state_dict': model.state_dict(),
-        'char_to_idx': char_to_idx,
-        'idx_to_char': idx_to_char
-    }, path)
+    torch.save({'model_state_dict': model.state_dict(), 'char_to_idx': char_to_idx, 'idx_to_char': idx_to_char}, path)
 
 def load_model(path='puzzle_model.pt'):
     checkpoint = torch.load(path)
-    vocab_size = len(checkpoint['char_to_idx'])
-    model = PuzzleGenerator(vocab_size)
+    model = PuzzleGenerator(len(checkpoint['char_to_idx']))
     model.load_state_dict(checkpoint['model_state_dict'])
     return model, checkpoint['char_to_idx'], checkpoint['idx_to_char']
 
-def download_wordlist():
-    import urllib.request
-    url = "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
-    urllib.request.urlretrieve(url, "wordlist.txt")
-
 def main():
-    if not os.path.exists("wordlist.txt"):
-        download_wordlist()
-    wordlist = load_wordlist()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    wordlist = load_wordlist()
     model_path = 'puzzle_model.pt'
-
     if not os.path.exists(model_path):
         print("Training new model...")
-        dataset = PuzzleDataset('../app/src-tauri/assets/puzzles.data')
+        dataset = PuzzleDataset('puzzles.data')
         train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
         model = PuzzleGenerator(len(dataset.char_to_idx))
         train_model(model, train_loader, device)
         save_model(model, dataset.char_to_idx, dataset.idx_to_char, model_path)
-        char_to_idx = dataset.char_to_idx
-        idx_to_char = dataset.idx_to_char
     else:
         print("Loading existing model...")
         model, char_to_idx, idx_to_char = load_model(model_path)
         model.to(device)
-
     for i in range(5):
         letters, words = generate_puzzle(model, char_to_idx, idx_to_char, wordlist, device=device)
         print(f"\nPuzzle {i+1}:")
