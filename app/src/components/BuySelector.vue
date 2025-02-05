@@ -1,32 +1,37 @@
 <template>
-  <div
-      id="buy-selector-backdrop"
-      :class="active ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-      class="fixed size-full inset-0 z-50 bg-black/75 transition-all duration-500 flex justify-center"
-  />
+  <div>
+    <FadeTransition :duration="500">
+      <div
+          id="buy-selector-backdrop"
+          v-if="active"
+          class="fixed size-full inset-0 z-10 bg-black/75 transition-all duration-500 flex justify-center"
+      />
+    </FadeTransition>
 
-  <div
-      v-if="grid !== null"
-      :class="active ? 'opacity-100' : 'opacity-0'"
-      class="fixed inset-0 z-[52] transition-all duration-500 pointer-events-none"
-  >
-    <div class="flex flex-col h-full">
-      <h1 class="text-4xl font-bold text-white text-center mt-20">BUY</h1>
-      <p :class="!hasSelection && 'opacity-0'"
-         class="text-xl text-white text-center mt-4 animate-pulse transition-opacity">
-        PRICE: <span :class="canAfford ? 'text-red-300' : 'text-red-500'"
-                     class="transition-colors font-bold">{{ affectedCells.length * 2 }}</span>
-      </p>
-      <div class="flex flex-row items-center justify-center grow gap-4">
-        <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
-        <div
-            class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
-            @click="cancel"
-        >
-          CANCEL
+    <FadeTransition :duration="500">
+      <div
+          v-if="grid !== null && active"
+          class="fixed inset-0 z-12 pointer-events-none"
+      >
+        <div class="flex flex-col h-full">
+          <h1 class="text-4xl font-bold text-white text-center mt-20">BUY</h1>
+          <p :class="!hasSelection && 'opacity-0'"
+             class="text-xl text-white text-center mt-4 animate-pulse transition-opacity">
+            PRICE: <span :class="canAfford ? 'text-red-300' : 'text-red-500'"
+                         class="transition-colors font-bold">{{ affectedCells.length * 2 }}</span>
+          </p>
+          <div class="flex flex-row items-center justify-center grow gap-4">
+            <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
+            <div
+                class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
+                @click="cancel"
+            >
+              CANCEL
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </FadeTransition>
   </div>
 </template>
 
@@ -34,6 +39,7 @@
 import { computed, ref } from 'vue';
 import BuyButton from '@/components/BuyButton.vue';
 import type { Cell, Grid } from '@/services/puzzles.service.ts';
+import FadeTransition from '@/components/FadeTransition.vue';
 
 const active = defineModel<boolean>({ required: true });
 

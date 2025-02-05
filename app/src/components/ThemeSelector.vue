@@ -2,24 +2,27 @@
   <div class="flex flex-col gap-2">
     <PopoutMenu
         v-if="themeItems.length !== 0"
+        emoji-mode
         variant="accent"
         :items="themeItems"
         @select="t => changeTheme(t as unknown as Theme['name'])"
         @start="() => emit('clear-unread')"
     >
-      <div
-          :class="showUnread ? 'animate-ping opacity-100' : 'opacity-0'"
-          class="transition-opacity fixed w-2 h-2 bg-primary-500 rounded-full" />
+      <FadeTransition>
+        <div
+            v-if="showUnread"
+            class="animate-ping fixed w-2 h-2 bg-primary-500 rounded-full"/>
+      </FadeTransition>
 
-      <span class="emoji">{{ THEME_EMOJIS[currentTheme.name] }}</span>
+      <span>{{ THEME_EMOJIS[currentTheme.name] }}</span>
     </PopoutMenu>
 
     <PopoutMenu
         variant="accent"
+        emoji-mode
         :items="darkModeItems[0]"
         @select="k => changeDarkMode(k as unknown as Theme['dark'])"
-    >
-      <span class="emoji">{{ darkModeItems[1].label }}</span>
+    >{{ darkModeItems[1].label }}
     </PopoutMenu>
   </div>
 </template>
@@ -28,6 +31,7 @@
 import { type Theme, THEME_EMOJIS, THEMES } from '@/composables/theme.composable.ts';
 import PopoutMenu, { type PopoutItem } from '@/components/PopoutMenu.vue';
 import { computed } from 'vue';
+import FadeTransition from '@/components/FadeTransition.vue';
 
 const props = defineProps<{
   showUnread: boolean;
@@ -70,3 +74,4 @@ function changeTheme(theme: typeof THEMES[number]) {
   emit('change-theme', { name: theme, dark: props.currentTheme.dark });
 }
 </script>
+

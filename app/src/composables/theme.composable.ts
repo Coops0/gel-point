@@ -1,5 +1,5 @@
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
-import { onMounted, readonly, watch } from 'vue';
+import { onMounted, readonly, ref, watch } from 'vue';
 
 export const THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic'] as const;
 export const THEME_EMOJIS = {
@@ -9,7 +9,8 @@ export const THEME_EMOJIS = {
     'chromatic': '🗿'
 } as const;
 
-export const earnedThemes = useLocalStorage<(typeof THEMES[number])[]>('earned-themes', ['grapefruit']);
+// export const earnedThemes = useLocalStorage<(typeof THEMES[number])[]>('earned-themes', ['grapefruit']);
+export const earnedThemes = ref<(typeof THEMES[number])[]>([...THEMES]); // temporarily for beta
 export const showNewlyUnlockedIndicator = useLocalStorage<boolean>('show-newly-unlocked-theme-indicator', false);
 
 export interface Theme {

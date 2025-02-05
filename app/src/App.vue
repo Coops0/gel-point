@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col">
-    <WinMessage ref="winMessage" :class="!showBuySelector && 'z-[52]'"/>
+    <WinMessage ref="winMessage" :class="!showBuySelector && 'z-7'"/>
     <BuySelector
         ref="buySelector"
         v-model="showBuySelector"
@@ -15,14 +15,17 @@
         <div class="text-primary-400">good job 🎉</div>
         <div class="text-primary-400 text-sm">you did all the puzzles. now wait for me to add more.</div>
       </div>
-      <div v-if="winState !== 'active'" :class="isLoaded ? 'opacity-0' : 'opacity-100'"
-           class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999] transition-all duration-200 pointer-events-none">
-        <div class="flex flex-col justify-center items-center h-screen gap-4 z-[999] pointer-events-none">
 
-          <div class="text-primary-400">loading...</div>
-          <div class="text-primary-400">{{ motd }}</div>
+      <FadeTransition :duration="200">
+        <div v-if="winState !== 'active' && !isLoaded"
+             class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999]">
+          <div class="flex flex-col justify-center items-center h-screen gap-4 z-[999] pointer-events-none">
+
+            <div class="text-primary-400">loading...</div>
+            <div class="text-primary-400">{{ motd }}</div>
+          </div>
         </div>
-      </div>
+      </FadeTransition>
 
       <div v-if="winState !== 'active' && isLoaded" class="flex flex-col h-screen">
         <!-- compensate for dynamic island -->
@@ -38,14 +41,14 @@
                 :buy-mode="showBuySelector"
                 :class="showBuySelector && 'opacity-80'"
                 :grid="grid!"
-                class="mt-4 relative z-[51] transition-opacity duration-500"
+                class="mt-4 relative z-11 transition-opacity duration-500"
                 @selected="(row, col) => buySelector?.select(row, col)"
             />
           </KeepAlive>
         </div>
 
         <div
-            :class="{ 'opacity-0': !showCurrentlyBuildingWord, 'z-[52]': !showBuySelector }"
+            :class="{ 'opacity-0': !showCurrentlyBuildingWord, 'z-1': !showBuySelector }"
             class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900"
             :style="{ bottom: `${Math.abs(highestLetterPosition?.y ?? 300) + 5}px` }"
         >
@@ -68,7 +71,7 @@
         />
 
         <div>
-          <div class="relative">
+          <div class="relative z-1">
             <WordBuilder
                 ref="wordBuilder"
                 :letters="currentPuzzle!.letters"
@@ -80,6 +83,7 @@
         </div>
       </div>
     </div>
+
     <input
         ref="cheatCodeInputElement"
         v-model="cheatCodeInput"
@@ -109,6 +113,7 @@ import { clone } from '@/util';
 import ThemeSelector from '@/components/ThemeSelector.vue';
 import { MOTDS } from '@/util/motds.util.ts';
 import type { LetterPosition } from '@/composables/letter-alignment.composable.ts';
+import FadeTransition from '@/components/FadeTransition.vue';
 
 const puzzleService = new PuzzleService();
 const wordService = new WordService();
@@ -122,7 +127,7 @@ const puzzleGrid = ref<null | typeof PuzzleGrid>(null);
 
 const cheatCodeInputElement = ref<HTMLInputElement | null>(null);
 const cheatCodeInput = ref('');
-const showCheatCodeInput = ref(true);
+const showCheatCodeInput = ref(false);
 
 const currentlyBuildingWord = ref('');
 const showCurrentlyBuildingWord = ref(false);

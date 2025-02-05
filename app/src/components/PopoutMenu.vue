@@ -1,22 +1,24 @@
 <template>
   <div>
-    <div
-        v-if="showHelper && elementPosition"
-        class="fixed z-100 bg-primary-900 text-white p-2 rounded-md"
-        :style="{ top: `${elementPosition.y}px`, left: `${elementPosition.x - 100}px` }"
-    >
-      hold me ->
-    </div>
+    <Teleport to="body">
+      <div
+          v-if="showHelper && elementPosition"
+          class="fixed z-9 bg-primary-900 text-white p-2 rounded-md"
+          :style="{ top: `${elementPosition.y}px`, left: `${elementPosition.x - 100}px` }"
+      >
+        hold me ->
+      </div>
+    </Teleport>
 
-    <div
-        :class="isHolding ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-        class="fixed transition-opacity ease-in-out"
-    >
-      <div>
+    <FadeTransition>
+      <div
+          v-if="isHolding"
+          class="fixed"
+      >
         <div
             v-for="item in alignedItems"
             :key="item.key"
-            class="flex items-center justify-between fixed z-40 bg-background-50 rounded-2xl"
+            class="flex items-center justify-between fixed z-9 bg-background-50 rounded-2xl"
             :style="{ top: `${item.y}px`, left: `${item.x}px` }"
         >
           <GhostButton
@@ -30,8 +32,7 @@
           </GhostButton>
         </div>
       </div>
-
-    </div>
+    </FadeTransition>
 
     <GhostButton
         :variant
@@ -39,7 +40,7 @@
         @pointerdown.prevent="event => beginHold(event)"
         :ref="popoutId"
     >
-      <slot/>
+      <span class="transition-all duration-150" :class="(emojiMode && !isHolding) ? 'emoji' : ''"><slot/></span>
     </GhostButton>
   </div>
 </template>
@@ -49,6 +50,7 @@ import GhostButton, { type GhostVariant } from '@/components/GhostButton.vue';
 import { onMounted, ref, useId, useTemplateRef, watch } from 'vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 import { useInterval } from '@/composables/interval.composable.ts';
+import FadeTransition from '@/components/FadeTransition.vue';
 
 const VERTICAL_PADDING = 8;
 
@@ -62,6 +64,7 @@ const props = defineProps<{
   variant: GhostVariant;
   items: PopoutItem[];
   dynamicSized?: boolean;
+  emojiMode?: boolean;
 }>();
 
 const emit = defineEmits<{
