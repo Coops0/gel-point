@@ -12,8 +12,10 @@
       </div>
     </div>
 
-    <GhostButton class="rounded-md" variant="accent" @click="() => clickShuffle()">♻️</GhostButton>
-    <GhostButton class="rounded-md" variant="secondary" @click="() => clickBuy()">$</GhostButton>
+    <GhostButton class="rounded-md" variant="accent" @click="() => clickShuffle()">
+      <div class="emoji" :class="isSpinningShuffle ? 'spin-button' : ''">♻️</div>
+    </GhostButton>
+    <GhostButton class="rounded-md" variant="secondary" @click="() => clickBuy()"><span class="emoji">$</span></GhostButton>
   </div>
 </template>
 
@@ -57,10 +59,18 @@ watch(() => props.availableBonusWordPoints, v => {
   updateLocalCounterSingle();
 });
 
+const isSpinningShuffle = ref(false);
+
 function clickShuffle() {
-  if (!cheatCodeButtonInput(1)) {
-    emit('shuffle');
-  }
+  if (cheatCodeButtonInput(1)) return;
+
+  emit('shuffle');
+  if (isSpinningShuffle.value) return;
+
+  isSpinningShuffle.value = true;
+  setTimeout(() => {
+    isSpinningShuffle.value = false;
+  }, 820);
 }
 
 function clickBuy() {
@@ -123,5 +133,25 @@ function cheatCodeButtonInput(index: number): boolean {
 .slide-up-leave-to, .slide-down-enter-from {
   transform: translateY(20px);
   opacity: 0;
+}
+
+.spin-button {
+  animation: spinOnce 800ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  -webkit-animation: spinOnce 800ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes spinOnce {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  90% {
+    -webkit-transform: rotate(365deg);
+    transform: rotate(365deg);
+  }
+  99% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
 }
 </style>

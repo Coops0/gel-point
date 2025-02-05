@@ -1,7 +1,7 @@
 export const MOTDS = [
     'jrnl.fm',
     'Endless - Frank Ocean',
-    'Balloonerism - Mac Miller',
+    'DJ\'s Chord Organ - Mac Miller',
     'Figure out any cheat codes yet?',
     'If you see this that means I finished an app',
     'Vue is my favorite frontend framework',
@@ -39,5 +39,6 @@ export const MOTDS = [
     'Me and Your Mama - Childish Gambino',
     'Spaceship - Kanye West',
     'Guilt Trip - Kanye West',
-    'cooperhanessian.com <-- That\'s me!'
+    'cooperhanessian.com <-- That\'s me!',
+    'Bruiseboy - Jean Dawson'
 ] as const;

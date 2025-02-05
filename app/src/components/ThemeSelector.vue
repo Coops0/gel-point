@@ -11,7 +11,7 @@
           :class="showUnread ? 'animate-ping opacity-100' : 'opacity-0'"
           class="transition-opacity fixed w-2 h-2 bg-primary-500 rounded-full" />
 
-      {{ THEME_EMOJIS[currentTheme.name] }}
+      <span class="emoji">{{ THEME_EMOJIS[currentTheme.name] }}</span>
     </PopoutMenu>
 
     <PopoutMenu
@@ -19,7 +19,7 @@
         :items="darkModeItems[0]"
         @select="k => changeDarkMode(k as unknown as Theme['dark'])"
     >
-      {{ darkModeItems[1].label }}
+      <span class="emoji">{{ darkModeItems[1].label }}</span>
     </PopoutMenu>
   </div>
 </template>

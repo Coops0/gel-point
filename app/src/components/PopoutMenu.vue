@@ -16,7 +16,7 @@
         <div
             v-for="item in alignedItems"
             :key="item.key"
-            class="flex items-center justify-between fixed z-40"
+            class="flex items-center justify-between fixed z-40 bg-background-50 rounded-2xl"
             :style="{ top: `${item.y}px`, left: `${item.x}px` }"
         >
           <GhostButton
