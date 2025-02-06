@@ -75,10 +75,10 @@ const emit = defineEmits<{
 type Key = typeof props.items[number]['key'];
 
 const popoutId = useId();
-const popoutElement = useTemplateRef<typeof GhostButton>(popoutId);
+const popoutElement = useTemplateRef<InstanceType<typeof GhostButton>>(popoutId);
 
 const itemRefIds = useId();
-const itemRefs = useTemplateRef<(typeof GhostButton)[]>(itemRefIds);
+const itemRefs = useTemplateRef<InstanceType<typeof GhostButton>[]>(itemRefIds);
 
 const elementPosition = ref<{ x: number; y: number; height: number; width: number; } | null>(null);
 

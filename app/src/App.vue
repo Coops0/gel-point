@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-col">
-    <WinMessage ref="winMessage" :class="!showBuySelector && 'z-7'"/>
+    <WinMessage ref="win-message" :class="!showBuySelector && 'z-7'"/>
     <BuySelector
-        ref="buySelector"
+        ref="buy-selector"
         v-model="showBuySelector"
         :available-bonus-word-points="availableBonusWordPoints"
         :grid
@@ -37,7 +37,7 @@
         <div class="flex-1">
           <KeepAlive>
             <PuzzleGrid
-                ref="puzzleGrid"
+                ref="puzzle-grid"
                 :buy-mode="showBuySelector"
                 :class="showBuySelector && 'opacity-80'"
                 :grid="grid!"
@@ -73,7 +73,7 @@
         <div>
           <div class="relative z-1">
             <WordBuilder
-                ref="wordBuilder"
+                ref="word-builder"
                 :letters="currentPuzzle!.letters"
                 @test-word="word => testWord(word)"
                 @update-built-word="updateBuiltWord"
@@ -85,7 +85,7 @@
     </div>
 
     <input
-        ref="cheatCodeInputElement"
+        ref="cheat-code-input-el"
         v-model="cheatCodeInput"
         @keydown.enter="() => submitCheatCode()"
         class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10 text-text-900"
@@ -96,7 +96,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, toRaw } from 'vue';
+import { ref, toRaw, useTemplateRef } from 'vue';
 import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
 import { usePuzzleManager, WordTestResult } from '@/composables/puzzle-manager.composable.ts';
@@ -121,11 +121,11 @@ const { theme, loadTheme, unlockNextTheme, showNewlyUnlockedIndicator, earnedThe
 
 const currentPuzzle = ref<Puzzle | null>(null);
 
-const winMessage = ref<typeof WinMessage | null>(null);
-const wordBuilder = ref<null | typeof WordBuilder>(null);
-const puzzleGrid = ref<null | typeof PuzzleGrid>(null);
+const winMessage = useTemplateRef<InstanceType<typeof WinMessage>>('win-message');
+const wordBuilder = useTemplateRef<InstanceType<typeof WordBuilder>>('word-builder');
+const puzzleGrid = useTemplateRef<InstanceType<typeof PuzzleGrid>>('puzzle-grid');
 
-const cheatCodeInputElement = ref<HTMLInputElement | null>(null);
+const cheatCodeInputElement = useTemplateRef<HTMLInputElement>('cheat-code-input-el');
 const cheatCodeInput = ref('');
 const showCheatCodeInput = ref(false);
 
@@ -134,7 +134,7 @@ const showCurrentlyBuildingWord = ref(false);
 const highestLetterPosition = ref<LetterPosition | null>(null);
 
 const showBuySelector = ref(false);
-const buySelector = ref<typeof BuySelector | null>(null);
+const buySelector = useTemplateRef<InstanceType<typeof BuySelector>>('buy-selector');
 
 const winState = ref<'next-level' | 'active' | 'none'>('none');
 
