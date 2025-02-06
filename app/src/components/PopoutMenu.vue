@@ -10,29 +10,22 @@
       </div>
     </Teleport>
 
-    <FadeTransition>
-      <div
-          v-if="isHolding"
-          class="fixed"
-      >
-        <div
-            v-for="item in alignedItems"
-            :key="item.key"
-            class="flex items-center justify-between fixed z-9 bg-background-50 rounded-2xl"
-            :style="{ top: `${item.y}px`, left: `${item.x}px` }"
-        >
-          <GhostButton
-              class="text-nowrap"
-              :variant="item.variant"
-              :class="item.key === hoveredItem && 'bg-primary-500/25'"
-              :data-popup-key="item.key"
-              :ref="itemRefIds"
-          >
-            {{ item.label }}
-          </GhostButton>
-        </div>
-      </div>
-    </FadeTransition>
+    <div
+        class="fixed"
+    >
+      <PopoutMenuItem v-for="(item, index) in alignedItems"
+                      :key="item.key"
+                      :x="item.x"
+                      :y="item.y"
+                      :label="item.label"
+                      :variant="item.variant"
+                      :popup-key="item.key"
+                      :hovered="item.key === hoveredItem"
+                      :index="index"
+                      :active="isHolding"
+                      :ref="itemRefIds"
+      />
+    </div>
 
     <GhostButton
         :variant
@@ -50,7 +43,7 @@ import GhostButton, { type GhostVariant } from '@/components/GhostButton.vue';
 import { onMounted, ref, useId, useTemplateRef, watch } from 'vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 import { useInterval } from '@/composables/interval.composable.ts';
-import FadeTransition from '@/components/FadeTransition.vue';
+import PopoutMenuItem from '@/components/PopoutMenuItem.vue';
 
 const VERTICAL_PADDING = 8;
 
@@ -78,7 +71,7 @@ const popoutId = useId();
 const popoutElement = useTemplateRef<InstanceType<typeof GhostButton>>(popoutId);
 
 const itemRefIds = useId();
-const itemRefs = useTemplateRef<InstanceType<typeof GhostButton>[]>(itemRefIds);
+const itemRefs = useTemplateRef<InstanceType<typeof PopoutMenuItem>[]>(itemRefIds);
 
 const elementPosition = ref<{ x: number; y: number; height: number; width: number; } | null>(null);
 
@@ -96,7 +89,8 @@ function recalculatePositions() {
     let x = rect.x;
     if (props.dynamicSized) {
       const rect = itemRefs.value
-          ?.map(i => i.$el)
+          ?.map(i => i.buttonElement?.$el)
+          ?.filter(el => !!el)
           ?.find(r => r.dataset['popupKey'] === item.key)
           ?.getBoundingClientRect();
 

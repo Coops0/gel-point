@@ -11,21 +11,22 @@
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
-    "@tauri-apps/plugin-haptics": "^2.2.3",
     "@tauri-apps/api": "^2.2.0",
+    "@tauri-apps/plugin-haptics": "^2.2.3",
+    "gsap": "^3.12.7",
     "vue": "^3.5.13"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.0.3",
+    "@tailwindcss/vite": "^4.0.4",
     "@tsconfig/node22": "^22.0.0",
     "@types/node": "^22.13.1",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
     "autoprefixer": "^10.4.20",
     "npm-run-all2": "^7.0.2",
-    "tailwindcss": "^4.0.3",
+    "tailwindcss": "^4.0.4",
     "typescript": "^5.7.3",
-    "vite": "^6.0.11",
+    "vite": "^6.1.0",
     "vue-tsc": "^2.2.0"
   }
 }
