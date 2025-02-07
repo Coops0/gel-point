@@ -99,7 +99,7 @@
 import { ref, toRaw, useTemplateRef } from 'vue';
 import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
-import { usePuzzleManager, WordTestResult } from '@/composables/puzzle-manager.composable.ts';
+import { usePuzzleManager } from '@/composables/puzzle-manager.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import { THEMES, useTheme } from '@/composables/theme.composable.ts';
 import WinMessage from '@/components/WinMessage.vue';
@@ -204,25 +204,27 @@ async function goToNextLevel() {
 }
 
 async function testWord(word: string) {
-  switch (await testWordResult(word)) {
-    case WordTestResult.Bonus:
+  const testResult = await testWordResult(word);
+  switch (testResult.tag) {
+    case 'bonus':
       wordBuilder.value?.showBonusAnimation?.();
       await impactFeedback('medium');
+
+      if (testResult.theme) {
+        unlockNextTheme();
+      }
+
       break;
-    case WordTestResult.BonusTheme:
-      wordBuilder.value?.showBonusAnimation?.();
-      unlockNextTheme();
-      await impactFeedback('medium');
-      break;
-    case WordTestResult.Win:
+    case 'win':
       await goToNextLevel();
       await notificationFeedback('success');
       break;
-    case WordTestResult.NotFound:
+    case 'not_found':
       await notificationFeedback('error');
       break;
-    case WordTestResult.Found:
+    case 'found':
       await impactFeedback('rigid');
+      puzzleGrid.value?.animateShimmerCells(testResult.cells);
       break;
   }
 }
@@ -270,6 +272,11 @@ function submitCheatCode() {
       break;
     case 'reload':
       loadAndSetPuzzle();
+      break;
+    case 'bonus':
+      wordBuilder.value?.showBonusAnimation?.();
+      impactFeedback('medium');
+      availableBonusWordPoints.value++;
       break;
     default:
       notificationFeedback('error');

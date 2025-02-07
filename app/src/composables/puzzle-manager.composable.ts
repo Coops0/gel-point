@@ -1,16 +1,14 @@
-import { computed, readonly, ref, toRaw } from 'vue';
+import { computed, ref, toRaw } from 'vue';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import type { Grid, Puzzle } from '@/services/puzzles.service.ts';
 import { clone } from '@/util';
 import type { WordService } from '@/services/words.service.ts';
 
-export enum WordTestResult {
-    NotFound,
-    Found,
-    Bonus,
-    BonusTheme,
-    Win
-}
+export type WordTestResult =
+    { tag: 'not_found' } |
+    { tag: 'found', cells: Array<[number, number]> } |
+    { tag: 'bonus', theme: boolean } |
+    { tag: 'win' }
 
 export const usePuzzleManager = (wordService: WordService) => {
     const isInitialLoad = ref(true);
@@ -30,17 +28,20 @@ export const usePuzzleManager = (wordService: WordService) => {
     const hasWon = () => activeGrid.value?.every(row => row.every(cell => cell !== 0)) === true;
 
     const testWord = async (word: string): Promise<WordTestResult> => {
-        if (!activeGrid.value || !puzzle.value) return WordTestResult.NotFound;
+        if (!activeGrid.value || !puzzle.value) return { tag: 'not_found' };
 
         const match = puzzle.value.words.find(w => w.word === word);
         if (!match) {
             if (foundBonusWords.value.has(word) || !(await wordService.testWord(word))) {
-                return WordTestResult.NotFound;
+                return { tag: 'not_found' };
             }
 
             availableBonusWordPoints.value++;
             foundBonusWords.value.add(word);
-            return foundBonusWords.value.size % 30 === 0 ? WordTestResult.BonusTheme : WordTestResult.Bonus;
+            return {
+                tag: 'bonus',
+                theme: foundBonusWords.value.size % 30 === 0
+            };
         }
 
         const newGrid = [...activeGrid.value];
@@ -51,7 +52,7 @@ export const usePuzzleManager = (wordService: WordService) => {
 
         activeGrid.value = newGrid;
 
-        return hasWon() ? WordTestResult.Win : WordTestResult.Found;
+        return hasWon() ? { tag: 'win' } : { tag: 'found', cells: match.positions };
     };
 
     const setPuzzle = (p: Puzzle) => {
@@ -89,7 +90,7 @@ export const usePuzzleManager = (wordService: WordService) => {
     return {
         grid: activeGrid,
         buyCells,
-        availableBonusWordPoints: readonly(availableBonusWordPoints),
+        availableBonusWordPoints,
         testWord,
         isLoaded,
         setPuzzle

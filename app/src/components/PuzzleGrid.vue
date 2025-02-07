@@ -12,11 +12,17 @@
           :class="{
             'bg-secondary-400 text-background-50': cell !== 0 && cell !== -1,
             'bg-secondary-200': cell === 0,
-            [cell === 0 ? 'ring-2 ring-accent-600' : 'ring-2 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex)
+            [cell === 0 ? 'ring-2 ring-accent-600' : 'ring-2 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
+            '!duration-150': buyMode,
+
+            'cell-active': cell !== 0,
+            'cell-inactive': cell === 0
           }"
           :style="{ width: `${cellSize}px`, height: `${cellSize}px` }"
-          class="flex items-center justify-center font-medium transition-all duration-500"
+          class="flex items-center justify-center font-medium transition-all duration-500 cell"
           @click="() => handleCellClick(rowIndex, colIndex)"
+          :data-row="rowIndex"
+          :data-col="colIndex"
       >
         <span v-if="cell !== 0 && cell !== -1" :style="{ fontSize: `${textSize}px` }">{{ cell }}</span>
       </div>
@@ -28,7 +34,7 @@
 import { computed, ref, toRaw, watch } from 'vue';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';
 import type { Cell, Grid } from '@/services/puzzles.service.ts';
-import { clone } from '@/util';
+import { centerOfCells, clone } from '@/util';
 import { useWindowSize } from '@/composables/reactive-sizes.composable.ts';
 
 const { width } = useWindowSize();
@@ -42,7 +48,7 @@ const emit = defineEmits<{
   selected: [row: number, col: number];
 }>();
 
-defineExpose({ resetSelection });
+defineExpose({ resetSelection, animateShimmerCells });
 
 const localGrid = ref<Grid>(clone(toRaw(props.grid)));
 
@@ -202,4 +208,50 @@ function handleCellClick(rowIndex: number, colIndex: number) {
 
   emit('selected', selectedRow.value, selectedCol.value);
 }
+
+let currentlyShiningCells: Array<[number, number]> = [];
+
+function animateShimmerCells(cells: Array<[number, number]>) {
+  if (props.buyMode) return;
+
+  const grid = <[number, number]>[localGrid.value.length, localGrid.value[0].length];
+
+  const centerCell = centerOfCells(cells, grid);
+
+  document.querySelectorAll<HTMLElement>('.cell').forEach((cell) => {
+    const [row, col] = [+(cell.dataset.row ?? '0'), +(cell.dataset.col ?? '0')];
+
+    const distanceTime = (Math.abs(row - centerCell[0]) * 50) + (Math.abs(col - centerCell[1]) * 100);
+
+    if (currentlyShiningCells.includes([row, col])) return;
+
+    currentlyShiningCells.push([row, col]);
+    // todo try to make shine wave line up better
+    setTimeout(() => {
+      cell.style.mask = 'linear-gradient(-60deg, #000 30%, #0005, #000 70%) right/350% 100%';
+      cell.classList.add('animate-shine');
+
+      setTimeout(() => {
+        currentlyShiningCells.filter(c => c[0] !== row && c[1] !== col);
+        cell.style.mask = '';
+        cell.classList.remove('animate-shine');
+      }, 200);
+    }, distanceTime);
+  });
+}
 </script>
+
+<style scoped>
+.animate-shine {
+  animation: animate-shine 200ms ease-in-out forwards;
+}
+
+@keyframes animate-shine {
+  from {
+    mask-position: left;
+  }
+  to {
+    mask-position: right;
+  }
+}
+</style>
