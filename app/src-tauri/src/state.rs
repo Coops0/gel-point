@@ -1,4 +1,3 @@
-use anyhow::Context;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::{
@@ -33,6 +32,10 @@ impl Paths {
         &self.cache_dir
     }
 
+    pub fn hashes(&self) -> PathBuf {
+        self.cache_dir.join("hashes.data")
+    }
+
     pub fn words(&self) -> PathBuf {
         self.cache_dir.join("words.data")
     }
@@ -43,14 +46,9 @@ impl Paths {
 }
 
 fn req_client() -> reqwest::Client {
-    reqwest::Client::builder()
-        .timeout(Duration::from_secs(1))
-        .build()
-        // TODO root certificate?
-        .unwrap()
+    reqwest::Client::builder().timeout(Duration::from_secs(1)).build().unwrap()
 }
 
-#[cfg(not(debug_assertions))]
 async fn fetch_hash(route: &str) -> anyhow::Result<Vec<u8>> {
     req_client()
         .get(format!("{}/{route}/hash", crate::BASE_API_URL))
@@ -62,7 +60,6 @@ async fn fetch_hash(route: &str) -> anyhow::Result<Vec<u8>> {
         .map(|r| r.to_vec())
 }
 
-#[cfg(not(debug_assertions))]
 async fn fetch_text(route: &str) -> anyhow::Result<String> {
     req_client()
         .get(format!("{}/{route}", crate::BASE_API_URL))
@@ -73,60 +70,74 @@ async fn fetch_text(route: &str) -> anyhow::Result<String> {
         .map_err(Into::into)
 }
 
-async fn memoize_or_fetch(path: &Path, route: &str) -> anyhow::Result<String> {
-    let local_bytes = tokio::fs::read(path).await.unwrap_or_default();
-    let hash = Sha256::digest(&local_bytes).to_vec();
+async fn read_cached_hashes(path: &Path) -> Option<(Vec<u8>, Vec<u8>)> {
+    let data = tokio::fs::read(path).await.ok()?;
+    let mut stream = data.split(|b| b == &b',').map(|b| b.to_vec());
 
-    #[cfg(not(debug_assertions))]
+    Some((stream.next()?, stream.next()?))
+}
+
+async fn memoize_or_fetch(
+    path: &Path,
+    route: &str,
+    cached_hash: Option<Vec<u8>>
+) -> anyhow::Result<(String, Vec<u8>)> {
+    let mut local_bytes = None::<Vec<u8>>;
+
+    let hash = match cached_hash {
+        Some(hash) => hash,
+        None => {
+            let b = tokio::fs::read(path).await.unwrap_or_default();
+            let h = Sha256::digest(&b).to_vec();
+            local_bytes = Some(b);
+
+            h
+        }
+    };
+
     let remote_hash = match fetch_hash(route).await {
         Ok(h) => h,
         Err(_) => hash.clone()
     };
 
-    #[cfg(debug_assertions)]
-    let remote_hash = vec![0, 0, 0];
-
-    if hash == remote_hash && !local_bytes.is_empty() {
-        return String::from_utf8(local_bytes).map_err(Into::into);
+    if hash != remote_hash {
+        if let Ok(text) = fetch_text(route).await {
+            tokio::fs::write(path, text.as_bytes()).await?;
+            return Ok((text, hash));
+        }
     }
 
-    #[cfg(not(debug_assertions))]
-    let Ok(text) = fetch_text(route).await
-    else {
-        return String::from_utf8(local_bytes).map_err(Into::into);
+    let bytes = match local_bytes {
+        Some(b) => String::from_utf8(b)?,
+        None => tokio::fs::read_to_string(path).await.unwrap_or_default()
     };
 
-    #[cfg(debug_assertions)]
-    let text = match route {
-        "words" => include_str!("../assets/words.data").to_string(),
-        "puzzles" => include_str!("../assets/puzzles.data").to_string(),
-        _ => unreachable!()
-    };
-
-    tokio::fs::write(path, text.as_bytes()).await?;
-
-    Ok(text)
+    Ok((bytes, hash))
 }
 
 pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, HashMap<u32, String>)> {
     let words_data = paths.words();
     let puzzles_data = paths.puzzles();
+    let hashes = paths.hashes();
 
-    let (words, puzzles) = try_join!(
-        memoize_or_fetch(&words_data, "words"),
-        memoize_or_fetch(&puzzles_data, "puzzles")
+    let (words_hash, puzzles_hash) = read_cached_hashes(&hashes).await.unzip();
+
+    let ((words, words_hash), (puzzles, puzzles_hash)) = try_join!(
+        memoize_or_fetch(&words_data, "words", words_hash),
+        memoize_or_fetch(&puzzles_data, "puzzles", puzzles_hash)
     )?;
+
+    let _ = tokio::fs::write(hashes, [&words_hash, &[b','][..], &puzzles_hash].concat()).await;
 
     let puzzles = puzzles
         .split("\n")
-        .map(|line| {
+        .filter_map(|line| {
             let mut parts = line.split("|");
             let id: u32 = parts.next()?.parse().ok()?;
 
             Some((id.to_owned(), line.to_owned()))
         })
-        .collect::<Option<HashMap<u32, String>>>()
-        .context("failed to split puzzles")?;
+        .collect::<HashMap<u32, String>>();
 
     Ok((words, puzzles))
 }

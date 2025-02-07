@@ -11,23 +11,21 @@
     <FadeTransition :duration="500">
       <div
           v-if="grid !== null && active"
-          class="fixed inset-0 z-12 pointer-events-none"
+          class="fixed inset-0 z-12 pointer-events-none items-center justify-center flex"
       >
-        <div class="flex flex-col h-full">
-          <h1 class="text-4xl font-bold text-white text-center mt-20">BUY</h1>
-          <p :class="!hasSelection && 'opacity-0'"
-             class="text-xl text-white text-center mt-4 animate-pulse transition-opacity">
-            PRICE: <span :class="canAfford ? 'text-red-300' : 'text-red-500'"
-                         class="transition-colors font-bold">{{ affectedCells.length * 2 }}</span>
-          </p>
-          <div class="flex flex-row items-center justify-center grow gap-4">
-            <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
-            <div
-                class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
-                @click="cancel"
-            >
-              CANCEL
-            </div>
+        <p :class="hasSelection ? 'animate-pulse' : 'opacity-0'"
+           class="text-xl text-white text-center transition-opacity fixed top-7/10">
+          PRICE: <span :class="canAfford ? 'text-red-300' : 'text-red-500'"
+                       class="transition-colors font-bold">{{ affectedCells.length * 2 }}</span>
+        </p>
+
+        <div class="flex flex-row gap-4 items-center justify-center fixed top-4/5">
+          <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
+          <div
+              class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
+              @click="cancel"
+          >
+            CANCEL
           </div>
         </div>
       </div>

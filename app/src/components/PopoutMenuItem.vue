@@ -56,7 +56,7 @@ function onEnter(el: Element, done: () => void) {
     duration: 0.25,
     delay: props.index * 0.1,
     onComplete: done,
-    ease: 'elastic.inOut(2.5, 1)'
+    ease: 'power3.out'
   });
 }
 
@@ -65,7 +65,7 @@ function onLeave(el: Element, done: () => void) {
     x: 50,
     duration: 0.25,
     onComplete: done,
-    ease: 'elastic.inOut(2.5, 1)'
+    ease: 'power3.in'
   });
 }
 </script>

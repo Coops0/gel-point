@@ -13,7 +13,6 @@ use tokio::time::sleep;
 mod ctx_macro_offload;
 mod state;
 
-#[cfg(not(debug_assertions))]
 const BASE_API_URL: &str = "https://gel-point.cooperhanessian.com";
 
 type AppState = Arc<Mutex<Option<CachedData>>>;

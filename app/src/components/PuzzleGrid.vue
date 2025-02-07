@@ -221,37 +221,53 @@ function animateShimmerCells(cells: Array<[number, number]>) {
   document.querySelectorAll<HTMLElement>('.cell').forEach((cell) => {
     const [row, col] = [+(cell.dataset.row ?? '0'), +(cell.dataset.col ?? '0')];
 
-    const distanceTime = (Math.abs(row - centerCell[0]) * 50) + (Math.abs(col - centerCell[1]) * 100);
+    const distanceTime = (Math.abs(row - centerCell[0]) * 50) + (Math.abs(col - centerCell[1]) * 50);
 
     if (currentlyShiningCells.includes([row, col])) return;
 
     currentlyShiningCells.push([row, col]);
-    // todo try to make shine wave line up better
+
     setTimeout(() => {
-      cell.style.mask = 'linear-gradient(-60deg, #000 30%, #0005, #000 70%) right/350% 100%';
-      cell.classList.add('animate-shine');
+      const isBefore = row < centerCell[0] || (row === centerCell[0] && col < centerCell[1]);
+
+      cell.style.mask = `linear-gradient(-60deg, #000 30%, #0005, #000 70%) ${!isBefore ? 'left' : 'right'}/350% 100%`;
+      cell.classList.add(!isBefore ? 'animate-shine-rtl' : 'animate-shine-ltr');
 
       setTimeout(() => {
         currentlyShiningCells.filter(c => c[0] !== row && c[1] !== col);
+
+        cell.classList.remove('animate-shine-ltr', 'animate-shine-rtl');
         cell.style.mask = '';
-        cell.classList.remove('animate-shine');
-      }, 200);
+      }, 100);
     }, distanceTime);
   });
 }
 </script>
 
 <style scoped>
-.animate-shine {
-  animation: animate-shine 200ms ease-in-out forwards;
+.animate-shine-ltr {
+  animation: animate-shine-ltr 100ms ease-in-out forwards;
 }
 
-@keyframes animate-shine {
+.animate-shine-rtl {
+  animation: animate-shine-rtl 200ms ease-in-out forwards;
+}
+
+@keyframes animate-shine-ltr {
   from {
     mask-position: left;
   }
   to {
     mask-position: right;
+  }
+}
+
+@keyframes animate-shine-rtl {
+  from {
+    mask-position: right;
+  }
+  to {
+    mask-position: left;
   }
 }
 </style>
