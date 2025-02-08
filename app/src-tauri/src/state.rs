@@ -28,6 +28,7 @@ impl Paths {
         Ok(Self { cache_dir: path_resolver.app_cache_dir()? })
     }
 
+    #[allow(clippy::missing_const_for_fn)]
     pub fn cache_dir(&self) -> &Path {
         &self.cache_dir
     }
@@ -88,12 +89,14 @@ async fn memoize_or_fetch(
     };
 
     match (&remote_hash, &cached_hash) {
+        // (both some) remote == local
         (Some(remote), Some(cached)) if remote == cached => {
             info!("hashes for {route} match remote, using local cache");
 
             let contents = tokio::fs::read_to_string(path).await?;
             Ok((contents, remote_hash.unwrap()))
         }
+        // remote && no local
         (Some(_), None) => {
             info!("no local hash, fetched {route} from remote");
 
@@ -102,19 +105,26 @@ async fn memoize_or_fetch(
 
             Ok((contents, remote_hash.unwrap()))
         }
+        // no remote && local
         (None, Some(_)) => {
             info!("remote hash is none, using local cache");
 
             let contents = tokio::fs::read_to_string(path).await?;
             Ok((contents, cached_hash.unwrap()))
         }
-        _ => {
+        // remote != local
+        (Some(_), Some(_)) => {
             info!("remote hash is different, fetching remote");
 
             let contents = fetch_text(route).await?;
             tokio::fs::write(path, &contents[..]).await?;
 
             Ok((contents, remote_hash.unwrap()))
+        }
+        // no remote && no local
+        _ => {
+            warn!("no remote or local cache for {route}");
+            Err(anyhow::anyhow!("no remote or local cache for {route}"))
         }
     }
 }
