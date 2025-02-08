@@ -78,51 +78,41 @@ async fn read_cached_hashes(path: &Path) -> Option<(String, String)> {
 async fn memoize_or_fetch(
     path: &Path,
     route: &str,
-    cached_hash: Option<String>
+    cached_hash: Option<String>,
 ) -> anyhow::Result<(String, String)> {
     let remote_hash = match fetch_hash(route).await {
-        Ok(h) => Some(h),
+        Ok(hash) => Some(hash),
         Err(err) => {
             warn!("failed to fetch hash for {route}: {err}");
             None
         }
     };
 
-    match (&remote_hash, &cached_hash) {
-        // (both some) remote == local
+    match (remote_hash, cached_hash) {
         (Some(remote), Some(cached)) if remote == cached => {
-            info!("hashes for {route} match remote, using local cache");
-
+            info!("hashes for {route} match remote; using local cache");
             let contents = tokio::fs::read_to_string(path).await?;
-            Ok((contents, remote_hash.unwrap()))
+            Ok((contents, remote))
         }
-        // remote && no local
-        (Some(_), None) => {
-            info!("no local hash, fetched {route} from remote");
+        (Some(remote), maybe_cached) => {
+            if maybe_cached.is_some() {
+                info!("remote hash is different for {route}; fetching remote");
+            } else {
+                info!("no local hash for {route}; fetching remote");
+            }
 
             let contents = fetch_text(route).await?;
-            tokio::fs::write(path, &contents[..]).await?;
+            tokio::fs::write(path, &contents).await?;
 
-            Ok((contents, remote_hash.unwrap()))
+            Ok((contents, remote))
         }
-        // no remote && local
-        (None, Some(_)) => {
-            info!("remote hash is none, using local cache");
-
+        (None, Some(cached)) => {
+            info!("remote hash fetch failed for {route}; using local cache");
             let contents = tokio::fs::read_to_string(path).await?;
-            Ok((contents, cached_hash.unwrap()))
-        }
-        // remote != local
-        (Some(_), Some(_)) => {
-            info!("remote hash is different, fetching remote");
 
-            let contents = fetch_text(route).await?;
-            tokio::fs::write(path, &contents[..]).await?;
-
-            Ok((contents, remote_hash.unwrap()))
+            Ok((contents, cached))
         }
-        // no remote && no local
-        _ => {
+        (None, None) => {
             warn!("no remote or local cache for {route}");
             Err(anyhow::anyhow!("no remote or local cache for {route}"))
         }
