@@ -538,6 +538,20 @@
     }
 }
 
-.emoji {
-    filter: grayscale(1);
+body {
+    background-color: var(--color-background-50);
+}
+
+@font-face {
+    font-family: "Shippori Antique B1";
+    /* noinspection CssUnknownTarget */
+    src: url("/fonts/ShipporiAntiqueB1-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: auto;
+    unicode-range: U+000-5FF;
+}
+
+.font-shippori {
+    font-family: "Shippori Antique B1", system-ui;
 }

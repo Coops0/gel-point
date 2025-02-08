@@ -3,7 +3,7 @@
     <Teleport to="body">
       <div
           v-if="showHelper && elementPosition"
-          class="fixed z-9 bg-primary-900 text-white p-2 rounded-md"
+          class="fixed z-9 bg-primary-900 text-white p-2 rounded-md font-shippori"
           :style="{ top: `${elementPosition.y}px`, left: `${elementPosition.x - 100}px` }"
       >
         hold me ->
@@ -33,7 +33,7 @@
         @pointerdown.prevent="event => beginHold(event)"
         :ref="popoutId"
     >
-      <span class="transition-all duration-150" :class="(emojiMode && !isHolding) ? 'emoji' : ''"><slot/></span>
+      <span class="transition-all duration-150" :class="(emojiMode && !isHolding) ? 'grayscale' : ''"><slot/></span>
     </GhostButton>
   </div>
 </template>
@@ -44,6 +44,7 @@ import { onMounted, ref, useId, useTemplateRef, watch } from 'vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 import { useInterval } from '@/composables/interval.composable.ts';
 import PopoutMenuItem from '@/components/PopoutMenuItem.vue';
+import { impactFeedback, selectionFeedback } from '@tauri-apps/plugin-haptics';
 
 const VERTICAL_PADDING = 8;
 
@@ -134,6 +135,7 @@ useEventListener('pointerup', event => {
 
   const key = (event.target as HTMLElement)?.dataset['popupKey'];
   if (key) {
+    impactFeedback('soft');
     emit('select', key as Key);
     return;
   }
@@ -171,6 +173,10 @@ useEventListener('pointermove', event => {
 
   const key = (event.target as HTMLElement)?.dataset['popupKey'];
   if (key) {
+    if (hoveredItem.value !== key) {
+      selectionFeedback();
+    }
+
     hoveredItem.value = key as Key;
   }
 });

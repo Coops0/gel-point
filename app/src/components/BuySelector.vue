@@ -14,7 +14,7 @@
           class="fixed inset-0 z-12 pointer-events-none items-center justify-center flex"
       >
         <p :class="hasSelection ? 'animate-pulse' : 'opacity-0'"
-           class="text-xl text-white text-center transition-opacity fixed top-7/10">
+           class="text-xl text-white text-center transition-opacity fixed top-7/10 font-shippori">
           PRICE: <span :class="canAfford ? 'text-red-300' : 'text-red-500'"
                        class="transition-colors font-bold">{{ affectedCells.length * 2 }}</span>
         </p>
@@ -22,7 +22,7 @@
         <div class="flex flex-row gap-4 items-center justify-center fixed top-4/5">
           <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
           <div
-              class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto"
+              class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto font-shippori"
               @click="cancel"
           >
             CANCEL
@@ -38,6 +38,7 @@ import { computed, ref } from 'vue';
 import BuyButton from '@/components/BuyButton.vue';
 import type { Cell, Grid } from '@/services/puzzles.service.ts';
 import FadeTransition from '@/components/FadeTransition.vue';
+import { impactFeedback, notificationFeedback } from '@tauri-apps/plugin-haptics';
 
 const active = defineModel<boolean>({ required: true });
 
@@ -58,6 +59,7 @@ function delayedClear() {
 }
 
 function cancel() {
+  impactFeedback('light');
   active.value = false;
   delayedClear();
 }
@@ -95,6 +97,8 @@ function buySelection() {
     active.value = false;
     emit('buy', affectedCells.value);
     delayedClear();
+  } else {
+    notificationFeedback('warning');
   }
 }
 </script>

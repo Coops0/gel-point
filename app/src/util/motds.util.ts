@@ -10,7 +10,7 @@ export const MOTDS = [
     'You shouldn\'t have time to read this much text before the app loads unless something went very wrong',
     '🫵YOU',
     'DIAMONDZ N CASH - Kevin Abstract',
-    'CITY IN THE SKY - ye',
+    'CITY IN THE SKY - Kanye West',
     'American Boyfriend: A Suburban Love Story - Kevin Abstract',
     'READY FOR WAR - BROCKHAMPTON',
     'Degas Park - Kevin Abstract',
@@ -40,5 +40,7 @@ export const MOTDS = [
     'Spaceship - Kanye West',
     'Guilt Trip - Kanye West',
     'cooperhanessian.com <-- That\'s me!',
-    'Bruiseboy - Jean Dawson'
+    'Bruiseboy - Jean Dawson',
+    'Hi8 tapes don\'t last forever',
+    'one two two one three'
 ] as const;

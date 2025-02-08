@@ -5,7 +5,7 @@
         <Transition :duration="transitionSpeed" :name="shouldIncrement ? 'slide-down' : 'slide-up'"
                     @leave="() => updateLocalCounterSingle()">
           <span :key="localBonusPoints" :style="{ transitionDuration: `${transitionSpeed / 2}ms` }"
-                class="absolute inset-0 transition-all ease-in-out">
+                class="absolute inset-0 transition-all ease-in-out font-shippori">
             {{ localBonusPoints }}
           </span>
         </Transition>
@@ -13,9 +13,9 @@
     </div>
 
     <GhostButton class="rounded-md" variant="accent" @click="() => clickShuffle()">
-      <div class="emoji" :class="isSpinningShuffle ? 'spin-button' : ''">♻️</div>
+      <div class="grayscale" :class="isSpinningShuffle ? 'spin-button' : ''">♻️</div>
     </GhostButton>
-    <GhostButton class="rounded-md" variant="secondary" @click="() => clickBuy()"><span class="emoji">$</span></GhostButton>
+    <GhostButton class="rounded-md" variant="secondary" @click="() => clickBuy()"><span class="grayscale">$</span></GhostButton>
   </div>
 </template>
 
@@ -65,6 +65,8 @@ function clickShuffle() {
   if (cheatCodeButtonInput(1)) return;
 
   emit('shuffle');
+  impactFeedback('light');
+
   if (isSpinningShuffle.value) return;
 
   isSpinningShuffle.value = true;
@@ -76,6 +78,7 @@ function clickShuffle() {
 function clickBuy() {
   if (!cheatCodeButtonInput(2)) {
     emit('buy');
+    impactFeedback('light');
   }
 }
 

@@ -1,6 +1,6 @@
 <template>
   <div
-      class="w-32 text-center flex justify-center items-center h-12 text-white rounded-lg transition-all duration-200 !pointer-events-auto"
+      class="w-32 text-center flex justify-center items-center h-12 text-white rounded-lg transition-all duration-200 !pointer-events-auto font-shippori"
       :class="bgColor"
   >
     <span v-text="text" />

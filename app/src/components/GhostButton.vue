@@ -10,7 +10,6 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 
-
 export type GhostVariant = 'primary' | 'secondary' | 'accent';
 
 const props = defineProps<{

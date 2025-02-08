@@ -12,8 +12,8 @@
     <div class="bg-background-50 text-text-900 min-h-screen p-2">
       <div v-if="winState === 'active'"
            class="flex flex-col justify-center items-center h-screen gap-4">
-        <div class="text-primary-400">good job 🎉</div>
-        <div class="text-primary-400 text-sm">you did all the puzzles. now wait for me to add more.</div>
+        <div class="text-primary-400 font-shippori">good job 🎉</div>
+        <div class="text-primary-400 text-sm font-shippori">you did all the puzzles. now wait for me to add more.</div>
       </div>
 
       <FadeTransition :duration="200">
@@ -21,8 +21,8 @@
              class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999]">
           <div class="flex flex-col justify-center items-center h-screen gap-4 z-[999] pointer-events-none">
 
-            <div class="text-primary-400">loading...</div>
-            <div class="text-primary-400">{{ motd }}</div>
+            <div class="text-primary-400 font-shippori">loading...</div>
+            <div class="text-primary-400 font-shippori">{{ motd }}</div>
           </div>
         </div>
       </FadeTransition>
@@ -31,7 +31,7 @@
         <!-- compensate for dynamic island -->
         <div class="h-12"/>
         <div class="flex justify-center items-center gap-4">
-          <div class="text-primary-400">LEVEL {{ puzzleId }}</div>
+          <div class="text-primary-400 font-shippori">LEVEL {{ puzzleId }}</div>
         </div>
 
         <div class="flex-1">
@@ -49,7 +49,7 @@
 
         <div
             :class="{ 'opacity-0': !showCurrentlyBuildingWord, 'z-1': !showBuySelector }"
-            class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900"
+            class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900 font-shippori"
             :style="{ bottom: `${Math.abs(highestLetterPosition?.y ?? 300) + 5}px` }"
         >
           {{ currentlyBuildingWord }}
@@ -220,7 +220,7 @@ async function testWord(word: string) {
       await notificationFeedback('success');
       break;
     case 'not_found':
-      await notificationFeedback('error');
+      await notificationFeedback('warning');
       break;
     case 'found':
       await impactFeedback('rigid');
@@ -275,7 +275,6 @@ function submitCheatCode() {
       break;
     case 'bonus':
       wordBuilder.value?.showBonusAnimation?.();
-      impactFeedback('medium');
       availableBonusWordPoints.value++;
       break;
     default:
