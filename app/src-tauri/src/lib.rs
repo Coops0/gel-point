@@ -1,6 +1,8 @@
+#![allow(clippy::missing_panics_doc, clippy::used_underscore_binding, clippy::large_stack_frames)]
+
 use crate::state::{memoized_fetch_cache, CachedData, Paths};
 use anyhow::Context;
-use log::{error, LevelFilter};
+use log::{error, info, LevelFilter};
 use serde::Serialize;
 use std::{
     fs, sync::{Arc, Mutex}, time::Duration
@@ -22,8 +24,9 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::new()
-                .targets([Target::new(TargetKind::Stdout), Target::new(TargetKind::Webview)])
+                .targets([Target::new(TargetKind::Stdout)])
                 .level(LevelFilter::Warn)
+                .level_for("app_lib", LevelFilter::Trace)
                 .build()
         )
         .plugin(tauri_plugin_fs::init())
@@ -46,11 +49,13 @@ pub fn run() {
                 let bundled_puzzles =
                     path.resolve("./assets/puzzles.txt", BaseDirectory::Resource)?;
                 let _ = fs::copy(&bundled_puzzles, paths.puzzles());
+                info!("copied bundled puzzles to cache");
             }
 
             if !paths.words().exists() {
                 let bundled_words = path.resolve("./assets/words.txt", BaseDirectory::Resource)?;
                 let _ = fs::copy(&bundled_words, paths.words());
+                info!("copied bundled words to cache");
             }
 
             let state = Arc::new(Mutex::new(None::<CachedData>));
@@ -69,7 +74,7 @@ pub fn run() {
                 };
 
                 let words =
-                    words.to_lowercase().split("\n").map(ToOwned::to_owned).collect::<Vec<_>>();
+                    words.to_lowercase().split('\n').map(ToOwned::to_owned).collect::<Vec<_>>();
 
                 let mut state = state.lock().unwrap();
                 *state = Some(CachedData { words, puzzles });
@@ -120,6 +125,8 @@ async fn load_puzzle_buffered(
 
     let puzzle = viable_puzzles.first().map(|(_, puzzle)| *puzzle).cloned();
     let next_puzzle = viable_puzzles.get(1).map(|(_, puzzle)| *puzzle).cloned();
+
+    drop(state);
 
     Ok(PuzzleBufferedResponse { puzzle, next_puzzle })
 }

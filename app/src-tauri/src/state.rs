@@ -1,5 +1,5 @@
+use log::{info, warn};
 use serde::Serialize;
-use sha2::{Digest, Sha256};
 use std::{
     collections::HashMap, path::{Path, PathBuf}, time::Duration
 };
@@ -49,15 +49,14 @@ fn req_client() -> reqwest::Client {
     reqwest::Client::builder().timeout(Duration::from_secs(1)).build().unwrap()
 }
 
-async fn fetch_hash(route: &str) -> anyhow::Result<Vec<u8>> {
+async fn fetch_hash(route: &str) -> anyhow::Result<String> {
     req_client()
-        .get(format!("{}/{route}/hash", crate::BASE_API_URL))
+        .get(format!("{}/{route}/hash-string", crate::BASE_API_URL))
         .send()
         .await?
-        .bytes()
+        .text()
         .await
         .map_err(Into::into)
-        .map(|r| r.to_vec())
 }
 
 async fn fetch_text(route: &str) -> anyhow::Result<String> {
@@ -70,49 +69,54 @@ async fn fetch_text(route: &str) -> anyhow::Result<String> {
         .map_err(Into::into)
 }
 
-async fn read_cached_hashes(path: &Path) -> Option<(Vec<u8>, Vec<u8>)> {
-    let data = tokio::fs::read(path).await.ok()?;
-    let mut stream = data.split(|b| b == &b',').map(|b| b.to_vec());
-
-    Some((stream.next()?, stream.next()?))
+async fn read_cached_hashes(path: &Path) -> Option<(String, String)> {
+    let data = tokio::fs::read_to_string(path).await.ok()?;
+    data.split_once(',').map(|(a, b)| (a.to_owned(), b.to_owned()))
 }
 
 async fn memoize_or_fetch(
     path: &Path,
     route: &str,
-    cached_hash: Option<Vec<u8>>
-) -> anyhow::Result<(String, Vec<u8>)> {
-    let mut local_bytes = None::<Vec<u8>>;
-
-    let hash = match cached_hash {
-        Some(hash) => hash,
-        None => {
-            let b = tokio::fs::read(path).await.unwrap_or_default();
-            let h = Sha256::digest(&b).to_vec();
-            local_bytes = Some(b);
-
-            h
+    cached_hash: Option<String>
+) -> anyhow::Result<(String, String)> {
+    let remote_hash = match fetch_hash(route).await {
+        Ok(h) => Some(h),
+        Err(err) => {
+            warn!("failed to fetch hash for {route}: {err}");
+            None
         }
     };
 
-    let remote_hash = match fetch_hash(route).await {
-        Ok(h) => h,
-        Err(_) => hash.clone()
-    };
+    match (&remote_hash, &cached_hash) {
+        (Some(remote), Some(cached)) if remote == cached => {
+            info!("hashes for {route} match remote, using local cache");
 
-    if hash != remote_hash {
-        if let Ok(text) = fetch_text(route).await {
-            tokio::fs::write(path, text.as_bytes()).await?;
-            return Ok((text, hash));
+            let contents = tokio::fs::read_to_string(path).await?;
+            Ok((contents, remote_hash.unwrap()))
+        }
+        (Some(_), None) => {
+            info!("no local hash, fetched {route} from remote");
+
+            let contents = fetch_text(route).await?;
+            tokio::fs::write(path, &contents[..]).await?;
+
+            Ok((contents, remote_hash.unwrap()))
+        }
+        (None, Some(_)) => {
+            info!("remote hash is none, using local cache");
+
+            let contents = tokio::fs::read_to_string(path).await?;
+            Ok((contents, cached_hash.unwrap()))
+        }
+        _ => {
+            info!("remote hash is different, fetching remote");
+
+            let contents = fetch_text(route).await?;
+            tokio::fs::write(path, &contents[..]).await?;
+
+            Ok((contents, remote_hash.unwrap()))
         }
     }
-
-    let bytes = match local_bytes {
-        Some(b) => String::from_utf8(b)?,
-        None => tokio::fs::read_to_string(path).await.unwrap_or_default()
-    };
-
-    Ok((bytes, hash))
 }
 
 pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, HashMap<u32, String>)> {
@@ -120,24 +124,30 @@ pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, Hash
     let puzzles_data = paths.puzzles();
     let hashes = paths.hashes();
 
-    let (words_hash, puzzles_hash) = read_cached_hashes(&hashes).await.unzip();
+    let (local_words_hash, local_puzzles_hash) = read_cached_hashes(&hashes).await.unzip();
 
     let ((words, words_hash), (puzzles, puzzles_hash)) = try_join!(
-        memoize_or_fetch(&words_data, "words", words_hash),
-        memoize_or_fetch(&puzzles_data, "puzzles", puzzles_hash)
+        memoize_or_fetch(&words_data, "words", local_words_hash),
+        memoize_or_fetch(&puzzles_data, "puzzles", local_puzzles_hash)
     )?;
 
-    let _ = tokio::fs::write(hashes, [&words_hash, &[b','][..], &puzzles_hash].concat()).await;
+    if let Err(err) =
+        tokio::fs::write(hashes, format!("{words_hash},{puzzles_hash}")).await
+    {
+        warn!("failed to write hashes to disk: {err}");
+    }
 
     let puzzles = puzzles
-        .split("\n")
+        .split('\n')
         .filter_map(|line| {
-            let mut parts = line.split("|");
+            let mut parts = line.split('|');
             let id: u32 = parts.next()?.parse().ok()?;
 
             Some((id.to_owned(), line.to_owned()))
         })
         .collect::<HashMap<u32, String>>();
+
+    info!("parsed {} puzzles", puzzles.len());
 
     Ok((words, puzzles))
 }
