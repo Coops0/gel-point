@@ -218,13 +218,13 @@ async function testWord(word: string) {
     case 'win':
       await goToNextLevel();
       await notificationFeedback('success');
+      puzzleGrid.value?.animateShimmerCells(testResult.cells);
       break;
     case 'not_found':
       await notificationFeedback('warning');
       break;
     case 'found':
       await impactFeedback('rigid');
-      puzzleGrid.value?.animateShimmerCells(testResult.cells);
       break;
   }
 }

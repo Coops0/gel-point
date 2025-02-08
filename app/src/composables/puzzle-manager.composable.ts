@@ -7,8 +7,8 @@ import type { WordService } from '@/services/words.service.ts';
 export type WordTestResult =
     { tag: 'not_found' } |
     { tag: 'found', cells: Array<[number, number]> } |
-    { tag: 'bonus', theme: boolean } |
-    { tag: 'win' }
+    { tag: 'win', cells: Array<[number, number]> } |
+    { tag: 'bonus', theme: boolean };
 
 export const usePuzzleManager = (wordService: WordService) => {
     const isInitialLoad = ref(true);
@@ -52,7 +52,7 @@ export const usePuzzleManager = (wordService: WordService) => {
 
         activeGrid.value = newGrid;
 
-        return hasWon() ? { tag: 'win' } : { tag: 'found', cells: match.positions };
+        return { tag: hasWon() ? 'win' : 'found', cells: match.positions };
     };
 
     const setPuzzle = (p: Puzzle) => {

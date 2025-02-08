@@ -4,7 +4,7 @@
 - Changed grid letters to use original font
 - Black and white buttons & emojis
 - Shuffle button spins on shuffle
-- Popover overlap of other emoji (e.x. dark mode over theme) looks bad / cover up with background
+- Popover overlap of other emoji (e.x. dark mode selector over theme) looks bad / cover up with background
 - Unlock all themes for beta
 - \[internal\] Migrate all 'template' refs to actually use template ref (`InstanceType<Component>`)
 - Refined haptics in various places
@@ -17,7 +17,7 @@
 ### v0.1.1
 - Fix currently built word text's position
 - Fade out from loading into game
-- Next level animation has variations in it's text
+- Next level animation has variations in its text
 - Light theme by default
 - Redo all dark themes
 - Next level animation on top
