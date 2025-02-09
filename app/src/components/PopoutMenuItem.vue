@@ -12,7 +12,7 @@
     >
       <GhostButton
           :ref="uniqueId"
-          :class="hovered && 'bg-primary-500/25'"
+          :class="hovered && '!bg-primary-500/25'"
           :data-popup-key="popupKey"
           :variant
           class="text-nowrap"
