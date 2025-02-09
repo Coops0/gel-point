@@ -47,13 +47,13 @@ pub fn run() {
 
             if !paths.puzzles().exists() {
                 let bundled_puzzles =
-                    path.resolve("./assets/puzzles.txt", BaseDirectory::Resource)?;
+                    path.resolve("./assets/puzzles.data", BaseDirectory::Resource)?;
                 let _ = fs::copy(&bundled_puzzles, paths.puzzles());
                 info!("copied bundled puzzles to cache");
             }
 
             if !paths.words().exists() {
-                let bundled_words = path.resolve("./assets/words.txt", BaseDirectory::Resource)?;
+                let bundled_words = path.resolve("./assets/words.data", BaseDirectory::Resource)?;
                 let _ = fs::copy(&bundled_words, paths.words());
                 info!("copied bundled words to cache");
             }

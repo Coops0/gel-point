@@ -48,8 +48,8 @@
 
         <div
             :class="{ 'opacity-0': !showCurrentlyBuildingWord, 'z-1': !showBuySelector }"
-            class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900 font-shippori"
             :style="{ bottom: `${Math.abs(highestLetterPosition?.y ?? 300) + 5}px` }"
+            class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900 font-shippori"
         >
           {{ currentlyBuildingWord }}
         </div>
@@ -61,22 +61,22 @@
                  @active-cheat-code="() => activateCheatCode()"
         />
 
-        <ThemeSelector class="fixed right-2 bottom-4"
+        <ThemeSelector :current-theme="theme"
+                       :earned="earnedThemes"
+                       :show-unread="showNewlyUnlockedIndicator"
+                       class="fixed right-2 bottom-4"
                        @change-theme="t => setTheme(t)"
                        @clear-unread="() => showNewlyUnlockedIndicator = false"
-                       :show-unread="showNewlyUnlockedIndicator"
-                       :earned="earnedThemes"
-                       :current-theme="theme"
         />
 
         <div>
           <div class="relative z-1">
             <WordBuilder
                 ref="word-builder"
+                v-model="highestLetterPosition"
                 :letters="currentPuzzle!.letters"
                 @test-word="word => testWord(word)"
                 @update-built-word="updateBuiltWord"
-                v-model="highestLetterPosition"
             />
           </div>
         </div>
@@ -86,10 +86,10 @@
     <input
         ref="cheat-code-input-el"
         v-model="cheatCodeInput"
-        @keydown.enter="() => submitCheatCode()"
-        class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10 text-text-900"
         :class="!showCheatCodeInput && 'hidden'"
         autocomplete="off"
+        class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10 text-text-900"
+        @keydown.enter="() => submitCheatCode()"
     />
   </div>
 </template>

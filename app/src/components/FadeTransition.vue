@@ -1,8 +1,8 @@
 <template>
   <Transition
-      class="transition-all"
-      :style="{ transitionDuration: `${duration}ms` }"
       :duration="duration"
+      :style="{ transitionDuration: `${duration}ms` }"
+      class="transition-all"
       enter-from-class="opacity-0 "
       enter-to-class="opacity-100"
       leave-from-class="opacity-100"
@@ -11,7 +11,7 @@
   </Transition>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 
 withDefaults(
     defineProps<{ duration?: number }>(),

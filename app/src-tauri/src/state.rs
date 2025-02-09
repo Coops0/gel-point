@@ -114,7 +114,12 @@ async fn memoize_or_fetch(
         }
         (None, None) => {
             warn!("no remote or local cache for {route}");
-            Err(anyhow::anyhow!("no remote or local cache for {route}"))
+
+            // most likely case this happens is if they start the app for the first time
+            // without internet. we'll just load the local bundled files, and "cache" a
+            // temporary hash that will be overwritten the next time they have internet
+            let contents = tokio::fs::read_to_string(path).await?;
+            Ok((contents, String::from("TEMP-HASH")))
         }
     }
 }
@@ -143,7 +148,7 @@ pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, Hash
             let mut parts = line.split('|');
             let id: u32 = parts.next()?.parse().ok()?;
 
-            Some((id.to_owned(), line.to_owned()))
+            Some((id, line.to_owned()))
         })
         .collect::<HashMap<u32, String>>();
 

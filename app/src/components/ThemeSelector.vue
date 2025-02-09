@@ -2,9 +2,9 @@
   <div class="flex flex-col gap-2">
     <PopoutMenu
         v-if="themeItems.length !== 0"
+        :items="themeItems"
         emoji-mode
         variant="accent"
-        :items="themeItems"
         @select="t => changeTheme(t as unknown as Theme['name'])"
         @start="() => emit('clear-unread')"
     >
@@ -18,16 +18,16 @@
     </PopoutMenu>
 
     <PopoutMenu
-        variant="accent"
-        emoji-mode
         :items="darkModeItems[0]"
+        emoji-mode
+        variant="accent"
         @select="k => changeDarkMode(k as unknown as Theme['dark'])"
     >{{ darkModeItems[1].label }}
     </PopoutMenu>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { type Theme, THEME_EMOJIS, THEMES } from '@/composables/theme.composable.ts';
 import PopoutMenu, { type PopoutItem } from '@/components/PopoutMenu.vue';
 import { computed } from 'vue';

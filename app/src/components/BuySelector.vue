@@ -2,8 +2,8 @@
   <div>
     <FadeTransition :duration="500">
       <div
-          id="buy-selector-backdrop"
           v-if="active"
+          id="buy-selector-backdrop"
           class="fixed size-full inset-0 z-10 bg-black/75 transition-all duration-500 flex justify-center"
       />
     </FadeTransition>

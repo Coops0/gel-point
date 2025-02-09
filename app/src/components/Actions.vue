@@ -13,9 +13,10 @@
     </div>
 
     <GhostButton class="rounded-md" variant="accent" @click="() => clickShuffle()">
-      <div class="grayscale" :class="isSpinningShuffle ? 'spin-button' : ''">♻️</div>
+      <div :class="isSpinningShuffle ? 'spin-button' : ''" class="grayscale">♻️</div>
     </GhostButton>
-    <GhostButton class="rounded-md" variant="secondary" @click="() => clickBuy()"><span class="grayscale">$</span></GhostButton>
+    <GhostButton class="rounded-md" variant="secondary" @click="() => clickBuy()"><span class="grayscale">$</span>
+    </GhostButton>
   </div>
 </template>
 

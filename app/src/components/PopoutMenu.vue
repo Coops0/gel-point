@@ -3,8 +3,8 @@
     <Teleport to="body">
       <div
           v-if="showHelper && elementPosition"
-          class="fixed z-9 bg-primary-900 text-white p-2 rounded-md font-shippori"
           :style="{ top: `${elementPosition.y}px`, left: `${elementPosition.x - 100}px` }"
+          class="fixed z-9 bg-primary-900 text-white p-2 rounded-md font-shippori"
       >
         hold me ->
       </div>
@@ -15,25 +15,25 @@
     >
       <PopoutMenuItem v-for="(item, index) in alignedItems"
                       :key="item.key"
-                      :x="item.x"
-                      :y="item.y"
-                      :label="item.label"
-                      :variant="item.variant"
-                      :popup-key="item.key"
+                      :ref="itemRefIds"
+                      :active="isHolding"
                       :hovered="item.key === hoveredItem"
                       :index="index"
-                      :active="isHolding"
-                      :ref="itemRefIds"
+                      :label="item.label"
+                      :popup-key="item.key"
+                      :variant="item.variant"
+                      :x="item.x"
+                      :y="item.y"
       />
     </div>
 
     <GhostButton
+        :ref="popoutId"
         :variant
         class="px-4 py-2 rounded-md transition-all ease-out duration-150"
         @pointerdown.prevent="event => beginHold(event)"
-        :ref="popoutId"
     >
-      <span class="transition-all duration-150" :class="(emojiMode && !isHolding) ? 'grayscale' : ''"><slot/></span>
+      <span :class="(emojiMode && !isHolding) ? 'grayscale' : ''" class="transition-all duration-150"><slot/></span>
     </GhostButton>
   </div>
 </template>

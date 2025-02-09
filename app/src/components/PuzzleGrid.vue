@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col justify-center items-center" :style="{ gap: `${gapSize}px` }">
+  <div :style="{ gap: `${gapSize}px` }" class="flex flex-col justify-center items-center">
     <div
         v-for="(row, rowIndex) in localGrid"
         :key="`${rowIndex}-${row.length}`"
@@ -18,11 +18,11 @@
             'cell-active': cell !== 0,
             'cell-inactive': cell === 0
           }"
+          :data-col="colIndex"
+          :data-row="rowIndex"
           :style="{ width: `${cellSize}px`, height: `${cellSize}px` }"
           class="flex items-center justify-center font-medium transition-all duration-500 cell"
           @click="() => handleCellClick(rowIndex, colIndex)"
-          :data-row="rowIndex"
-          :data-col="colIndex"
       >
         <span v-if="cell !== 0 && cell !== -1" :style="{ fontSize: `${textSize}px` }">{{ cell }}</span>
       </div>

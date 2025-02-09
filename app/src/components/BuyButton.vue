@@ -1,9 +1,9 @@
 <template>
   <div
-      class="w-32 text-center flex justify-center items-center h-12 text-white rounded-lg transition-all duration-200 !pointer-events-auto font-shippori"
       :class="bgColor"
+      class="w-32 text-center flex justify-center items-center h-12 text-white rounded-lg transition-all duration-200 !pointer-events-auto font-shippori"
   >
-    <span v-text="text" />
+    <span v-text="text"/>
   </div>
 </template>
 
@@ -23,17 +23,23 @@ const state = computed(() => {
 
 const text = computed(() => {
   switch (state.value) {
-    case -2: return 'SELECT';
-    case -1: return 'CANNOT AFFORD';
-    case 0: return 'BUY';
+    case -2:
+      return 'SELECT';
+    case -1:
+      return 'CANNOT AFFORD';
+    case 0:
+      return 'BUY';
   }
 });
 
 const bgColor = computed(() => {
   switch (state.value) {
-    case -2: return 'bg-blue-200';
-    case -1: return 'bg-blue-200';
-    case 0: return 'bg-blue-600 active:bg-blue-700';
+    case -2:
+      return 'bg-blue-200';
+    case -1:
+      return 'bg-blue-200';
+    case 0:
+      return 'bg-blue-600 active:bg-blue-700';
   }
 });
 </script>

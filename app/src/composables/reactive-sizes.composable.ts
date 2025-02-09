@@ -1,4 +1,4 @@
-import { onMounted, type Ref, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 
 export const useWindowSize = () => {
