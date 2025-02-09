@@ -20,7 +20,6 @@
         <div v-if="winState !== 'active' && !isLoaded"
              class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999]">
           <div class="flex flex-col justify-center items-center h-screen gap-4 z-[999] pointer-events-none">
-
             <div class="text-primary-400 font-shippori">loading...</div>
             <div class="text-primary-400 font-shippori">{{ motd }}</div>
           </div>
