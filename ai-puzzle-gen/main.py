@@ -8,180 +8,6 @@ import os
 import random
 
 class PuzzleDataset(Dataset):
-    def __init__(self, file_path, max_letters=8, max_words=12):
-        self.puzzles = []
-        self.max_letters = max_letters
-        self.max_words = max_words
-        self.vocab = set()
-
-        with open(file_path, 'r') as f:
-            for line in f:
-                parts = line.strip().split('|')
-                if len(parts) < 3:
-                    continue
-                puzzle_id, letters, solutions = parts
-                if len(letters) <= max_letters:
-                    words = [w.split(',')[0] for w in solutions.split(';')]
-                    if len(words) <= max_words:
-                        self.puzzles.append((letters, words))
-                        self.vocab.update(letters)
-
-        self.char_to_idx = {c: i for i, c in enumerate(sorted(self.vocab))}
-        self.idx_to_char = {i: c for c, i in self.char_to_idx.items()}
-
-    def __len__(self):
-        return len(self.puzzles)
-
-    def __getitem__(self, idx):
-        letters, words = self.puzzles[idx]
-        x = torch.zeros(self.max_letters, len(self.char_to_idx))
-        for i, letter in enumerate(letters):
-            x[i][self.char_to_idx[letter]] = 1
-
-        y = torch.zeros(self.max_words, self.max_letters)
-        for i, word in enumerate(words):
-            if i >= self.max_words:
-                break
-            for j, letter in enumerate(word):
-                if j < self.max_letters:
-                    y[i][j] = 1
-
-        return x, y
-
-class PuzzleGenerator(nn.Module):
-    def __init__(self, vocab_size, max_letters=8, max_words=12, hidden_dim=256):
-        super().__init__()
-        self.max_letters = max_letters
-        self.max_words = max_words
-        self.vocab_size = vocab_size
-        
-        # Calculate correct input size: max_letters * vocab_size
-        input_size = max_letters * vocab_size
-        
-        self.encoder = nn.Sequential(
-            nn.Linear(input_size, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU()
-        )
-        self.decoder = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, max_words * max_letters),
-            nn.Sigmoid()
-        )
-
-    def forward(self, x):
-        # x shape: [batch_size, max_letters, vocab_size]
-        batch_size = x.size(0)
-        # Flatten: [batch_size, max_letters * vocab_size]
-        x = x.reshape(batch_size, self.max_letters * self.vocab_size)
-        x = self.encoder(x)
-        x = self.decoder(x)
-        # Reshape output to [batch_size, max_words, max_letters]
-        return x.reshape(batch_size, self.max_words, self.max_letters)
-
-def train_model(model, train_loader, device, epochs=50):
-    criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-    model.to(device)
-    for epoch in range(epochs):
-        total_loss = 0
-        for batch_x, batch_y in train_loader:
-            batch_x, batch_y = batch_x.to(device), batch_y.to(device)
-            optimizer.zero_grad()
-            output = model(batch_x)
-            loss = criterion(output, batch_y)
-            loss.backward()
-            optimizer.step()
-            total_loss += loss.item()
-        if (epoch + 1) % 10 == 0:
-            print(f'Epoch {epoch+1}, Loss: {total_loss/len(train_loader):.4f}')
-
-def load_wordlist(filepath='wordlist.txt'):
-    if not os.path.exists(filepath):
-        import urllib.request
-        url = "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
-        urllib.request.urlretrieve(url, filepath)
-    with open(filepath, 'r') as f:
-        return set(word.strip().lower() for word in f)
-
-def get_valid_words(letters, wordlist):
-    valid = set()
-    letter_count = defaultdict(int, {c: letters.count(c) for c in letters})
-    for word in wordlist:
-        if 3 <= len(word) <= len(letters):
-            word_count = defaultdict(int, {c: word.count(c) for c in word})
-            if all(word_count[c] <= letter_count[c] for c in word_count):
-                valid.add(word)
-    return valid
-
-def generate_puzzle(model, char_to_idx, idx_to_char, wordlist, max_letters=6, device='cpu'):
-    model.eval()
-    with torch.no_grad():
-        available_letters = list(char_to_idx.keys())
-        puzzle_letters = ''.join(random.sample(available_letters, max_letters))
-        x = torch.zeros(1, max_letters, len(char_to_idx))
-        for i, letter in enumerate(puzzle_letters):
-            x[0, i, char_to_idx[letter]] = 1
-        x = x.to(device)
-        output = model(x).cpu().numpy()[0]
-        valid_words = get_valid_words(puzzle_letters, wordlist)
-        return puzzle_letters, list(valid_words)
-
-def save_model(model, char_to_idx, idx_to_char, path='puzzle_model.pt'):
-    torch.save({
-        'model_state_dict': model.state_dict(),
-        'char_to_idx': char_to_idx,
-        'idx_to_char': idx_to_char,
-        'max_letters': model.max_letters,
-        'max_words': model.max_words,
-        'vocab_size': model.vocab_size
-    }, path)
-
-def load_model(path='puzzle_model.pt'):
-    checkpoint = torch.load(path)
-    model = PuzzleGenerator(
-        vocab_size=checkpoint['vocab_size'],
-        max_letters=checkpoint['max_letters'],
-        max_words=checkpoint['max_words']
-    )
-    model.load_state_dict(checkpoint['model_state_dict'])
-    return model, checkpoint['char_to_idx'], checkpoint['idx_to_char']
-
-def main():
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    wordlist = load_wordlist()
-    model_path = 'puzzle_model.pt'
-    if not os.path.exists(model_path):
-        print("Training new model...")
-        dataset = PuzzleDataset('puzzles.data')
-        train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
-        model = PuzzleGenerator(len(dataset.char_to_idx))
-        train_model(model, train_loader, device)
-        save_model(model, dataset.char_to_idx, dataset.idx_to_char, model_path)
-    else:
-        print("Loading existing model...")
-        model, char_to_idx, idx_to_char = load_model(model_path)
-        model.to(device)
-    for i in range(5):
-        letters, words = generate_puzzle(model, char_to_idx, idx_to_char, wordlist, device=device)
-        print(f"\nPuzzle {i+1}:")
-        print(f"Letters: {letters}")
-        print(f"Possible words: {', '.join(words)}")
-
-if __name__ == "__main__":
-    main()
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-import numpy as np
-from collections import defaultdict
-import os
-import random
-
-class PuzzleDataset(Dataset):
     def __init__(self, file_path):
         self.puzzles = []
         self.vocab = set()
@@ -192,26 +18,34 @@ class PuzzleDataset(Dataset):
                 if len(parts) != 3:
                     continue
                     
-                puzzle_id, letters, placements = parts
+                puzzle_id, letters, words_part = parts
+                if not letters or not words_part:
+                    continue
+                    
                 words_data = []
-                for placement in placements.split(';'):
+                for placement in words_part.split(';'):
                     if not placement:
                         continue
-                    word, direction, row, col = placement.split(',')
+                    parts = placement.split(',')
+                    if len(parts) != 4:
+                        continue
+                    word, direction, row, col = parts
+                    if not word.isalpha():
+                        continue
                     words_data.append({
-                        'word': word,
+                        'word': word.lower(),
                         'direction': direction,
                         'row': int(row),
                         'col': int(col)
                     })
                 
-                if words_data:  # Only add if we have valid words
+                if words_data:
                     self.puzzles.append({
                         'id': int(puzzle_id),
-                        'letters': letters,
+                        'letters': letters.lower(),
                         'words': words_data
                     })
-                    self.vocab.update(letters)
+                    self.vocab.update(letters.lower())
 
         self.char_to_idx = {c: i for i, c in enumerate(sorted(self.vocab))}
         self.idx_to_char = {i: c for c, i in self.char_to_idx.items()}
@@ -221,12 +55,14 @@ class PuzzleDataset(Dataset):
 
     def __getitem__(self, idx):
         puzzle = self.puzzles[idx]
+        
+        # Encode letters
         x = torch.zeros(len(self.char_to_idx))
         for letter in puzzle['letters']:
             x[self.char_to_idx[letter]] = 1
             
-        # Encode word placements as a sequence of [word_length, direction, row, col]
-        max_words = 12  # Maximum number of words per puzzle
+        # Encode words and their placements
+        max_words = 15  # Maximum number of words per puzzle
         y = torch.zeros(max_words, 4)  # [word_length, direction (0=h, 1=v), row, col]
         
         for i, word_data in enumerate(puzzle['words']):
@@ -238,6 +74,210 @@ class PuzzleDataset(Dataset):
             y[i, 3] = word_data['col']
             
         return x, y
+
+def get_valid_words(letters, wordlist):
+    valid = set()
+    letter_count = defaultdict(int)
+    for letter in letters:
+        letter_count[letter] += 1
+        
+    # First pass: find all possible words
+    for word in wordlist:
+        if 3 <= len(word) <= 7:  # Allow words up to 7 letters
+            word_count = defaultdict(int)
+            for char in word:
+                word_count[char] += 1
+            if all(word_count[c] <= letter_count[c] for c in word_count):
+                valid.add(word)
+                
+    return valid
+
+def check_word_fit(grid, word, row, col, direction, size=15):
+    if direction == 'v':
+        if row + len(word) > size:
+            return False
+        # Check vertical fit
+        for i in range(len(word)):
+            if grid[row + i][col] not in (0, word[i]):
+                return False
+    else:
+        if col + len(word) > size:
+            return False
+        # Check horizontal fit
+        for i in range(len(word)):
+            if grid[row][col + i] not in (0, word[i]):
+                return False
+    return True
+
+def place_word(grid, word, row, col, direction):
+    for i, letter in enumerate(word):
+        if direction == 'v':
+            grid[row + i][col] = letter
+        else:
+            grid[row][col + i] = letter
+
+def generate_valid_puzzle(letters, wordlist, min_words=5, max_words=12, size=15):
+    valid_words = get_valid_words(letters, wordlist)
+    if len(valid_words) < min_words:
+        return None
+        
+    # Sort words by length (prefer longer words first)
+    words = sorted(valid_words, key=len, reverse=True)
+    
+    best_puzzle = None
+    best_word_count = 0
+    
+    # Try multiple times to generate a good puzzle
+    for attempt in range(50):
+        grid = [[0] * size for _ in range(size)]
+        placed = []
+        
+        # Place first word in center area
+        first_word = random.choice([w for w in words if len(w) >= 4])
+        start_row = size // 2
+        start_col = (size - len(first_word)) // 2
+        place_word(grid, first_word, start_row, start_col, 'h')
+        placed.append((first_word, 'h', start_row, start_col))
+        
+        # Try to place remaining words
+        for _ in range(max_words - 1):
+            # Try each word in random positions
+            random.shuffle(words)
+            word_placed = False
+            
+            for word in words:
+                if word in [p[0] for p in placed]:
+                    continue
+                    
+                # Try random positions
+                for _ in range(30):
+                    direction = random.choice(['h', 'v'])
+                    row = random.randint(0, size-1)
+                    col = random.randint(0, size-1)
+                    
+                    if check_word_fit(grid, word, row, col, direction, size):
+                        place_word(grid, word, row, col, direction)
+                        placed.append((word, direction, row, col))
+                        word_placed = True
+                        break
+                        
+                if word_placed:
+                    break
+                    
+            if not word_placed:
+                break
+        
+        if len(placed) > best_word_count:
+            best_puzzle = placed
+            best_word_count = len(placed)
+            
+        if best_word_count >= min_words:
+            break
+            
+    return best_puzzle if best_word_count >= min_words else None
+
+def train_model(model, train_loader, device, epochs=200):
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.0005)  # Lower learning rate for better convergence
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10)
+    model.to(device)
+    
+    best_loss = float('inf')
+    
+    for epoch in range(epochs):
+        total_loss = 0
+        for batch_x, batch_y in train_loader:
+            batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+            optimizer.zero_grad()
+            output = model(batch_x)
+            loss = criterion(output, batch_y)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+            
+        avg_loss = total_loss / len(train_loader)
+        scheduler.step(avg_loss)
+        
+        if avg_loss < best_loss:
+            best_loss = avg_loss
+            
+        if (epoch + 1) % 10 == 0:
+            print(f'Epoch {epoch+1}, Loss: {avg_loss:.4f}')
+
+def load_wordlist(filepath='wordlist.txt'):
+    # Try to use NLTK's word lists for better quality words
+    try:
+        import nltk
+        from nltk.corpus import words, brown
+        nltk.download('words', quiet=True)
+        nltk.download('brown', quiet=True)
+        
+        # Get word frequency from Brown corpus
+        word_freq = defaultdict(int)
+        for word in brown.words():
+            word = word.lower()
+            if word.isalpha():
+                word_freq[word] += 1
+        
+        # Filter words by length and frequency
+        common_words = set()
+        for word, freq in word_freq.items():
+            if 3 <= len(word) <= 7 and freq >= 5:  # Words that appear at least 5 times
+                common_words.add(word)
+                
+        # Add some basic words from NLTK's word list that might be missing
+        english_words = set(w.lower() for w in words.words() if 3 <= len(w) <= 7 and w.isalpha())
+        basic_words = {'cat', 'dog', 'run', 'jump', 'play', 'walk', 'talk', 'eat', 'drink', 
+                      'sleep', 'work', 'help', 'look', 'see', 'hear', 'feel', 'think', 'know',
+                      'want', 'need', 'give', 'take', 'make', 'find', 'keep', 'let', 'seem',
+                      'have', 'show', 'try', 'call', 'ask', 'live', 'stay', 'sit', 'stand',
+                      'love', 'like', 'come', 'leave', 'put', 'send', 'meet', 'pay', 'hear',
+                      'stop', 'pass', 'set', 'cut', 'fall', 'tell', 'turn', 'cost', 'drive',
+                      'hold', 'move', 'wait', 'sold', 'fill', 'lead', 'lie', 'red', 'blue',
+                      'open', 'pull', 'read', 'ride', 'run', 'seek', 'sell', 'send', 'shed',
+                      'shut', 'sing', 'sink', 'slip', 'slow', 'snap', 'snow', 'sort', 'spot',
+                      'star', 'stay', 'step', 'stop', 'swim', 'take', 'talk', 'tear', 'tell',
+                      'tend', 'test', 'tick', 'tide', 'time', 'tire', 'turn', 'twin', 'type',
+                      'view', 'vote', 'wait', 'wake', 'walk', 'want', 'warm', 'warn', 'wash',
+                      'wave', 'wear', 'wind', 'wing', 'wipe', 'wire', 'wish', 'wood', 'work',
+                      'yard', 'year', 'yell'}
+        
+        return common_words.union(basic_words)
+        
+    except:
+        # Fallback to downloading wordlist if NLTK fails
+        if not os.path.exists(filepath):
+            import urllib.request
+            # Use a better word list source - Norvig's frequency-based list
+            url = "https://norvig.com/ngrams/count_1w.txt"
+            urllib.request.urlretrieve(url, filepath)
+        
+        words = set()
+        with open(filepath, 'r', encoding='utf-8') as f:
+            for line in f:
+                try:
+                    word, count = line.strip().split('\t')
+                    if word.isalpha() and 3 <= len(word) <= 7:
+                        count = int(count)
+                        if count > 1000:  # Only take somewhat common words
+                            words.add(word.lower())
+                except:
+                    continue
+        return words
+
+def save_model(model, char_to_idx, idx_to_char, path='wordscape_model.pt'):
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'char_to_idx': char_to_idx,
+        'idx_to_char': idx_to_char,
+        'vocab_size': model.vocab_size
+    }, path)
+
+def load_model(path='wordscape_model.pt'):
+    checkpoint = torch.load(path)
+    model = PuzzleGenerator(vocab_size=checkpoint['vocab_size'])
+    model.load_state_dict(checkpoint['model_state_dict'])
+    return model, checkpoint['char_to_idx'], checkpoint['idx_to_char']
 
 class PuzzleGenerator(nn.Module):
     def __init__(self, vocab_size, hidden_dim=512):
@@ -254,169 +294,62 @@ class PuzzleGenerator(nn.Module):
         self.decoder = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, 12 * 4),  # 12 words max, 4 features each
+            nn.Linear(hidden_dim, 15 * 4),  # 15 words max, 4 features each
             nn.Sigmoid()
         )
 
     def forward(self, x):
         x = self.encoder(x)
         x = self.decoder(x)
-        return x.reshape(-1, 12, 4)  # Reshape to [batch_size, max_words, features]
-
-def load_wordlist(filepath='wordlist.txt'):
-    if not os.path.exists(filepath):
-        import urllib.request
-        url = "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
-        urllib.request.urlretrieve(url, filepath)
-    
-    with open(filepath, 'r') as f:
-        words = set()
-        for word in f:
-            word = word.strip().lower()
-            if len(word) >= 3 and word.isalpha():
-                words.add(word)
-    return words
-
-def check_word_fit(grid, word, row, col, direction):
-    height, width = len(grid), len(grid[0])
-    
-    # Check if word fits within grid bounds
-    if direction == 'v':
-        if row + len(word) > height:
-            return False
-    else:
-        if col + len(word) > width:
-            return False
-    
-    # Check if word can be placed (empty spaces or matching letters)
-    for i, letter in enumerate(word):
-        curr_row = row + (i if direction == 'v' else 0)
-        curr_col = col + (i if direction == 'h' else 0)
-        
-        if grid[curr_row][curr_col] not in (0, letter):
-            return False
-            
-    return True
-
-def place_word(grid, word, row, col, direction):
-    for i, letter in enumerate(word):
-        if direction == 'v':
-            grid[row + i][col] = letter
-        else:
-            grid[row][col + i] = letter
-
-def generate_valid_puzzle(wordlist, letters, min_words=3, max_words=8, grid_size=15):
-    grid = [[0] * grid_size for _ in range(grid_size)]
-    placed_words = []
-    
-    # Get all valid words that can be made from letters
-    valid_words = set()
-    letter_count = defaultdict(int)
-    for letter in letters:
-        letter_count[letter] += 1
-        
-    for word in wordlist:
-        if 3 <= len(word) <= len(letters):
-            word_chars = defaultdict(int)
-            for char in word:
-                word_chars[char] += 1
-            if all(word_chars[char] <= letter_count[char] for char in word_chars):
-                valid_words.add(word)
-    
-    valid_words = sorted(valid_words, key=len, reverse=True)
-    if not valid_words:
-        return None
-    
-    # Place first word in center
-    first_word = valid_words[0]
-    start_row = grid_size // 2
-    start_col = (grid_size - len(first_word)) // 2
-    place_word(grid, first_word, start_row, start_col, 'h')
-    placed_words.append((first_word, 'h', start_row, start_col))
-    
-    # Try to place remaining words
-    attempts = 0
-    max_attempts = 1000
-    
-    while len(placed_words) < max_words and attempts < max_attempts:
-        word = random.choice(valid_words)
-        direction = random.choice(['h', 'v'])
-        
-        # Try random positions
-        for _ in range(50):
-            row = random.randint(0, grid_size - 1)
-            col = random.randint(0, grid_size - 1)
-            
-            if check_word_fit(grid, word, row, col, direction):
-                place_word(grid, word, row, col, direction)
-                placed_words.append((word, direction, row, col))
-                break
-                
-        attempts += 1
-    
-    if len(placed_words) >= min_words:
-        return placed_words
-    return None
-
-def train_model(model, train_loader, device, epochs=100):
-    criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-    model.to(device)
-    
-    for epoch in range(epochs):
-        total_loss = 0
-        for batch_x, batch_y in train_loader:
-            batch_x, batch_y = batch_x.to(device), batch_y.to(device)
-            optimizer.zero_grad()
-            output = model(batch_x)
-            loss = criterion(output, batch_y)
-            loss.backward()
-            optimizer.step()
-            total_loss += loss.item()
-            
-        if (epoch + 1) % 10 == 0:
-            print(f'Epoch {epoch+1}, Loss: {total_loss/len(train_loader):.4f}')
-
-def save_model(model, char_to_idx, idx_to_char, path='wordscape_model.pt'):
-    torch.save({
-        'model_state_dict': model.state_dict(),
-        'char_to_idx': char_to_idx,
-        'idx_to_char': idx_to_char,
-        'vocab_size': model.vocab_size
-    }, path)
-
-def load_model(path='wordscape_model.pt'):
-    checkpoint = torch.load(path)
-    model = PuzzleGenerator(vocab_size=checkpoint['vocab_size'])
-    model.load_state_dict(checkpoint['model_state_dict'])
-    return model, checkpoint['char_to_idx'], checkpoint['idx_to_char']
+        return x.reshape(-1, 15, 4)
 
 def generate_puzzle(model, char_to_idx, idx_to_char, wordlist, puzzle_id, device='cpu'):
     model.eval()
-    with torch.no_grad():
-        # Generate random set of letters
-        num_letters = random.randint(6, 8)
-        letters = ''.join(random.sample(list(char_to_idx.keys()), num_letters))
-        
-        # Create input tensor
-        x = torch.zeros(1, len(char_to_idx))
-        for letter in letters:
-            x[0, char_to_idx[letter]] = 1
-        
-        x = x.to(device)
-        
-        # Generate puzzle layout
-        placed_words = generate_valid_puzzle(wordlist, letters)
-        
-        if placed_words is None:
-            return None
+    attempts = 0
+    max_attempts = 50  # Maximum number of attempts to generate a valid puzzle
+    
+    while attempts < max_attempts:
+        with torch.no_grad():
+            # Generate 5-7 letters
+            num_letters = random.randint(5, 7)
             
-        # Format output string
-        word_placements = []
-        for word, direction, row, col in placed_words:
-            word_placements.append(f"{word},{direction},{row},{col}")
+            # Ensure we have vowels
+            vowels = 'aeiou'
+            consonants = 'bcdfghjklmnpqrstvwxyz'
             
-        return f"{puzzle_id}|{letters}|{';'.join(word_placements)}"
+            # Start with 2 random vowels
+            puzzle_letters = random.sample(vowels, 2)
+            
+            # Add random consonants and maybe another vowel
+            remaining_letters = num_letters - 2
+            consonant_choices = random.sample(consonants, remaining_letters)
+            if random.random() < 0.3:  # 30% chance to add another vowel
+                consonant_choices[0] = random.choice(vowels)
+            
+            puzzle_letters.extend(consonant_choices)
+            random.shuffle(puzzle_letters)
+            puzzle_letters = ''.join(puzzle_letters)
+            
+            # Test if we can make enough valid words
+            valid_words = get_valid_words(puzzle_letters, wordlist)
+            if len(valid_words) >= 5:  # Make sure we have enough words
+                x = torch.zeros(1, len(char_to_idx))
+                for letter in puzzle_letters:
+                    if letter in char_to_idx:
+                        x[0, char_to_idx[letter]] = 1
+                
+                x = x.to(device)
+                placed_words = generate_valid_puzzle(puzzle_letters, wordlist)
+                
+                if placed_words and len(placed_words) >= 3:
+                    word_placements = []
+                    for word, direction, row, col in placed_words:
+                        word_placements.append(f"{word},{direction},{row},{col}")
+                    return f"{puzzle_id}|{puzzle_letters}|{';'.join(word_placements)}"
+        
+        attempts += 1
+    
+    return None
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -425,24 +358,36 @@ def main():
     wordlist = load_wordlist()
     model_path = 'wordscape_model.pt'
     
+    # Load dataset first to get character mappings regardless of training path
+    dataset = PuzzleDataset('puzzles.data')
+    char_to_idx = dataset.char_to_idx
+    idx_to_char = dataset.idx_to_char
+    
     if not os.path.exists(model_path):
         print("Training new model...")
-        dataset = PuzzleDataset('puzzles.data')
         train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
-        model = PuzzleGenerator(len(dataset.char_to_idx))
-        train_model(model, train_loader, device)
-        save_model(model, dataset.char_to_idx, dataset.idx_to_char, model_path)
+        model = PuzzleGenerator(len(char_to_idx))
+        train_model(model, train_loader, device, epochs=200)
+        save_model(model, char_to_idx, idx_to_char, model_path)
     else:
         print("Loading existing model...")
         model, char_to_idx, idx_to_char = load_model(model_path)
         model.to(device)
     
     print("\nGenerating sample puzzles:")
-    for i in range(5):
-        puzzle = generate_puzzle(model, char_to_idx, idx_to_char, wordlist, i+1, device)
+    for i in range(100):
+        puzzle = None
+
+        try:
+            puzzle = generate_puzzle(model, char_to_idx, idx_to_char, wordlist, i+1, device)
+        except Exception as e:
+            print(f"Error generating puzzle: {e}")
+
         if puzzle:
             print(f"\nPuzzle {i+1}:")
             print(puzzle)
+        else:
+            print(f"\nPuzzle {i+1}: Failed to generate valid puzzle")
 
 if __name__ == "__main__":
     main()
