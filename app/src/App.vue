@@ -206,7 +206,7 @@ async function testWord(word: string) {
   const r = await testWordResult(word);
   switch (r.tag) {
     case 'bonus':
-      wordBuilder.value?.showBonusAnimation?.();
+      wordBuilder.value?.showBonusAnimation();
       await impactFeedback('medium');
 
       if (r.theme) {
@@ -273,7 +273,7 @@ function submitCheatCode() {
       loadAndSetPuzzle();
       break;
     case 'bonus':
-      wordBuilder.value?.showBonusAnimation?.();
+      wordBuilder.value?.showBonusAnimation();
       availableBonusWordPoints.value++;
       break;
     default:
@@ -297,7 +297,7 @@ useEventListener(
 
       event.preventDefault();
 
-      if (buySelector.value?.hasSelection?.() === true) {
+      if (buySelector.value?.hasSelection() === true) {
         puzzleGrid.value?.resetSelection();
       } else {
         showBuySelector.value = false;

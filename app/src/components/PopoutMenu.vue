@@ -91,8 +91,8 @@ function recalculatePositions() {
     if (props.dynamicSized) {
       const rect = itemRefs.value
           ?.map(i => i.buttonElement?.$el)
-          ?.filter(el => !!el)
-          ?.find(r => r.dataset['popupKey'] === item.key)
+          .filter(el => !!el)
+          .find(r => r.dataset['popupKey'] === item.key)
           ?.getBoundingClientRect();
 
       if (rect) {
