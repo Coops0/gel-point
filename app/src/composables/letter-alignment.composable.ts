@@ -11,7 +11,6 @@ const assignPositions = <E = string>(l: E[], circleRadius: number, circleXCenter
         const step = i / l.length;
         const angle = Math.PI * (2 * step - (1 / 2));
 
-        // (x-h)^2+(y-k)^2=r^2
         return {
             x: (Math.cos(angle)) * circleRadius + (circleXCenterOffset / 2) + 65,
             y: (Math.sin(angle) * circleRadius) - circleYCenterOffset,

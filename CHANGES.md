@@ -1,5 +1,8 @@
 # changelog
 
+### v0.1.4
+- Optimize built binary for size
+
 ### v0.1.3
 - Resolved special case app would fail to launch
 - Resolve bundle naming issues

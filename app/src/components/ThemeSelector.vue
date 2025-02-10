@@ -46,7 +46,7 @@ const emit = defineEmits<{
 
 const darkModeItems = computed<[PopoutItem[], PopoutItem]>(() => {
   const items: PopoutItem[] = [
-    { label: '🤖', key: 'system', variant: 'primary' },
+    { label: '🔄', key: 'system', variant: 'primary' },
     { label: '☀️', key: 'never', variant: 'primary' },
     { label: '🌑', key: 'always', variant: 'primary' },
   ];

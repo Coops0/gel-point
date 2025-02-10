@@ -203,13 +203,13 @@ async function goToNextLevel() {
 }
 
 async function testWord(word: string) {
-  const testResult = await testWordResult(word);
-  switch (testResult.tag) {
+  const r = await testWordResult(word);
+  switch (r.tag) {
     case 'bonus':
       wordBuilder.value?.showBonusAnimation?.();
       await impactFeedback('medium');
 
-      if (testResult.theme) {
+      if (r.theme) {
         unlockNextTheme();
       }
 
@@ -217,7 +217,7 @@ async function testWord(word: string) {
     case 'win':
       await goToNextLevel();
       await notificationFeedback('success');
-      puzzleGrid.value?.animateShimmerCells(testResult.cells);
+      puzzleGrid.value?.animateShimmerCells(r.cells);
       break;
     case 'not_found':
       await notificationFeedback('warning');
