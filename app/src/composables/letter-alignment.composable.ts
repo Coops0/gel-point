@@ -37,7 +37,7 @@ export const useLetterAlignment = (letters: Ref<string[]>, windowWidth: Ref<numb
     const shuffle = () => {
         const original: Array<[string, number]> = [...alignedLetters.value].map((l, i) => [l.letter, i]);
 
-        let shuffledLetters = [...original];
+        const shuffledLetters = [...original];
 
         let tries = 0;
         while (JSON.stringify(original) === JSON.stringify(shuffledLetters)) {

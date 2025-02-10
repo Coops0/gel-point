@@ -2,7 +2,7 @@
 
 import { onMounted, onUnmounted } from 'vue';
 
-export const useInterval = (handler: TimerHandler, timeout?: number, ...args: any[]) => {
+export const useInterval = (handler: TimerHandler, timeout?: number, ...args: unknown[]) => {
     let taskId: number | null = null;
 
     onMounted(() => {

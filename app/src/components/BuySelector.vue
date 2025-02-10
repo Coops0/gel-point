@@ -13,10 +13,12 @@
           v-if="grid !== null && active"
           class="fixed inset-0 z-12 pointer-events-none items-center justify-center flex"
       >
-        <p :class="hasSelection ? 'animate-pulse' : 'opacity-0'"
-           class="text-xl text-white text-center transition-opacity fixed top-7/10 font-shippori">
-          PRICE: <span :class="canAfford ? 'text-red-300' : 'text-red-500'"
-                       class="transition-colors font-bold">{{ affectedCells.length * 2 }}</span>
+        <p
+            :class="hasSelection ? 'animate-pulse' : 'opacity-0'"
+            class="text-xl text-white text-center transition-opacity fixed top-7/10 font-shippori">
+          PRICE: <span
+            :class="canAfford ? 'text-red-300' : 'text-red-500'"
+            class="transition-colors font-bold">{{ affectedCells.length * 2 }}</span>
         </p>
 
         <div class="flex flex-row gap-4 items-center justify-center fixed top-4/5">

@@ -4,7 +4,7 @@ import { onMounted, onUnmounted } from 'vue';
 
 export const useEventListener = <K extends keyof DocumentEventMap>(
     type: K,
-    listener: (ev: DocumentEventMap[K]) => any,
+    listener: (ev: DocumentEventMap[K]) => unknown,
     options?: boolean | AddEventListenerOptions
 ) => {
     onMounted(() => {

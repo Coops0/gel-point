@@ -1,6 +1,6 @@
 import { ref, watch } from 'vue';
 
-export const useLocalStorage = <T = any>(
+export const useLocalStorage = <T = unknown>(
     key: string,
     defaultValue: T,
     serialize: (data: T) => string = JSON.stringify,

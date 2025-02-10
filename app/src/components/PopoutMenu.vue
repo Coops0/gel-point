@@ -13,17 +13,18 @@
     <div
         class="fixed"
     >
-      <PopoutMenuItem v-for="(item, index) in alignedItems"
-                      :key="item.key"
-                      :ref="itemRefIds"
-                      :active="isHolding"
-                      :hovered="item.key === hoveredItem"
-                      :index="index"
-                      :label="item.label"
-                      :popup-key="item.key"
-                      :variant="item.variant"
-                      :x="item.x"
-                      :y="item.y"
+      <PopoutMenuItem
+          v-for="(item, index) in alignedItems"
+          :key="item.key"
+          :ref="itemRefIds"
+          :active="isHolding"
+          :hovered="item.key === hoveredItem"
+          :index="index"
+          :label="item.label"
+          :popup-key="item.key"
+          :variant="item.variant"
+          :x="item.x"
+          :y="item.y"
       />
     </div>
 

@@ -14,15 +14,16 @@
     </svg>
 
     <div class="w-full">
-      <Letter v-for="(l, letterIndex) in alignedLetters"
-              :key="letterIndex.toString() + l.letter"
-              :active="selectedLetterIndices.includes(letterIndex)"
-              :animating
-              :last-selected="selectedLetterIndices.length > 0 && selectedLetterIndices[selectedLetterIndices.length - 1] === letterIndex"
-              v-bind="l"
-              @hover="event => hover(event, letterIndex)"
-              @move="(x, y) => handleLetterMovement(letterIndex, x, y)"
-              @start-touch="event => startTouch(event, letterIndex)"
+      <Letter
+          v-for="(l, letterIndex) in alignedLetters"
+          :key="letterIndex.toString() + l.letter"
+          :active="selectedLetterIndices.includes(letterIndex)"
+          :animating
+          :last-selected="selectedLetterIndices.length > 0 && selectedLetterIndices[selectedLetterIndices.length - 1] === letterIndex"
+          v-bind="l"
+          @hover="event => hover(event, letterIndex)"
+          @move="(x, y) => handleLetterMovement(letterIndex, x, y)"
+          @start-touch="event => startTouch(event, letterIndex)"
       />
     </div>
   </div>
@@ -48,8 +49,7 @@ const { height, width } = useWindowSize();
 const {
   alignedLetters,
   shuffle,
-  circleXCenterOffset,
-  circleYCenterOffset
+  circleXCenterOffset
 } = useLetterAlignment(toRef(() => props.letters), width);
 
 watch(alignedLetters, a => {

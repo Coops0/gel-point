@@ -97,12 +97,12 @@ let updateTasks: number[] = [];
 
 const updateArrayLen = <T>(arr: T[], newLen: number) => {
   if (arr.length < newLen) {
-    let isArray = Array.isArray(arr.find(el => typeof el !== 'undefined'));
+    const isArray = Array.isArray(arr.find(el => typeof el !== 'undefined'));
 
     arr.push(
         ...Array(newLen - arr.length)
             .fill(null)
-            .map(() => isArray ? [] : -1) as any
+            .map(() => isArray ? [] : -1) as unknown as T[]
     );
   } else if (arr.length > newLen) {
     arr.length = newLen;
@@ -209,7 +209,7 @@ function handleCellClick(rowIndex: number, colIndex: number) {
   emit('selected', selectedRow.value, selectedCol.value);
 }
 
-let currentlyShiningCells: Array<[number, number]> = [];
+const currentlyShiningCells: Array<[number, number]> = [];
 
 function animateShimmerCells(cells: Array<[number, number]>) {
   if (props.buyMode) return;

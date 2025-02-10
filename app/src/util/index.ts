@@ -3,7 +3,7 @@ export const lerp = (a: number, b: number, alpha: number) => a + alpha * (b - a)
 export const clone = <T>(obj: T): T => JSON.parse(JSON.stringify(obj));
 
 export const centerOfCells = (cells: Array<[number, number]>, [rows, cols]: [number, number]): [number, number] => {
-    let cell = cells
+    const cell = cells
         .reduce(([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2], <[number, number]>[0, 0])
         .map(num => Math.floor(num / cells.length)) as [number, number];
 
@@ -15,7 +15,7 @@ export const centerOfCells = (cells: Array<[number, number]>, [rows, cols]: [num
 };
 
 export const ratioToCenterOfCells = (cells: Array<[number, number]>, [rows, cols]: [number, number]): [number, number] => {
-    let centerCell = cells
+    const centerCell = cells
         .reduce(([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2], <[number, number]>[0, 0]);
 
     centerCell[0] /= (rows * cells.length);

@@ -10,15 +10,17 @@
     />
 
     <div class="bg-background-50 text-text-900 min-h-screen p-2">
-      <div v-if="winState === 'active'"
-           class="flex flex-col justify-center items-center h-screen gap-4">
+      <div
+          v-if="winState === 'active'"
+          class="flex flex-col justify-center items-center h-screen gap-4">
         <div class="text-primary-400 font-shippori">good job 🎉</div>
         <div class="text-primary-400 text-sm font-shippori">you did all the puzzles. now wait for me to add more.</div>
       </div>
 
       <FadeTransition :duration="200">
-        <div v-if="winState !== 'active' && !isLoaded"
-             class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999]">
+        <div
+            v-if="winState !== 'active' && !isLoaded"
+            class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999]">
           <div class="flex flex-col justify-center items-center h-screen gap-4 z-[999] pointer-events-none">
             <div class="text-primary-400 font-shippori">loading...</div>
             <div class="text-primary-400 font-shippori">{{ motd }}</div>
@@ -54,19 +56,21 @@
           {{ currentlyBuildingWord }}
         </div>
 
-        <Actions :available-bonus-word-points="availableBonusWordPoints"
-                 class="fixed left-2 bottom-4"
-                 @buy="() => (showBuySelector = true)"
-                 @shuffle="() => wordBuilder?.shuffle()"
-                 @active-cheat-code="() => activateCheatCode()"
+        <Actions
+            :available-bonus-word-points="availableBonusWordPoints"
+            class="fixed left-2 bottom-4"
+            @buy="() => (showBuySelector = true)"
+            @shuffle="() => wordBuilder?.shuffle()"
+            @active-cheat-code="() => activateCheatCode()"
         />
 
-        <ThemeSelector :current-theme="theme"
-                       :earned="earnedThemes"
-                       :show-unread="showNewlyUnlockedIndicator"
-                       class="fixed right-2 bottom-4"
-                       @change-theme="t => setTheme(t)"
-                       @clear-unread="() => showNewlyUnlockedIndicator = false"
+        <ThemeSelector
+            :current-theme="theme"
+            :earned="earnedThemes"
+            :show-unread="showNewlyUnlockedIndicator"
+            class="fixed right-2 bottom-4"
+            @change-theme="t => setTheme(t)"
+            @clear-unread="() => showNewlyUnlockedIndicator = false"
         />
 
         <div>

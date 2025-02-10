@@ -2,10 +2,12 @@
   <div class="flex flex-col gap-2">
     <div class="text-primary-800 opacity-50 h-8 w-12 text-center relative">
       <div class="absolute inset-0 overflow-hidden" @click="() => cheatCodeButtonInput(0)">
-        <Transition :duration="transitionSpeed" :name="shouldIncrement ? 'slide-down' : 'slide-up'"
-                    @leave="() => updateLocalCounterSingle()">
-          <span :key="localBonusPoints" :style="{ transitionDuration: `${transitionSpeed / 2}ms` }"
-                class="absolute inset-0 transition-all ease-in-out font-shippori">
+        <Transition
+            :duration="transitionSpeed" :name="shouldIncrement ? 'slide-down' : 'slide-up'"
+            @leave="() => updateLocalCounterSingle()">
+          <span
+              :key="localBonusPoints" :style="{ transitionDuration: `${transitionSpeed / 2}ms` }"
+              class="absolute inset-0 transition-all ease-in-out font-shippori">
             {{ localBonusPoints }}
           </span>
         </Transition>

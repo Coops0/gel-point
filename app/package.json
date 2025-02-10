@@ -8,12 +8,19 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
+    "lint": "eslint \"src/**/*.{js,vue,ts}\" --ignores src-tauri/**"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.2.0",
     "@tauri-apps/plugin-haptics": "^2.2.3",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "eslint": "^9.20.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-vue": "^9.32.0",
+    "globals": "^15.14.0",
     "gsap": "^3.12.7",
+    "typescript-eslint": "^8.23.0",
     "vue": "^3.5.13"
   },
   "devDependencies": {
