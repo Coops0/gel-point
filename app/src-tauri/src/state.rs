@@ -78,7 +78,7 @@ async fn read_cached_hashes(path: &Path) -> Option<(String, String)> {
 async fn memoize_or_fetch(
     path: &Path,
     route: &str,
-    cached_hash: Option<String>,
+    cached_hash: Option<String>
 ) -> anyhow::Result<(String, String)> {
     let remote_hash = match fetch_hash(route).await {
         Ok(hash) => Some(hash),
@@ -136,9 +136,7 @@ pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, Hash
         memoize_or_fetch(&puzzles_data, "puzzles", local_puzzles_hash)
     )?;
 
-    if let Err(err) =
-        tokio::fs::write(hashes, format!("{words_hash},{puzzles_hash}")).await
-    {
+    if let Err(err) = tokio::fs::write(hashes, format!("{words_hash},{puzzles_hash}")).await {
         warn!("failed to write hashes to disk: {err}");
     }
 

@@ -1,0 +1,10 @@
+[package]
+name = "gel-point-beta-invite-r-printer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.95"
+escpos = { version = "0.15.0", default-features = false, features = ["native_usb", "usb", "codes_2d"] }
+nusb = "0.1.12"
+clap = { version = "4.5.28", features = ["derive"] }
