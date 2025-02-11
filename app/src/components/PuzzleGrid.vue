@@ -141,8 +141,8 @@ function updateGrid(newGrid: Grid) {
 
             impactFeedback('light');
 
-            // 50(|row - startRow|) + 100(|col - startCol|)
-          }, Math.abs(row - startRow) * 50 + Math.abs(col - startCol) * 100)
+            // 50(|row - startRow|) + 50(|col - startCol|)
+          }, Math.abs(row - startRow) * 50 + Math.abs(col - startCol) * 50)
       );
 }
 
