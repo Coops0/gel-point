@@ -111,7 +111,11 @@ useInterval(() => {
 </script>
 
 <style scoped>
-@keyframes bonusAnimation {
+.animate-bonus {
+  animation: bonus-animation 1.4s ease forwards;
+}
+
+@keyframes bonus-animation {
   0% {
     filter: brightness(1) blur(0);
     box-shadow: 0 0 0 0 var(--color-primary-400);
@@ -136,9 +140,5 @@ useInterval(() => {
     filter: brightness(1) blur(0);
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
-}
-
-.animate-bonus {
-  animation: bonusAnimation 1.4s ease forwards;
 }
 </style>

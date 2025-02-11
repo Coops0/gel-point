@@ -6,7 +6,7 @@ import type { WordService } from '@/services/words.service.ts';
 
 export type WordTestResult =
     { tag: 'not_found' } |
-    { tag: 'found', cells: Array<[number, number]> } |
+    { tag: 'found', cells: Array<[number, number]>, foundBefore: boolean } |
     { tag: 'win', cells: Array<[number, number]> } |
     { tag: 'bonus', theme: boolean };
 
@@ -45,14 +45,24 @@ export const usePuzzleManager = (wordService: WordService) => {
         }
 
         const newGrid = [...activeGrid.value];
+        let foundBefore = true;
 
         for (const [row, col] of match.positions) {
-            newGrid[row][col] = puzzle.value.grid[row][col];
+            const newCell = puzzle.value.grid[row][col];
+
+            if (activeGrid.value[row][col] !== newCell) {
+                foundBefore = false;
+                newGrid[row][col] = newCell;
+            }
         }
 
         activeGrid.value = newGrid;
 
-        return { tag: hasWon() ? 'win' : 'found', cells: match.positions };
+        if (hasWon()) {
+            return { tag: 'win', cells: match.positions };
+        }
+
+        return { tag: 'found', cells: match.positions, foundBefore };
     };
 
     const setPuzzle = (p: Puzzle) => {

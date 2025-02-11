@@ -124,10 +124,13 @@ const showHelper = ref(false);
 
 function beginHold(event: PointerEvent) {
   emit('start');
+
   isHolding.value = true;
   (<Element>event.target)?.releasePointerCapture(event.pointerId);
 
   beganHeldAt = Date.now();
+
+  selectionFeedback();
 }
 
 useEventListener('pointerup', event => {
@@ -169,12 +172,16 @@ useEventListener('pointerup', event => {
 });
 
 useEventListener('pointermove', event => {
+  const item = hoveredItem.value;
   hoveredItem.value = null;
+
   if (!isHolding.value) return;
+
+  event.preventDefault();
 
   const key = (event.target as HTMLElement)?.dataset['popupKey'];
   if (key) {
-    if (hoveredItem.value !== key) {
+    if (item !== key) {
       selectionFeedback();
     }
 

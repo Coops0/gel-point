@@ -92,6 +92,9 @@
         v-model="cheatCodeInput"
         :class="!showCheatCodeInput && 'hidden'"
         autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        autocorrect="off"
         class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10 text-text-900"
         @keydown.enter="() => submitCheatCode()"
     />
@@ -227,7 +230,12 @@ async function testWord(word: string) {
       await notificationFeedback('warning');
       break;
     case 'found':
-      await impactFeedback('rigid');
+      if (r.foundBefore) {
+        await notificationFeedback('warning');
+      } else {
+        puzzleGrid.value?.animateGlowCells(r.cells);
+        await impactFeedback('rigid');
+      }
       break;
   }
 }
@@ -250,14 +258,18 @@ function updateBuiltWord(word: string) {
 function activateCheatCode() {
   cheatCodeInput.value = '';
   showCheatCodeInput.value = true;
-  requestAnimationFrame(() => cheatCodeInputElement.value?.focus());
+  setTimeout(() => {
+    cheatCodeInputElement.value?.setAttribute('tabindex', '0');
+    cheatCodeInputElement.value?.focus();
+  }, 150);
 }
 
 function submitCheatCode() {
   cheatCodeInputElement.value?.blur();
-  requestAnimationFrame(() => (showCheatCodeInput.value = false));
+  setTimeout(() => (showCheatCodeInput.value = false), 150);
 
   const code = cheatCodeInput.value.toLowerCase();
+  cheatCodeInput.value = '';
 
   const [name, ...args] = code.split(' ');
   switch (name) {

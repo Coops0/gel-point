@@ -15,6 +15,7 @@
             [cell === 0 ? 'ring-2 ring-accent-600' : 'ring-2 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
             '!duration-150': buyMode,
 
+            'animate-glow': positionInArray([rowIndex, colIndex], currentlyGlowingCells) !== -1,
             'cell-active': cell !== 0,
             'cell-inactive': cell === 0
           }"
@@ -34,7 +35,7 @@
 import { computed, ref, toRaw, watch } from 'vue';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';
 import type { Cell, Grid } from '@/services/puzzles.service.ts';
-import { centerOfCells, clone } from '@/util';
+import { centerOfCells, clone, positionInArray } from '@/util';
 import { useWindowSize } from '@/composables/reactive-sizes.composable.ts';
 
 const { width } = useWindowSize();
@@ -48,7 +49,7 @@ const emit = defineEmits<{
   selected: [row: number, col: number];
 }>();
 
-defineExpose({ resetSelection, animateShimmerCells });
+defineExpose({ resetSelection, animateShimmerCells, animateGlowCells });
 
 const localGrid = ref<Grid>(clone(toRaw(props.grid)));
 
@@ -223,7 +224,7 @@ function animateShimmerCells(cells: Array<[number, number]>) {
 
     const distanceTime = (Math.abs(row - centerCell[0]) * 50) + (Math.abs(col - centerCell[1]) * 50);
 
-    if (currentlyShiningCells.includes([row, col])) return;
+    if (positionInArray([row, col], currentlyShiningCells)) return;
 
     currentlyShiningCells.push([row, col]);
 
@@ -241,6 +242,22 @@ function animateShimmerCells(cells: Array<[number, number]>) {
       }, 100);
     }, distanceTime);
   });
+}
+
+const currentlyGlowingCells = ref<Array<[number, number]>>([]);
+
+function animateGlowCells(cells: Array<[number, number]>) {
+  if (props.buyMode) return;
+
+  for (const cell of cells) {
+    if (positionInArray(cell, currentlyGlowingCells.value) !== -1) continue;
+
+    requestAnimationFrame(() => currentlyGlowingCells.value.push(cell));
+    setTimeout(() => {
+      const cellIndex = positionInArray(cell, currentlyGlowingCells.value);
+      currentlyGlowingCells.value.splice(cellIndex, 1);
+    }, 1210);
+  }
 }
 </script>
 
@@ -268,6 +285,28 @@ function animateShimmerCells(cells: Array<[number, number]>) {
   }
   to {
     mask-position: left;
+  }
+}
+
+.animate-glow {
+  animation: glow-pulse 600ms ease-in-out;
+  animation-iteration-count: 2;
+}
+
+/* noinspection ALL */
+@keyframes glow-pulse {
+  0% {
+    box-shadow: 0 0 0 0 --alpha(var(--theme-secondary-400) / 10%);
+    transform: scale(1);
+  }
+  25% {
+    filter: brightness(1.1);
+    box-shadow: 0 0 10px 5px --alpha(var(--theme-secondary-400) / 30%);
+    transform: scale(1.001);
+  }
+  100% {
+    box-shadow: 0 0 0 0 --alpha(var(--theme-secondary-400) / 10%);
+    transform: scale(1);
   }
 }
 </style>

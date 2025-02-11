@@ -142,11 +142,11 @@ function cheatCodeButtonInput(index: number): boolean {
 }
 
 .spin-button {
-  animation: spinOnce 800ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  animation: spin-once 800ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
   -webkit-animation: spinOnce 800ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
-@keyframes spinOnce {
+@keyframes spin-once {
   0% {
     -webkit-transform: rotate(0deg);
     transform: rotate(0deg);
