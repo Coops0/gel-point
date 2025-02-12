@@ -12,7 +12,7 @@
           animating && 'animate-bonus'
         ]"
         class="absolute flex items-center justify-center text-xl font-bold size-16
-               transition-all duration-100 rounded-full select-none cursor-pointer
+               transition-colors duration-100 rounded-full select-none cursor-pointer
                bg-accent-400 text-background-50 group-active:bg-accent-500 shadow-lg pointer-events-none font-shippori"
     >
       {{ letter }}

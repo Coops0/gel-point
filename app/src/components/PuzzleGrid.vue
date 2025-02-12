@@ -35,7 +35,7 @@
 import { computed, ref, toRaw, watch } from 'vue';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';
 import type { Cell, Grid } from '@/services/puzzles.service.ts';
-import { centerOfCells, clamp, clone, positionInArray } from '@/util';
+import { centerOfCells, clone, positionInArray } from '@/util';
 import { useWindowSize } from '@/composables/reactive-sizes.composable.ts';
 
 const { width } = useWindowSize();
@@ -110,21 +110,6 @@ const updateArrayLen = <T>(arr: T[], newLen: number) => {
   }
 };
 
-function calculateUpdateDelay(updates: [number, number, Cell][], [startRow, startCol]: [number, number]) {
-  const baseDelay = Math.max(30, 120 - Math.log2(updates.length) * 15);
-
-  const maxRows = localGrid.value.length;
-  const maxCols = localGrid.value[0].length;
-
-  return (row: number, col: number) => {
-    const rowDist = Math.abs(row - startRow) / maxRows;
-    const colDist = Math.abs(col - startCol) / maxCols;
-    const distance = Math.max(rowDist, colDist) * 0.7 + (rowDist + colDist) * 0.3;
-
-    return baseDelay * (1 + distance);
-  };
-}
-
 function updateGrid(newGrid: Grid) {
   updateTasks.forEach(id => clearTimeout(id));
 
@@ -147,13 +132,14 @@ function updateGrid(newGrid: Grid) {
     return;
   }
 
-  const delayFactory = calculateUpdateDelay(updates, updates[0] as unknown as [number, number]);
+  const [startRow, startCol] = updates[0];
+
   updateTasks = updates
       .map(([row, col, cell]) =>
           setTimeout(() => {
             localGrid.value[row][col] = cell;
             impactFeedback('light');
-          }, delayFactory(row, col))
+          }, Math.abs(row - startRow) * 50 + Math.abs(col - startCol) * 50)
       );
 }
 

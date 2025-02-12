@@ -15,10 +15,10 @@
     "@tauri-apps/api": "^2.2.0",
     "@tauri-apps/plugin-haptics": "^2.2.3",
     "@types/eslint-config-prettier": "^6.11.3",
-    "eslint": "^9.20.0",
+    "eslint": "^9.20.1",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-vue": "^9.32.0",
-    "globals": "^15.14.0",
+    "globals": "^15.15.0",
     "gsap": "^3.12.7",
     "typescript-eslint": "^8.24.0",
     "vue": "^3.5.13"

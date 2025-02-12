@@ -96,6 +96,7 @@
         autocorrect="off"
         class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10 text-text-900"
         spellcheck="false"
+        autofocus
         @keydown.enter="() => submitCheatCode()"
     />
   </div>
@@ -259,7 +260,6 @@ function activateCheatCode() {
   cheatCodeInput.value = '';
   showCheatCodeInput.value = true;
   setTimeout(() => {
-    cheatCodeInputElement.value?.setAttribute('tabindex', '0');
     cheatCodeInputElement.value?.focus();
   }, 150);
 }
