@@ -2,6 +2,15 @@
 
 ### v0.1.4
 - Optimize built binary for size
+- Disable iOS hold magnifier `* { -webkit-user-select: none; }`
+- *Cheat code input not always being focused*
+- *Disable Cheat code input autocorrect `autocomplete="off" autocapitalize="off" spellcheck="false" autocorrect="off"`*
+- Fix haptic spam on pop out menu
+- Make pop out menu less glitchy
+- Add haptic feedback to pop out menu initial open
+- Cells glow after being filled out for a second
+- Update grid update animation
+- *Secret zebra theme*
 
 ### v0.1.3
 - Resolved special case app would fail to launch
