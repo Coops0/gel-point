@@ -35,7 +35,7 @@
 import { computed, ref, toRaw, watch } from 'vue';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';
 import type { Cell, Grid } from '@/services/puzzles.service.ts';
-import { centerOfCells, clone, positionInArray } from '@/util';
+import { centerOfCells, clamp, clone, positionInArray } from '@/util';
 import { useWindowSize } from '@/composables/reactive-sizes.composable.ts';
 
 const { width } = useWindowSize();
@@ -64,16 +64,18 @@ const gapSize = computed(() => {
 });
 
 const cellSize = computed(() => {
-  const c = colSize.value;
-  const g = gapSize.value;
-
-  for (let i = 24; i < 48; i++) {
-    if (width.value < c * (i + g)) {
-      return i - 1;
-    }
-  }
-
-  return 48;
+  // const c = colSize.value;
+  // const g = gapSize.value;
+  //
+  // for (let i = 24; i < 48; i++) {
+  //   if (width.value < c * (i + g)) {
+  //     return i - 1;
+  //   }
+  // }
+  //
+  // return 48;
+  const maxCells = Math.floor((width.value + gapSize.value) / (colSize.value + gapSize.value));
+  return clamp(maxCells - 1, 24, 48);
 });
 
 const textSize = computed(() => {
@@ -134,6 +136,8 @@ function updateGrid(newGrid: Grid) {
 
   const [startRow, startCol] = updates[0];
 
+  const delay = updates.length > 12 ? 50 : 100;
+
   updateTasks = updates
       .map(([row, col, cell]) =>
           setTimeout(() => {
@@ -142,7 +146,7 @@ function updateGrid(newGrid: Grid) {
             impactFeedback('light');
 
             // 50(|row - startRow|) + 50(|col - startCol|)
-          }, Math.abs(row - startRow) * 50 + Math.abs(col - startCol) * 50)
+          }, Math.abs(row - startRow) * delay + Math.abs(col - startCol) * delay)
       );
 }
 
