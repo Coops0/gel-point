@@ -112,6 +112,21 @@ const updateArrayLen = <T>(arr: T[], newLen: number) => {
   }
 };
 
+function calculateUpdateDelay(updates: [number, number, Cell][], [startRow, startCol]: [number, number]) {
+  const baseDelay = Math.max(30, 120 - Math.log2(updates.length) * 15);
+
+  const maxRows = localGrid.value.length;
+  const maxCols = localGrid.value[0].length;
+
+  return (row: number, col: number) => {
+    const rowDist = Math.abs(row - startRow) / maxRows;
+    const colDist = Math.abs(col - startCol) / maxCols;
+    const distance = Math.max(rowDist, colDist) * 0.7 + (rowDist + colDist) * 0.3;
+
+    return baseDelay * (1 + distance);
+  };
+}
+
 function updateGrid(newGrid: Grid) {
   updateTasks.forEach(id => clearTimeout(id));
 
@@ -134,19 +149,13 @@ function updateGrid(newGrid: Grid) {
     return;
   }
 
-  const [startRow, startCol] = updates[0];
-
-  const delay = updates.length > 12 ? 50 : 100;
-
+  const delayFactory = calculateUpdateDelay(updates, updates[0] as unknown as [number, number]);
   updateTasks = updates
       .map(([row, col, cell]) =>
           setTimeout(() => {
             localGrid.value[row][col] = cell;
-
             impactFeedback('light');
-
-            // 50(|row - startRow|) + 50(|col - startCol|)
-          }, Math.abs(row - startRow) * delay + Math.abs(col - startCol) * delay)
+          }, delayFactory(row, col))
       );
 }
 

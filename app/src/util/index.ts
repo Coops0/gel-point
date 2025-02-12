@@ -26,4 +26,4 @@ export const ratioToCenterOfCells = (cells: Array<[number, number]>, [rows, cols
 
 export const positionInArray = (point: [number, number], array: Array<[number, number]>): number => {
     return array.findIndex(([x, y]) => x === point[0] && y === point[1]);
-}
+};

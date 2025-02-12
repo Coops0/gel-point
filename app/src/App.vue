@@ -91,11 +91,11 @@
         ref="cheat-code-input-el"
         v-model="cheatCodeInput"
         :class="!showCheatCodeInput && 'hidden'"
-        autocomplete="off"
         autocapitalize="off"
-        spellcheck="false"
+        autocomplete="off"
         autocorrect="off"
         class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10 text-text-900"
+        spellcheck="false"
         @keydown.enter="() => submitCheatCode()"
     />
   </div>
