@@ -64,18 +64,16 @@ const gapSize = computed(() => {
 });
 
 const cellSize = computed(() => {
-  // const c = colSize.value;
-  // const g = gapSize.value;
-  //
-  // for (let i = 24; i < 48; i++) {
-  //   if (width.value < c * (i + g)) {
-  //     return i - 1;
-  //   }
-  // }
-  //
-  // return 48;
-  const maxCells = Math.floor((width.value + gapSize.value) / (colSize.value + gapSize.value));
-  return clamp(maxCells - 1, 24, 48);
+  const c = colSize.value;
+  const g = gapSize.value;
+
+  for (let i = 24; i < 48; i++) {
+    if (width.value < c * (i + g)) {
+      return i - 1;
+    }
+  }
+
+  return 48;
 });
 
 const textSize = computed(() => {

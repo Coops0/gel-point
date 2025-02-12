@@ -107,7 +107,7 @@ import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
 import { usePuzzleManager } from '@/composables/puzzle-manager.composable.ts';
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
-import { THEMES, useTheme } from '@/composables/theme.composable.ts';
+import { useTheme } from '@/composables/theme.composable.ts';
 import WinMessage from '@/components/WinMessage.vue';
 import Actions from '@/components/Actions.vue';
 import BuySelector from '@/components/BuySelector.vue';
@@ -123,7 +123,7 @@ import FadeTransition from '@/components/FadeTransition.vue';
 
 const puzzleService = new PuzzleService();
 const wordService = new WordService();
-const { theme, loadTheme, unlockNextTheme, showNewlyUnlockedIndicator, earnedThemes, setTheme } = useTheme();
+const { theme, loadTheme, unlock, showNewlyUnlockedIndicator, earnedThemes, setTheme } = useTheme();
 
 const currentPuzzle = ref<Puzzle | null>(null);
 
@@ -216,8 +216,8 @@ async function testWord(word: string) {
       wordBuilder.value?.showBonusAnimation();
       await impactFeedback('medium');
 
-      if (r.theme) {
-        unlockNextTheme();
+      if (r.theme && unlock('next')) {
+        showNewlyUnlockedIndicator.value = true;
       }
 
       break;
@@ -283,7 +283,9 @@ function submitCheatCode() {
       }
       break;
     case 'unlockallthemes':
-      THEMES.forEach(() => unlockNextTheme());
+      if (unlock('public')) {
+        showNewlyUnlockedIndicator.value = true;
+      }
       break;
     case 'reload':
       loadAndSetPuzzle();
@@ -291,6 +293,11 @@ function submitCheatCode() {
     case 'bonus':
       wordBuilder.value?.showBonusAnimation();
       availableBonusWordPoints.value++;
+      break;
+    case 'zebra':
+      if (unlock('zebra')) {
+        showNewlyUnlockedIndicator.value = true;
+      }
       break;
     default:
       notificationFeedback('error');

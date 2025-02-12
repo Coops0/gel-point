@@ -1,16 +1,19 @@
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import { onMounted, readonly, ref, watch } from 'vue';
 
-export const THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic'] as const;
-export const THEME_EMOJIS = {
+export const THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic', 'zebra'] as const;
+export const PUBLIC_THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic'] as const;
+
+export const THEME_EMOJIS: { [key in typeof THEMES[number]]: string } = {
     'grapefruit': '🍇',
     'cotton-candy': '🍬',
     'lilac': '🪻',
-    'chromatic': '🗿'
+    'chromatic': '🗿',
+    'zebra': '🦓'
 } as const;
 
 // export const earnedThemes = useLocalStorage<(typeof THEMES[number])[]>('earned-themes', ['grapefruit']);
-export const earnedThemes = ref<(typeof THEMES[number])[]>([...THEMES]); // temporarily for beta
+export const earnedThemes = ref<(typeof THEMES[number])[]>([...PUBLIC_THEMES]); // temporarily for beta
 export const showNewlyUnlockedIndicator = useLocalStorage<boolean>('show-newly-unlocked-theme-indicator', false);
 
 export interface Theme {
@@ -39,17 +42,31 @@ const loadTheme = () => {
     });
 };
 
-const unlockNextTheme = (): boolean => {
-    const nextTheme = THEMES.find(t => !earnedThemes.value.includes(t));
+const unlock = (action: 'public' | 'next' | typeof THEMES[number] = 'next'): boolean => {
+    switch (action) {
+        case 'public': {
+            const newThemes = PUBLIC_THEMES.filter(t => !earnedThemes.value.includes(t));
+            earnedThemes.value = [...earnedThemes.value, ...newThemes];
 
-    if (nextTheme) {
-        earnedThemes.value = [...earnedThemes.value, nextTheme];
-        showNewlyUnlockedIndicator.value = true;
+            return newThemes.length === 0;
+        }
+        case 'next': {
+            const nextTheme = PUBLIC_THEMES.find(t => !earnedThemes.value.includes(t));
+            if (nextTheme) {
+                earnedThemes.value = [...earnedThemes.value, nextTheme];
+            }
 
-        return true;
+            return !!nextTheme;
+        }
+        default: {
+            if (earnedThemes.value.includes(action)) {
+                return false;
+            } else {
+                earnedThemes.value = [...earnedThemes.value, action];
+                return true;
+            }
+        }
     }
-
-    return false;
 };
 
 export const useTheme = () => {
@@ -59,6 +76,6 @@ export const useTheme = () => {
         earnedThemes,
         showNewlyUnlockedIndicator,
         loadTheme,
-        unlockNextTheme
+        unlock
     };
 };
