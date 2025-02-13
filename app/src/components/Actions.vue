@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-col gap-2">
-    <div class="text-primary-800 opacity-50 h-8 w-12 text-center relative">
+  <div class="flex flex-col gap-2 items-center">
+    <div class="text-primary-800 opacity-50 h-8 w-12 text-center relative m-0 p-0">
       <div class="absolute inset-0 overflow-hidden" @click="() => cheatCodeButtonInput(0)">
         <Transition
             :duration="transitionSpeed" :name="shouldIncrement ? 'slide-down' : 'slide-up'"
@@ -150,25 +150,5 @@ function cheatCodeButtonInput(index: number): boolean {
 .slide-up-leave-to, .slide-down-enter-from {
   transform: translateY(20px);
   opacity: 0;
-}
-
-.spin-button {
-  animation: spin-once 800ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-  -webkit-animation: spinOnce 800ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-}
-
-@keyframes spin-once {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  90% {
-    -webkit-transform: rotate(365deg);
-    transform: rotate(365deg);
-  }
-  99% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
 }
 </style>
