@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col">
-    <WinMessage ref="win-message" :class="!showBuySelector && 'z-7'"/>
+    <WinMessage ref="win-message" :class="!showBuySelector && 'z-12'"/>
     <BuySelector
         ref="buy-selector"
         v-model="showBuySelector"

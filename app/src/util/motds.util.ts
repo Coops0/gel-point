@@ -47,5 +47,8 @@ export const MOTDS = [
     'Who\'s Lila?',
     'The Spire in the Woods',
     'OXENFREE',
-    'Russian Doll'
+    'Russian Doll',
+    'RAP WORLD',
+    'LinkedIn is hell',
+    'Tauri is the only reason this is possible'
 ] as const;
