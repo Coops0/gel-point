@@ -1,6 +1,7 @@
 # changelog
 
 ### v0.1.4
+
 - Optimize built binary for size
 - Disable iOS hold magnifier `* { -webkit-user-select: none; }`
 - *Cheat code input not always being focused*
@@ -11,12 +12,22 @@
 - Cells glow after being filled out for a second
 - Update grid update animation
 - *Secret zebra theme*
+- Popout menu haptic feedback when selecting active option
+- Fix counter off center
+- Rewrite shuffle animation
+- Add haptic to selecting to buy cols/rows
+- Found bonus words list are not being persisted
+- Improve data persistence
+- Fix buying haptic feedback
+- Update selected row/col indicator within buy menu
 
 ### v0.1.3
+
 - Resolved special case app would fail to launch
 - Resolve bundle naming issues
 
 ### v0.1.2
+
 - Changed grid letters to use original font
 - Black and white buttons & emojis
 - Shuffle button spins on shuffle
@@ -31,6 +42,7 @@
 - Rewrote and optimized local cache of word list and puzzles list, app should load faster
 
 ### v0.1.1
+
 - Fix currently built word text's position
 - Fade out from loading into game
 - Next level animation has variations in its text

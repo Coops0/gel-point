@@ -21,7 +21,13 @@ export interface Theme {
     dark: 'system' | 'always' | 'never';
 }
 
-const theme = useLocalStorage<Theme>('theme', { name: 'grapefruit', dark: 'never' });
+const theme = useLocalStorage<Theme>(
+    'theme',
+    { name: 'grapefruit', dark: 'never' },
+    JSON.stringify,
+    JSON.parse,
+    true
+);
 
 const darkMediaQuery = () => window.matchMedia('(prefers-color-scheme: dark)');
 

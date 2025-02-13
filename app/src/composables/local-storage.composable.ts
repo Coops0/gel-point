@@ -4,7 +4,8 @@ export const useLocalStorage = <T = unknown>(
     key: string,
     defaultValue: T,
     serialize: (data: T) => string = JSON.stringify,
-    deserialize: (payload: string) => T = JSON.parse
+    deserialize: (payload: string) => T = JSON.parse,
+    deep: boolean = false
 ) => {
     let initialLoadedValue = null;
     try {
@@ -18,7 +19,7 @@ export const useLocalStorage = <T = unknown>(
 
     const value = ref<T>(initialLoadedValue || defaultValue);
 
-    watch(value, v => localStorage.setItem(key, serialize(v)));
+    watch(value, v => localStorage.setItem(key, serialize(v)), { deep });
 
     return value;
 };

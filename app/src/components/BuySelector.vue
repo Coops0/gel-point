@@ -40,7 +40,7 @@ import { computed, ref } from 'vue';
 import BuyButton from '@/components/BuyButton.vue';
 import type { Cell, Grid } from '@/services/puzzles.service.ts';
 import FadeTransition from '@/components/FadeTransition.vue';
-import { impactFeedback, notificationFeedback } from '@tauri-apps/plugin-haptics';
+import { impactFeedback } from '@tauri-apps/plugin-haptics';
 
 const active = defineModel<boolean>({ required: true });
 
@@ -104,8 +104,6 @@ function buySelection() {
     active.value = false;
     emit('buy', affectedCells.value);
     delayedClear();
-  } else {
-    notificationFeedback('warning');
   }
 }
 </script>

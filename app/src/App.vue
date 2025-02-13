@@ -246,7 +246,6 @@ async function testWord(word: string) {
 function buy(cells: Array<[number, number]>) {
   if (buyCells(cells)) {
     goToNextLevel();
-    notificationFeedback('success');
   }
 }
 

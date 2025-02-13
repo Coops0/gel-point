@@ -50,7 +50,6 @@ function updateLocalCounterSingle() {
   if (localBonusPoints.value !== props.availableBonusWordPoints) {
     setTimeout(() => {
       localBonusPoints.value += shouldIncrement.value ? 1 : -1;
-      impactFeedback('medium');
     }, transitionSpeed.value / 2);
   }
 }

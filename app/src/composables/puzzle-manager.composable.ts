@@ -14,13 +14,14 @@ export const usePuzzleManager = (wordService: WordService) => {
     const isInitialLoad = ref(true);
     const puzzle = ref<Puzzle | null>(null);
 
-    const activeGrid = useLocalStorage<Grid | null>('active-grid', null);
+    const activeGrid = useLocalStorage<Grid | null>('active-grid', null, JSON.stringify, JSON.parse, true);
 
-    const foundBonusWords = useLocalStorage<Set<string>>(
+    const foundBonusWords = useLocalStorage<Array<string>>(
         'bonus-words',
-        new Set(),
-        w => [...w].join(','),
-        s => new Set([...s.split(',')])
+        [],
+        w => w.join(','),
+        s => s.split(','),
+        true
     );
 
     const availableBonusWordPoints = useLocalStorage('available-bonus-word-points', 0);
@@ -32,23 +33,24 @@ export const usePuzzleManager = (wordService: WordService) => {
 
         const match = puzzle.value.words.find(w => w.word === word);
         if (!match) {
-            if (foundBonusWords.value.has(word) || !(await wordService.testWord(word))) {
+            if (foundBonusWords.value.includes(word) || !(await wordService.testWord(word))) {
                 return { tag: 'not_found' };
             }
 
             availableBonusWordPoints.value++;
-            foundBonusWords.value.add(word);
+            foundBonusWords.value = [...foundBonusWords.value, word];
             return {
                 tag: 'bonus',
-                theme: foundBonusWords.value.size % 30 === 0
+                theme: foundBonusWords.value.length % 30 === 0
             };
         }
 
         const newGrid = [...activeGrid.value];
         let foundBefore = true;
 
+        const revealedGrid = revealGrid(puzzle.value);
         for (const [row, col] of match.positions) {
-            const newCell = puzzle.value.grid[row][col];
+            const newCell = revealedGrid[row][col];
 
             if (activeGrid.value[row][col] !== newCell) {
                 foundBefore = false;
@@ -80,9 +82,13 @@ export const usePuzzleManager = (wordService: WordService) => {
         if (!activeGrid.value || !puzzle.value) return false;
 
         const newGrid = clone(toRaw(activeGrid.value));
+        const revealedGrid = revealGrid(puzzle.value);
 
         for (const [row, col] of cells) {
-            newGrid[row][col] = puzzle.value.grid[row][col];
+            const newCell = revealedGrid[row][col];
+            if (typeof newCell === 'string') {
+                newGrid[row][col] = newCell;
+            }
         }
 
         availableBonusWordPoints.value -= cells.length * 2;
@@ -109,4 +115,8 @@ export const usePuzzleManager = (wordService: WordService) => {
 
 function transformToActiveGrid(grid: Grid): Grid {
     return grid.map(row => row.map(cell => cell === 0 ? -1 : 0));
+}
+
+function revealGrid(puzzle: Puzzle): Grid {
+    return puzzle.grid.map(row => row.map(cell => cell === 0 ? -1 : cell));
 }

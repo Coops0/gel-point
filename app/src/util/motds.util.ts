@@ -42,5 +42,10 @@ export const MOTDS = [
     'cooperhanessian.com <-- That\'s me!',
     'Bruiseboy - Jean Dawson',
     'Hi8 tapes don\'t last forever',
-    'one two two one three'
+    'one two two one three',
+    'RIP David Lynch',
+    'Who\'s Lila?',
+    'The Spire in the Woods',
+    'OXENFREE',
+    'Russian Doll'
 ] as const;
