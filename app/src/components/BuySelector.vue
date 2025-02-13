@@ -91,6 +91,11 @@ function select(row: number, col: number) {
     affectedCells.value = flattenedGrid.filter(([, c]) => c === col);
   } else {
     affectedCells.value = [];
+    return;
+  }
+
+  if (affectedCells.value.length !== 0) {
+    impactFeedback('medium');
   }
 }
 

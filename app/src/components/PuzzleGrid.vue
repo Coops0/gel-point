@@ -12,7 +12,7 @@
           :class="{
             'bg-secondary-400 text-background-50': cell !== 0 && cell !== -1,
             'bg-secondary-200': cell === 0,
-            [cell === 0 ? 'ring-2 ring-accent-600' : 'ring-2 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
+            [cell === 0 ? 'ring-6 ring-accent-600' : 'ring-3 ring-accent-300']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
             '!duration-150': buyMode,
 
             'animate-glow': positionInArray([rowIndex, colIndex], currentlyGlowingCells) !== -1,
