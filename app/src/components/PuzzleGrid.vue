@@ -49,7 +49,7 @@ const emit = defineEmits<{
   selected: [row: number, col: number];
 }>();
 
-defineExpose({ resetSelection, animateShimmerCells, animateGlowCells });
+defineExpose({ resetSelection, animateShimmerCells, animateGlowCells, stopAnimations });
 
 const localGrid = ref<Grid>(clone(toRaw(props.grid)));
 
@@ -134,12 +134,17 @@ function updateGrid(newGrid: Grid) {
 
   const [startRow, startCol] = updates[0];
 
+  let delay = 50;
+  if (updates.length < 4) {
+    delay = 75;
+  }
+
   updateTasks = updates
       .map(([row, col, cell]) =>
           setTimeout(() => {
             localGrid.value[row][col] = cell;
             impactFeedback('light');
-          }, Math.abs(row - startRow) * 50 + Math.abs(col - startCol) * 50)
+          }, Math.abs(row - startRow) * delay + Math.abs(col - startCol) * delay)
       );
 }
 
@@ -255,6 +260,11 @@ function animateGlowCells(cells: Array<[number, number]>) {
       currentlyGlowingCells.value.splice(cellIndex, 1);
     }, 1210);
   }
+}
+
+function stopAnimations() {
+  currentlyShiningCells.length = 0;
+  currentlyGlowingCells.value.length = 0;
 }
 </script>
 

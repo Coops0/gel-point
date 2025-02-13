@@ -7,7 +7,7 @@
             @leave="() => updateLocalCounterSingle()">
           <span
               :key="localBonusPoints" :style="{ transitionDuration: `${transitionSpeed / 2}ms` }"
-              class="absolute inset-0 transition-all ease-in-out font-shippori">
+              class="absolute inset-0 transition-all ease-in-out font-shippori text-center">
             {{ localBonusPoints }}
           </span>
         </Transition>
@@ -15,7 +15,12 @@
     </div>
 
     <GhostButton class="rounded-md" variant="accent" @click="() => clickShuffle()">
-      <div :class="isSpinningShuffle ? 'spin-button' : ''" class="grayscale">♻️</div>
+      <div
+          class="grayscale transition-transform ease-[cubic-bezier(0.4,0,0.2,1)]"
+          :class="isSpinning ? 'duration-600' : 'duration-0'"
+          :style="{ transform: `rotate(${rotation}deg)` }"
+          @transitionend="() => spinTransitionEnd()">♻️
+      </div>
     </GhostButton>
     <GhostButton class="rounded-md" variant="secondary" @click="() => clickBuy()"><span class="grayscale">$</span>
     </GhostButton>
@@ -62,7 +67,8 @@ watch(() => props.availableBonusWordPoints, v => {
   updateLocalCounterSingle();
 });
 
-const isSpinningShuffle = ref(false);
+const rotation = ref(0);
+const isSpinning = ref(false);
 
 function clickShuffle() {
   if (cheatCodeButtonInput(1)) return;
@@ -70,12 +76,17 @@ function clickShuffle() {
   emit('shuffle');
   impactFeedback('light');
 
-  if (isSpinningShuffle.value) return;
+  if (isSpinning.value) {
+    rotation.value += 360;
+  } else {
+    isSpinning.value = true;
+    rotation.value += 360;
+  }
+}
 
-  isSpinningShuffle.value = true;
-  setTimeout(() => {
-    isSpinningShuffle.value = false;
-  }, 820);
+function spinTransitionEnd() {
+  isSpinning.value = false;
+  rotation.value = 0;
 }
 
 function clickBuy() {

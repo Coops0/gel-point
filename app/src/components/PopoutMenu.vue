@@ -33,6 +33,7 @@
         :variant
         class="px-4 py-2 rounded-md transition-all ease-out duration-150"
         @pointerdown.prevent="event => beginHold(event)"
+        :data-popup-key="popoutId"
     >
       <span :class="(emojiMode && !isHolding) ? 'grayscale' : ''" class="transition-all duration-150"><slot/></span>
     </GhostButton>
@@ -139,6 +140,9 @@ useEventListener('pointerup', event => {
 
   const key = (event.target as HTMLElement)?.dataset['popupKey'];
   if (key) {
+    // Went back to initial button
+    if (key === popoutId) return;
+
     impactFeedback('soft');
     emit('select', key as Key);
     return;

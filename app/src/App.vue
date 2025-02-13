@@ -207,6 +207,7 @@ async function goToNextLevel() {
     puzzleId.value = nextPuzzle;
     winMessage.value?.hideMessage();
     loadAndSetPuzzle(loadResult);
+    puzzleGrid.value?.stopAnimations();
   }, Math.max(waitTimeLeft, 0));
 }
 
@@ -226,6 +227,7 @@ async function testWord(word: string) {
       await goToNextLevel();
       await notificationFeedback('success');
       puzzleGrid.value?.animateShimmerCells(r.cells);
+      puzzleGrid.value?.animateGlowCells(r.cells);
       break;
     case 'not_found':
       await notificationFeedback('warning');
