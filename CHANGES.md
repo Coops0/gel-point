@@ -1,5 +1,14 @@
 # changelog
 
+### v0.1.5
+- Hopefully fix again Next Level text being overlapped by the grid
+- Add help text to buy menu
+- Add 2 new themes
+- *Remove old hash bytes routes from server*
+- If continuous tapping letters is detected, show help message
+- All elements transition with the change of theme now
+- Fixed popout menu edge case
+
 ### v0.1.4
 
 - Optimize built binary for size
