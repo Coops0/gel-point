@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "lint": "eslint \"src/**/*.{js,vue,ts}\" --ignores src-tauri/**"
+    "lint": "eslint \"src/**/*.{js,vue,ts}\""
   },
   "dependencies": {
     "@tauri-apps/api": "^2.2.0",

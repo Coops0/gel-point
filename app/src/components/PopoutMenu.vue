@@ -1,13 +1,15 @@
 <template>
   <div>
     <Teleport to="body">
-      <div
-          v-if="showHelper && elementPosition"
-          :style="{ top: `${elementPosition.y}px`, left: `${elementPosition.x - 115}px` }"
-          class="fixed z-9 bg-primary-900 text-white p-2 rounded-md font-shippori"
-      >
-        hold me 👉
-      </div>
+      <FadeTransition>
+        <div
+            v-if="showHelper && elementPosition"
+            :style="{ top: `${elementPosition.y}px`, left: `${elementPosition.x - 115}px` }"
+            class="fixed z-9 bg-primary-900 text-white p-2 rounded-md font-shippori"
+        >
+          hold me 👉
+        </div>
+      </FadeTransition>
     </Teleport>
 
     <div
@@ -47,6 +49,7 @@ import { useEventListener } from '@/composables/event-listener.composable.ts';
 import { useInterval } from '@/composables/interval.composable.ts';
 import PopoutMenuItem from '@/components/PopoutMenuItem.vue';
 import { impactFeedback, selectionFeedback } from '@tauri-apps/plugin-haptics';
+import FadeTransition from '@/components/FadeTransition.vue';
 
 const VERTICAL_PADDING = 8;
 

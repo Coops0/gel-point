@@ -1,14 +1,16 @@
 import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import { onMounted, readonly, ref, watch } from 'vue';
 
-export const THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic', 'zebra'] as const;
-export const PUBLIC_THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic'] as const;
+export const THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic', 'amber', 'ivy', 'zebra'] as const;
+export const PUBLIC_THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic', 'amber', 'ivy'] as const;
 
 export const THEME_EMOJIS: { [key in typeof THEMES[number]]: string } = {
     'grapefruit': '🍇',
     'cotton-candy': '🍬',
     'lilac': '🪻',
     'chromatic': '🗿',
+    'amber': '🏵️',
+    'ivy': '🌿',
     'zebra': '🦓'
 } as const;
 
