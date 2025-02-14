@@ -42,6 +42,7 @@ const props = defineProps<{ letters: string[] }>();
 const emit = defineEmits<{
   'test-word': [word: string];
   'update-built-word': [word: string];
+  'show-help': [];
 }>();
 
 const { height, width } = useWindowSize();
@@ -136,12 +137,32 @@ function hover(_event: PointerEvent, letterIndex: number) {
   selectionFeedback();
 }
 
+let consecutiveTaps = 0;
+let lastTap = -1;
+
+// This can be called 2x sometimes
 function endTouch() {
   const word = buildingWord.value;
   selectedLetterIndices.value = [];
 
   if (word.length >= 3) {
     emit('test-word', word);
+  }
+
+  if (lastTap !== -1 && Date.now() - lastTap > 1000) {
+    consecutiveTaps = 0;
+  }
+
+  lastTap = Date.now();
+
+  if (word.length === 1) {
+    if (++consecutiveTaps >= 5) {
+      consecutiveTaps = 0;
+      emit('show-help');
+    }
+    // This function gets called twice sometimes, with the second call therefor having no length
+  } else if (word.length !== 0) {
+    consecutiveTaps = 0;
   }
 }
 

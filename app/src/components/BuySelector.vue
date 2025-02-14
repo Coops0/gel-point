@@ -30,6 +30,11 @@
             CANCEL
           </div>
         </div>
+
+        <div
+            class="flex flex-col gap-2 text-center items-center justify-center fixed top-9/10 text-white/50 font-shippori">
+          <p>select a row or column by clicking on it, or double clicking to switch axis</p>
+        </div>
       </div>
     </FadeTransition>
   </div>

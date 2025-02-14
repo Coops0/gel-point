@@ -74,6 +74,15 @@
         />
 
         <div>
+          <FadeTransition>
+            <div
+                v-if="showHelp"
+                class="fixed top-3/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-9 bg-primary-900 text-white p-2 rounded-md font-shippori w-fit"
+                @click="() => showHelp = false">
+              hold and drag letters to build words
+            </div>
+          </FadeTransition>
+
           <div class="relative z-1">
             <WordBuilder
                 ref="word-builder"
@@ -81,6 +90,7 @@
                 :letters="currentPuzzle!.letters"
                 @test-word="word => testWord(word)"
                 @update-built-word="updateBuiltWord"
+                @show-help="() => requestShowHelp()"
             />
           </div>
         </div>
@@ -306,6 +316,21 @@ function submitCheatCode() {
   }
 
   impactFeedback('light');
+}
+
+let hideHelpTask = -1;
+const showHelp = ref(false);
+
+function requestShowHelp() {
+  if (hideHelpTask !== -1) {
+    clearTimeout(hideHelpTask);
+  }
+
+  showHelp.value = true;
+  hideHelpTask = setTimeout(() => {
+    showHelp.value = false;
+    hideHelpTask = -1;
+  }, 3000);
 }
 
 // detect if click outside of buy selector, close it

@@ -3,10 +3,10 @@
     <Teleport to="body">
       <div
           v-if="showHelper && elementPosition"
-          :style="{ top: `${elementPosition.y}px`, left: `${elementPosition.x - 100}px` }"
+          :style="{ top: `${elementPosition.y}px`, left: `${elementPosition.x - 115}px` }"
           class="fixed z-9 bg-primary-900 text-white p-2 rounded-md font-shippori"
       >
-        hold me ->
+        hold me 👉
       </div>
     </Teleport>
 
@@ -32,8 +32,8 @@
         :ref="popoutId"
         :variant
         class="px-4 py-2 rounded-md transition-all ease-out duration-150"
-        @pointerdown.prevent="event => beginHold(event)"
         :data-popup-key="popoutId"
+        @pointerdown.prevent="event => beginHold(event)"
     >
       <span :class="(emojiMode && !isHolding) ? 'grayscale' : ''" class="transition-all duration-150"><slot/></span>
     </GhostButton>

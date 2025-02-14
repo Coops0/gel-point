@@ -4,9 +4,6 @@ use axum::Router;
 use sha2::{Digest, Sha256};
 use tokio::fs;
 
-static mut WORDS_HASH: Vec<u8> = Vec::new();
-static mut PUZZLES_HASH: Vec<u8> = Vec::new();
-
 static mut WORDS_HASH_STRING: String = String::new();
 static mut PUZZLES_HASH_STRING: String = String::new();
 
@@ -22,9 +19,6 @@ async fn main() -> anyhow::Result<()> {
         let words_hash = Sha256::digest(&WORDS);
         let puzzles_hash = Sha256::digest(&PUZZLES);
 
-        WORDS_HASH = words_hash.to_vec();
-        PUZZLES_HASH = puzzles_hash.to_vec();
-
         WORDS_HASH_STRING = format!("{:x}", words_hash);
         PUZZLES_HASH_STRING = format!("{:x}", puzzles_hash);
 
@@ -34,22 +28,12 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/words/", get(words))
-        .route("/words/hash", get(words_hash))
         .route("/words/hash-string", get(words_hash_string))
         .route("/puzzles/", get(puzzles))
-        .route("/puzzles/hash", get(puzzles_hash))
         .route("/puzzles/hash-string", get(puzzles_hash_string));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:4444").await?;
     axum::serve(listener, app).await.map_err(Into::into)
-}
-
-async fn words_hash() -> &'static [u8] {
-    unsafe { &WORDS_HASH }
-}
-
-async fn puzzles_hash() -> &'static [u8] {
-    unsafe { &PUZZLES_HASH }
 }
 
 async fn words_hash_string() -> &'static str {
