@@ -51,7 +51,7 @@
         <div
             :class="{ 'opacity-0': !showCurrentlyBuildingWord, 'z-1': !showBuySelector }"
             :style="{ bottom: `${Math.abs(highestLetterPosition?.y ?? 300) + 5}px` }"
-            class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900 font-shippori pointer-events-none"
+            class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900 pointer-events-none uppercase"
         >
           {{ currentlyBuildingWord }}
         </div>
