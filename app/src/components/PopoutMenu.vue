@@ -1,7 +1,7 @@
 <template>
   <div>
     <Teleport to="body">
-      <FadeTransition>
+      <FadeTransition appear>
         <div
             v-if="showHelper && elementPosition"
             :style="{ top: `${elementPosition.y}px`, left: `${elementPosition.x - 115}px` }"

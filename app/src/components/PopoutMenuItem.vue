@@ -1,9 +1,10 @@
 <template>
   <Transition
       :css="false"
+      appear
+      @before-enter="onBeforeEnter"
       @enter="onEnter"
       @leave="onLeave"
-      @before-enter="onBeforeEnter"
   >
     <div
         v-if="active"
@@ -46,9 +47,7 @@ const buttonElement = useTemplateRef<InstanceType<typeof GhostButton>>(uniqueId)
 defineExpose({ buttonElement });
 
 function onBeforeEnter(el: Element) {
-  gsap.set(el, {
-    x: 50
-  });
+  gsap.set(el, { x: 50 });
 }
 
 function onEnter(el: Element, done: () => void) {

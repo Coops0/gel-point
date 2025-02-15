@@ -1,6 +1,7 @@
 <template>
   <div class="fixed inset-0 flex items-center justify-center pointer-events-none">
     <Transition
+        appear
         class="!transition-all !duration-1000"
         enter-from-class="opacity-0 scale-95"
         enter-to-class="opacity-100 scale-100"

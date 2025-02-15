@@ -4,7 +4,8 @@
       <div class="absolute inset-0 overflow-hidden" @click="() => cheatCodeButtonInput(0)">
         <Transition
             :duration="transitionSpeed" :name="shouldIncrement ? 'slide-down' : 'slide-up'"
-            @leave="() => updateLocalCounterSingle()">
+            @leave="() => updateLocalCounterSingle()"
+        >
           <span
               :key="localBonusPoints" :style="{ transitionDuration: `${transitionSpeed / 2}ms` }"
               class="absolute inset-0 !transition-all !ease-in-out font-shippori text-center">

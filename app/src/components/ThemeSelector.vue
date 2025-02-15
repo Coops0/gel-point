@@ -8,7 +8,7 @@
         @select="t => changeTheme(t as unknown as Theme['name'])"
         @start="() => emit('clear-unread')"
     >
-      <FadeTransition>
+      <FadeTransition appear>
         <div
             v-if="showUnread"
             class="animate-ping fixed w-2 h-2 bg-primary-500 rounded-full"/>
