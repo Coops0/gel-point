@@ -12,9 +12,9 @@
     >
       <GhostButton
           :ref="uniqueId"
-          :class="hovered && '!bg-primary-500/25'"
           :data-popup-key="popupKey"
           :variant
+          :active="hovered"
           class="text-nowrap"
       >
         {{ label }}
@@ -37,6 +37,7 @@ const props = defineProps<{
   index: number;
   variant: GhostVariant;
   active: boolean;
+  delay: number;
 }>();
 
 const uniqueId = useId();
@@ -54,7 +55,7 @@ function onEnter(el: Element, done: () => void) {
   gsap.to(el, {
     x: 0,
     duration: 0.25,
-    delay: props.index * 0.1,
+    delay: props.index * props.delay,
     onComplete: done,
     ease: 'power3.out'
   });

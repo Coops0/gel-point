@@ -7,7 +7,7 @@
             @leave="() => updateLocalCounterSingle()">
           <span
               :key="localBonusPoints" :style="{ transitionDuration: `${transitionSpeed / 2}ms` }"
-              class="absolute inset-0 transition-all ease-in-out font-shippori text-center">
+              class="absolute inset-0 !transition-all !ease-in-out font-shippori text-center">
             {{ localBonusPoints }}
           </span>
         </Transition>
@@ -16,8 +16,8 @@
 
     <GhostButton class="rounded-md" variant="accent" @click="() => clickShuffle()">
       <div
-          class="grayscale transition-transform ease-[cubic-bezier(0.4,0,0.2,1)]"
-          :class="isSpinning ? 'duration-600' : 'duration-0'"
+          class="grayscale !transition-transform !ease-[cubic-bezier(0.4,0,0.2,1)]"
+          :class="isSpinning ? '!duration-600' : '!duration-0'"
           :style="{ transform: `rotate(${rotation}deg)` }"
           @transitionend="() => spinTransitionEnd()">♻️
       </div>

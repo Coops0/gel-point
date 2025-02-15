@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col">
-    <WinMessage ref="win-message" :class="!showBuySelector && 'z-12'"/>
+    <WinMessage ref="win-message" :class="!showBuySelector && 'z-15'"/>
     <BuySelector
         ref="buy-selector"
         v-model="showBuySelector"
@@ -40,9 +40,9 @@
             <PuzzleGrid
                 ref="puzzle-grid"
                 :buy-mode="showBuySelector"
-                :class="showBuySelector && 'opacity-80'"
+                :class="showBuySelector && 'opacity-80 !z-22'"
                 :grid="grid!"
-                class="mt-4 relative z-11 transition-opacity duration-500"
+                class="mt-4 relative z-10 transition-opacity duration-500"
                 @selected="(row, col) => buySelector?.select(row, col)"
             />
           </KeepAlive>
@@ -51,7 +51,7 @@
         <div
             :class="{ 'opacity-0': !showCurrentlyBuildingWord, 'z-1': !showBuySelector }"
             :style="{ bottom: `${Math.abs(highestLetterPosition?.y ?? 300) + 5}px` }"
-            class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900 font-shippori"
+            class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900 font-shippori pointer-events-none"
         >
           {{ currentlyBuildingWord }}
         </div>
@@ -77,7 +77,7 @@
           <FadeTransition>
             <div
                 v-if="showHelp"
-                class="fixed top-3/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-9 bg-primary-900 text-white p-2 rounded-md font-shippori w-fit pointer-events-none"
+                class="fixed top-3/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-9 bg-primary-900 text-white p-2 rounded-md font-shippori w-fit !pointer-events-none"
                 @click="() => showHelp = false">
               hold and drag letters to build words
             </div>
@@ -247,7 +247,6 @@ async function testWord(word: string) {
         await notificationFeedback('warning');
       } else {
         puzzleGrid.value?.animateGlowCells(r.cells);
-        await impactFeedback('rigid');
       }
       break;
   }

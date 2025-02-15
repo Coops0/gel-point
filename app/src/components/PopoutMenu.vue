@@ -27,6 +27,7 @@
           :variant="item.variant"
           :x="item.x"
           :y="item.y"
+          :delay="delay"
       />
     </div>
 
@@ -44,7 +45,7 @@
 
 <script lang="ts" setup>
 import GhostButton, { type GhostVariant } from '@/components/GhostButton.vue';
-import { onMounted, ref, useId, useTemplateRef, watch } from 'vue';
+import { computed, onMounted, ref, useId, useTemplateRef, watch } from 'vue';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 import { useInterval } from '@/composables/interval.composable.ts';
 import PopoutMenuItem from '@/components/PopoutMenuItem.vue';
@@ -114,6 +115,8 @@ function recalculatePositions() {
     });
   });
 }
+
+const delay = computed(() => alignedItems.value.length > 5 ? 0.06 : 0.1);
 
 const isHolding = ref(false);
 const hoveredItem = ref<Key | null>(null);

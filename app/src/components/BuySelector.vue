@@ -4,27 +4,27 @@
       <div
           v-if="active"
           id="buy-selector-backdrop"
-          class="fixed size-full inset-0 z-10 bg-black/75 transition-all duration-500 flex justify-center"
+          class="fixed size-full inset-0 z-20 bg-black/75 !transition-all !duration-500 flex justify-center"
       />
     </FadeTransition>
 
     <FadeTransition :duration="500">
       <div
           v-if="grid !== null && active"
-          class="fixed inset-0 z-12 pointer-events-none items-center justify-center flex"
+          class="fixed inset-0 z-22 pointer-events-none items-center justify-center flex"
       >
         <p
             :class="hasSelection ? 'animate-pulse' : 'opacity-0'"
-            class="text-xl text-white text-center transition-opacity fixed top-7/10 font-shippori">
+            class="text-xl text-white text-center !transition-opacity fixed top-7/10 font-shippori">
           PRICE: <span
             :class="canAfford ? 'text-red-300' : 'text-red-500'"
-            class="transition-colors font-bold">{{ affectedCells.length * 2 }}</span>
+            class="!transition-colors font-bold">{{ affectedCells.length * 2 }}</span>
         </p>
 
         <div class="flex flex-row gap-4 items-center justify-center fixed top-4/5">
           <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
           <div
-              class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg transition-colors duration-200 !pointer-events-auto font-shippori"
+              class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg !transition-colors !duration-200 !pointer-events-auto font-shippori"
               @click="cancel"
           >
             CANCEL

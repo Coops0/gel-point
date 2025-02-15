@@ -14,7 +14,7 @@
             'bg-secondary-200': cell === 0,
             [cell === 0 ? 'ring-3 ring-accent-600 brightness-125' : 'bg-accent-300/25']: buyMode && (selectedCol === colIndex || selectedRow === rowIndex),
             '!duration-150': buyMode,
-            'duration-500': !buyMode,
+            '!duration-500': !buyMode,
 
             'animate-glow': positionInArray([rowIndex, colIndex], currentlyGlowingCells) !== -1,
             'cell-active': cell !== 0,
@@ -23,7 +23,7 @@
           :data-col="colIndex"
           :data-row="rowIndex"
           :style="{ width: `${cellSize}px`, height: `${cellSize}px` }"
-          class="flex items-center justify-center font-medium transition-all cell"
+          class="flex items-center justify-center font-medium !transition-all cell"
           @click="() => handleCellClick(rowIndex, colIndex)"
       >
         <span v-if="cell !== 0 && cell !== -1" :style="{ fontSize: `${textSize}px` }">{{ cell }}</span>
@@ -83,7 +83,7 @@ const textSize = computed(() => {
 
   if (s > 10) return 16;
   if (s > 8) return 18;
-  if (s > 6) return 20;
+  // if (s > 6) return 22;
   return 22;
 });
 
