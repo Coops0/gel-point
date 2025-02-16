@@ -77,7 +77,8 @@
           <FadeTransition appear>
             <div
                 v-if="showHelp"
-                class="fixed top-3/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-9 bg-primary-900 text-white p-2 rounded-md font-shippori w-fit !pointer-events-none"
+                class="fixed top-3/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-9 bg-primary-900 text-white p-2 rounded-md font-shippori w-fit"
+                :class="!showHelp && '!pointer-events-none'"
                 @click="() => showHelp = false">
               hold and drag letters to build words
             </div>
