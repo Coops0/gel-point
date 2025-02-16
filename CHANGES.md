@@ -1,6 +1,7 @@
 # changelog
 
 ### v0.1.5
+- Use capital letters for all game-related elements
 - Hopefully fix again Next Level text being overlapped by the grid
 - Add help text to buy menu
 - Add 2 new themes
@@ -8,6 +9,7 @@
 - If continuous tapping letters is detected, show help message
 - All elements transition with the change of theme now
 - Fixed popout menu edge case
+- Refine haptics
 
 ### v0.1.4
 

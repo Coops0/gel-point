@@ -17,9 +17,9 @@
 
     <GhostButton class="rounded-md" variant="accent" @click="() => clickShuffle()">
       <div
-          class="grayscale !transition-transform !ease-[cubic-bezier(0.4,0,0.2,1)]"
           :class="isSpinning ? '!duration-600' : '!duration-0'"
           :style="{ transform: `rotate(${rotation}deg)` }"
+          class="grayscale !transition-transform !ease-[cubic-bezier(0.4,0,0.2,1)]"
           @transitionend="() => spinTransitionEnd()">♻️
       </div>
     </GhostButton>

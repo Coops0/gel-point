@@ -2,9 +2,9 @@
   <Transition
       :css="false"
       appear
-      @before-enter="onBeforeEnter"
       @enter="onEnter"
       @leave="onLeave"
+      @before-enter="onBeforeEnter"
   >
     <div
         v-if="active"
@@ -13,9 +13,9 @@
     >
       <GhostButton
           :ref="uniqueId"
+          :active="hovered"
           :data-popup-key="popupKey"
           :variant
-          :active="hovered"
           class="text-nowrap"
       >
         {{ label }}

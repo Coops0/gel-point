@@ -20,6 +20,7 @@
           :key="item.key"
           :ref="itemRefIds"
           :active="isHolding"
+          :delay="delay"
           :hovered="item.key === hoveredItem"
           :index="index"
           :label="item.label"
@@ -27,15 +28,14 @@
           :variant="item.variant"
           :x="item.x"
           :y="item.y"
-          :delay="delay"
       />
     </div>
 
     <GhostButton
         :ref="popoutId"
+        :data-popup-key="popoutId"
         :variant
         class="px-4 py-2 rounded-md transition-all ease-out duration-150"
-        :data-popup-key="popoutId"
         @pointerdown.prevent="event => beginHold(event)"
     >
       <span :class="(emojiMode && !isHolding) ? 'grayscale' : ''" class="transition-all duration-150"><slot/></span>
@@ -175,10 +175,10 @@ useEventListener('pointerup', event => {
   clicks = 0;
   showHelper.value = true;
 
-  setTimeout(() => {
+  previousHoldTimeout = setTimeout(() => {
     showHelper.value = false;
     previousHoldTimeout = -1;
-  }, 5000);
+  }, 2500);
 });
 
 useEventListener('pointermove', event => {
