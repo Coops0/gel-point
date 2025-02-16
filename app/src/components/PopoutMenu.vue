@@ -117,7 +117,7 @@ function recalculatePositions() {
   });
 }
 
-const delay = computed(() => alignedItems.value.length > 5 ? 0.06 : 0.1);
+const delay = computed(() => alignedItems.value.length > 4 ? 0.04 : 0.1);
 
 const isHolding = ref(false);
 const hoveredItem = ref<Key | null>(null);

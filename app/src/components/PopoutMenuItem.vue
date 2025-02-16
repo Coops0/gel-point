@@ -7,7 +7,7 @@
       @before-enter="onBeforeEnter"
   >
     <div
-        v-if="active"
+        v-show="active"
         :style="{ top: `${y}px`, left: `${x}px` }"
         class="flex items-center justify-between fixed z-9 bg-background-50 rounded-2xl"
     >
@@ -28,6 +28,7 @@
 import GhostButton, { type GhostVariant } from '@/components/GhostButton.vue';
 import { useId, useTemplateRef } from 'vue';
 import gsap from 'gsap';
+import { lerp } from '@/util';
 
 const props = defineProps<{
   x: number;
@@ -46,25 +47,37 @@ const buttonElement = useTemplateRef<InstanceType<typeof GhostButton>>(uniqueId)
 
 defineExpose({ buttonElement });
 
+let isLeaving = false;
+
 function onBeforeEnter(el: Element) {
-  gsap.set(el, { x: 50 });
+  if (!isLeaving) {
+    gsap.set(el, { x: 50 });
+  }
 }
 
 function onEnter(el: Element, done: () => void) {
+  // const distance = (gsap.getProperty(el, 'x') as number) / 50;
+  // const delay = (distance ** 4) * props.delay;
+  
   gsap.to(el, {
     x: 0,
-    duration: 0.25,
+    duration: 0.20,
     delay: props.index * props.delay,
     onComplete: done,
-    ease: 'power3.out'
+    ease: 'power3.out',
+    overwrite: true
   });
 }
 
 function onLeave(el: Element, done: () => void) {
+  isLeaving = true;
   gsap.to(el, {
     x: 50,
     duration: 0.25,
-    onComplete: done,
+    onComplete: function () {
+      done();
+      isLeaving = false;
+    },
     ease: 'power3.in'
   });
 }
