@@ -2,11 +2,11 @@ import { promises as fs } from "fs";
 
 async function r() {
   const words = await fs
-    .readFile("../app/src-tauri/assets/words.data", { encoding: "utf-8" })
+    .readFile("./new-word-list.txt", { encoding: "utf-8" })
     .then((w) => w.split("\n"));
 
   const w = words
-    .map((word) => word.replace("\r", ""))
+    .map((word) => word.replace("\r", "").split("	")[0])
     .filter(
       (word) => word.length >= 3 && word.length <= 10 && /^[A-Z]+$/i.test(word),
     )

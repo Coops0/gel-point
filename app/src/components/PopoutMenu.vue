@@ -6,6 +6,7 @@
             v-if="showHelper && elementPosition"
             :style="{ top: `${elementPosition.y}px`, left: `${elementPosition.x - 115}px` }"
             class="fixed z-9 bg-primary-900 text-white p-2 rounded-md font-shippori"
+            @click="() => showHelper = false"
         >
           hold me 👉
         </div>

@@ -701,17 +701,17 @@
             --theme-secondary-900: #331f00;
             --theme-secondary-950: #1a0f00;
 
-            --theme-accent-50: #fff8e6;
-            --theme-accent-100: #fff1cc;
-            --theme-accent-200: #ffe399;
-            --theme-accent-300: #ffd566;
-            --theme-accent-400: #ffc733;
-            --theme-accent-500: #ffb900;
-            --theme-accent-600: #cc9400;
-            --theme-accent-700: #996f00;
-            --theme-accent-800: #664a00;
-            --theme-accent-900: #332500;
-            --theme-accent-950: #1a1200;
+            --theme-accent-50: #eee6d7;
+            --theme-accent-100: #efe1c1;
+            --theme-accent-200: #e5cc8a;
+            --theme-accent-300: #e7c15d;
+            --theme-accent-400: #e7b32f;
+            --theme-accent-500: #e7a601;
+            --theme-accent-600: #b78801;
+            --theme-accent-700: #856200;
+            --theme-accent-800: #543b00;
+            --theme-accent-900: #261e00;
+            --theme-accent-950: #110d00;
         }
 
         body[data-theme="amber"].dark {
@@ -825,17 +825,17 @@
             --theme-secondary-900: #33691e;
             --theme-secondary-950: #1a3d0f;
 
-            --theme-accent-50: #f9fbe7;
-            --theme-accent-100: #f0f4c3;
-            --theme-accent-200: #e6ee9c;
-            --theme-accent-300: #dce775;
-            --theme-accent-400: #c4d151;
-            --theme-accent-500: #becc35;
-            --theme-accent-600: #adb62e;
-            --theme-accent-700: #a1a528;
-            --theme-accent-800: #8f8e22;
-            --theme-accent-900: #736915;
-            --theme-accent-950: #3c3b0a;
+            --theme-accent-50: #f1f3e0;
+            --theme-accent-100: #dde1b5;
+            --theme-accent-200: #dbe396;
+            --theme-accent-300: #ced96f;
+            --theme-accent-400: #b8c54d;
+            --theme-accent-500: #b4c233;
+            --theme-accent-600: #9fa82b;
+            --theme-accent-700: #949825;
+            --theme-accent-800: #807f1f;
+            --theme-accent-900: #655b13;
+            --theme-accent-950: #2d2c08;
         }
 
         body[data-theme="ivy"].dark {

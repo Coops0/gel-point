@@ -5,6 +5,7 @@ use std::{
 };
 use tauri::{path::PathResolver, Wry};
 use tauri_plugin_http::reqwest;
+use tokio::time::Instant;
 use tokio::try_join;
 
 #[derive(Serialize, Clone)]
@@ -131,15 +132,18 @@ pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, Hash
 
     let (local_words_hash, local_puzzles_hash) = read_cached_hashes(&hashes).await.unzip();
 
+    let before = Instant::now();
     let ((words, words_hash), (puzzles, puzzles_hash)) = try_join!(
         memoize_or_fetch(&words_data, "words", local_words_hash),
         memoize_or_fetch(&puzzles_data, "puzzles", local_puzzles_hash)
     )?;
+    info!("fetched data in {}ms", before.elapsed().as_millis());
 
     if let Err(err) = tokio::fs::write(hashes, format!("{words_hash},{puzzles_hash}")).await {
         warn!("failed to write hashes to disk: {err}");
     }
 
+    let before = Instant::now();
     let puzzles = puzzles
         .split('\n')
         .filter_map(|line| {
@@ -150,7 +154,7 @@ pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, Hash
         })
         .collect::<HashMap<u32, String>>();
 
-    info!("parsed {} puzzles", puzzles.len());
+    info!("parsed {} puzzles in {}ms", puzzles.len(), before.elapsed().as_millis());
 
     Ok((words, puzzles))
 }

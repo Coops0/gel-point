@@ -65,6 +65,7 @@ pub fn run() {
                 cached_data: Mutex::new(None::<CachedData>),
                 notify: Notify::new()
             });
+            
             if !app.manage(Arc::clone(&state)) {
                 return Err(Box::from("failed to create managed app state in setup hook"));
             }

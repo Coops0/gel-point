@@ -23,7 +23,7 @@
           :data-col="colIndex"
           :data-row="rowIndex"
           :style="{ width: `${cellSize}px`, height: `${cellSize}px` }"
-          class="flex items-center justify-center font-medium !transition-all cell uppercase"
+          class="flex items-center justify-center font-bold !transition-all cell uppercase"
           @click="() => handleCellClick(rowIndex, colIndex)"
       >
         <span v-if="cell !== 0 && cell !== -1" :style="{ fontSize: `${textSize}px` }">{{ cell }}</span>
