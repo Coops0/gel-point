@@ -10,6 +10,12 @@
 - All elements transition with the change of theme now
 - Fixed popout menu edge case
 - Refine haptics
+- Fixed popout menu snap animation
+- Improve theme colors
+- Try to load theme immediately on app load
+- Tap to dismiss hint popups
+- New word list
+- Fix popout menu being aligned incorrectly for the first few seconds of the app loading
 
 ### v0.1.4
 
@@ -44,7 +50,7 @@
 - Shuffle button spins on shuffle
 - Popover overlap of other emoji (e.x. dark mode selector over theme) looks bad / cover up with background
 - Unlock all themes for beta
-- \[internal\] Migrate all 'template' refs to actually use template ref (`InstanceType<Component>`)
+- *\[internal\] Migrate all 'template' refs to actually use template ref (`InstanceType<Component>`)*
 - Refined haptics in various places
 - Add staggered animation to popout menus
 - Fix bonus letter animation shadow bug
