@@ -66,7 +66,6 @@ function delayedClear() {
 }
 
 function cancel() {
-  impactFeedback('light');
   active.value = false;
   delayedClear();
 }

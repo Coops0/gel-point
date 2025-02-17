@@ -87,7 +87,7 @@ const alignedItems = ref<Array<PopoutItem & { x: number; y: number }>>([]);
 
 function recalculatePositions() {
   const rect = popoutElement.value?.$el?.getBoundingClientRect();
-  if (!rect) return null;
+  if (!rect || !rect.height|| !rect.width) return null;
 
   elementPosition.value = ({ x: rect.x, y: rect.y, height: rect.height, width: rect.width });
 
@@ -147,8 +147,8 @@ useEventListener('pointerup', event => {
 
   const key = (event.target as HTMLElement)?.dataset['popupKey'];
   if (key) {
-    // Went back to initial button
-    if (key === popoutId) return;
+    // Went back to initial button or item not in this menu
+    if (key === popoutId || !alignedItems.value.find(i => i.key === key)) return;
 
     impactFeedback('soft');
     emit('select', key as Key);
@@ -200,10 +200,14 @@ useEventListener('pointermove', event => {
   }
 });
 
-onMounted(() => recalculatePositions());
+onMounted(() => {
+  recalculatePositions();
+  setTimeout(() => recalculatePositions(), 200);
+});
 watch(() => props.items, () => recalculatePositions(), { deep: true });
 watch(popoutElement, () => recalculatePositions());
 watch(itemRefs, () => recalculatePositions());
 useEventListener('DOMContentLoaded', () => recalculatePositions());
+useEventListener('load', () => recalculatePositions());
 useInterval(recalculatePositions, 1500); // I don't know why but it keeps glitching out
 </script>

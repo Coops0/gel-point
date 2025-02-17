@@ -128,10 +128,15 @@ function hover(_event: PointerEvent, letterIndex: number) {
     selectedLetterIndices.value = [...selectedLetterIndices.value, letterIndex];
   } else /* if (wordIndex === len - 2) {
     selectedLetterIndices.value = selectedLetterIndices.value.slice(0, -1);
-  } */ if (len !== 1) {
+    // must be more than 1 letter to go back, and cannot have all letters selected already UNLESS it is the letter behind
+  } */ if (len !== 1 && (len !== alignedLetters.value.length || wordIndex === len - 2)) {
     selectedLetterIndices.value = selectedLetterIndices.value.slice(0, wordIndex + 1);
   } else {
     return;
+  }
+
+  if (len !== 1) {
+    consecutiveTaps = 0;
   }
 
   selectionFeedback();

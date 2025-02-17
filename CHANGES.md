@@ -2,6 +2,7 @@
 
 ### v0.1.5
 - Use capital letters for all game-related elements
+- New icon (thanks Chloe)
 - Hopefully fix again Next Level text being overlapped by the grid
 - Add help text to buy menu
 - Add 2 new themes
@@ -16,6 +17,9 @@
 - Tap to dismiss hint popups
 - New word list
 - Fix popout menu being aligned incorrectly for the first few seconds of the app loading
+- Move all icons up a little bit to prevent accidental swipes up
+- Change how letter deselection works to be more intuitive
+- Hopefully fully disable iOS magnifier
 
 ### v0.1.4
 

@@ -58,7 +58,7 @@
 
         <Actions
             :available-bonus-word-points="availableBonusWordPoints"
-            class="fixed left-2 bottom-4"
+            class="fixed left-2 bottom-6"
             @buy="() => (showBuySelector = true)"
             @shuffle="() => wordBuilder?.shuffle()"
             @active-cheat-code="() => activateCheatCode()"
@@ -68,7 +68,7 @@
             :current-theme="theme"
             :earned="earnedThemes"
             :show-unread="showNewlyUnlockedIndicator"
-            class="fixed right-2 bottom-4"
+            class="fixed right-2 bottom-6"
             @change-theme="t => setTheme(t)"
             @clear-unread="() => showNewlyUnlockedIndicator = false"
         />
@@ -106,7 +106,7 @@
         autocomplete="off"
         autocorrect="off"
         autofocus
-        class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10 text-text-900"
+        class="fixed w-1/2 h-16 z-[1000] ml-10 mt-10 text-text-900 !select-auto"
         spellcheck="false"
         @keydown.enter="() => submitCheatCode()"
     />
