@@ -48,13 +48,11 @@
           </KeepAlive>
         </div>
 
-        <div
-            :class="{ 'opacity-0': !showCurrentlyBuildingWord, 'z-1': !showBuySelector }"
-            :style="{ bottom: `${Math.abs(highestLetterPosition?.y ?? 300) + 5}px` }"
-            class="text-center w-full fixed text-2xl font-bold transition-opacity text-primary-900 pointer-events-none uppercase"
-        >
-          {{ currentlyBuildingWord }}
-        </div>
+        <BuiltWordIndicator
+            ref="built-word-indicator"
+            :highest-letter-position="highestLetterPosition"
+            :class="!showBuySelector && 'z-1'"
+        />
 
         <Actions
             :available-bonus-word-points="availableBonusWordPoints"
@@ -132,6 +130,7 @@ import ThemeSelector from '@/components/ThemeSelector.vue';
 import { MOTDS } from '@/util/motds.util.ts';
 import type { LetterPosition } from '@/composables/letter-alignment.composable.ts';
 import FadeTransition from '@/components/FadeTransition.vue';
+import BuiltWordIndicator from '@/components/BuiltWordIndicator.vue';
 
 const puzzleService = new PuzzleService();
 const wordService = new WordService();
@@ -142,13 +141,12 @@ const currentPuzzle = ref<Puzzle | null>(null);
 const winMessage = useTemplateRef<InstanceType<typeof WinMessage>>('win-message');
 const wordBuilder = useTemplateRef<InstanceType<typeof WordBuilder>>('word-builder');
 const puzzleGrid = useTemplateRef<InstanceType<typeof PuzzleGrid>>('puzzle-grid');
+const builtWordIndicator = useTemplateRef<InstanceType<typeof BuiltWordIndicator>>('built-word-indicator');
 
 const cheatCodeInputElement = useTemplateRef<HTMLInputElement>('cheat-code-input-el');
 const cheatCodeInput = ref('');
 const showCheatCodeInput = ref(false);
 
-const currentlyBuildingWord = ref('');
-const showCurrentlyBuildingWord = ref(false);
 const highestLetterPosition = ref<LetterPosition | null>(null);
 
 const showBuySelector = ref(false);
@@ -226,6 +224,8 @@ async function testWord(word: string) {
   const r = await testWordResult(word);
   switch (r.tag) {
     case 'bonus':
+      builtWordIndicator.value?.dismissWith('bonus');
+
       wordBuilder.value?.showBonusAnimation();
       await impactFeedback('medium');
 
@@ -235,18 +235,24 @@ async function testWord(word: string) {
 
       break;
     case 'win':
+      builtWordIndicator.value?.dismissWith('word');
+
       await goToNextLevel();
       await notificationFeedback('success');
+
       puzzleGrid.value?.animateShimmerCells(r.cells);
       puzzleGrid.value?.animateGlowCells(r.cells);
       break;
     case 'not_found':
       await notificationFeedback('warning');
+      builtWordIndicator.value?.dismissWith();
       break;
     case 'found':
       if (r.foundBefore) {
         await notificationFeedback('warning');
+        builtWordIndicator.value?.dismissWith();
       } else {
+        builtWordIndicator.value?.dismissWith('word');
         puzzleGrid.value?.animateGlowCells(r.cells);
       }
       break;
@@ -260,11 +266,7 @@ function buy(cells: Array<[number, number]>) {
 }
 
 function updateBuiltWord(word: string) {
-  if (word.length) {
-    currentlyBuildingWord.value = word;
-  }
-
-  showCurrentlyBuildingWord.value = !!word.length;
+  builtWordIndicator.value?.updateWord(word);
 }
 
 function activateCheatCode() {
