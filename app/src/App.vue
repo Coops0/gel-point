@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col">
-    <WinMessage ref="win-message" :class="!showBuySelector && 'z-15'"/>
+    <WinMessage ref="win-message" :class="showBuySelector ? 'z-18' : 'z-25'"/>
     <BuySelector
         ref="buy-selector"
         v-model="showBuySelector"
@@ -40,9 +40,9 @@
             <PuzzleGrid
                 ref="puzzle-grid"
                 :buy-mode="showBuySelector"
-                :class="showBuySelector && 'opacity-80 !z-22'"
+                :class="showBuySelector && 'opacity-80 !duration-150'"
                 :grid="grid!"
-                class="mt-4 relative z-10 transition-opacity duration-500"
+                class="mt-4 relative z-22 transition-opacity duration-500"
                 @selected="(row, col) => buySelector?.select(row, col)"
             />
           </KeepAlive>

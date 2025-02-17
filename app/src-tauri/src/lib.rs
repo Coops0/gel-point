@@ -35,6 +35,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_haptics::init())
         .plugin(tauri_plugin_http::init())
+        .append_invoke_initialization_script(include_str!("../assets/startup.js"))
         .invoke_handler(generate_handler![test_word, load_puzzle_buffered])
         .setup(|app| {
             let path = app.path();

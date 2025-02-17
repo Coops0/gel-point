@@ -28,7 +28,6 @@
 import GhostButton, { type GhostVariant } from '@/components/GhostButton.vue';
 import { useId, useTemplateRef } from 'vue';
 import gsap from 'gsap';
-import { lerp } from '@/util';
 
 const props = defineProps<{
   x: number;
@@ -58,7 +57,7 @@ function onBeforeEnter(el: Element) {
 function onEnter(el: Element, done: () => void) {
   // const distance = (gsap.getProperty(el, 'x') as number) / 50;
   // const delay = (distance ** 4) * props.delay;
-  
+
   gsap.to(el, {
     x: 0,
     duration: 0.20,
