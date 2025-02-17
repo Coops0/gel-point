@@ -5,7 +5,7 @@ export const THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic', 'ambe
 export const PUBLIC_THEMES = ['grapefruit', 'cotton-candy', 'lilac', 'chromatic', 'amber', 'ivy'] as const;
 
 export const THEME_EMOJIS: { [key in typeof THEMES[number]]: string } = {
-    'grapefruit': '🍇',
+    'grapefruit': '🍆',
     'cotton-candy': '🍬',
     'lilac': '🪻',
     'chromatic': '🗿',

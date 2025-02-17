@@ -167,7 +167,7 @@ useEventListener('pointerup', event => {
     return;
   }
 
-  if (clicks < 2) return;
+  if (clicks < 4) return;
 
   if (previousHoldTimeout !== -1) {
     clearTimeout(previousHoldTimeout);
@@ -204,5 +204,6 @@ onMounted(() => recalculatePositions());
 watch(() => props.items, () => recalculatePositions(), { deep: true });
 watch(popoutElement, () => recalculatePositions());
 watch(itemRefs, () => recalculatePositions());
+useEventListener('DOMContentLoaded', () => recalculatePositions());
 useInterval(recalculatePositions, 1500); // I don't know why but it keeps glitching out
 </script>
