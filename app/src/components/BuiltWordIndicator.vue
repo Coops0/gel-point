@@ -1,7 +1,7 @@
 <template>
   <div
       class="w-full fixed pointer-events-none text-center"
-      :style="{ bottom: `${Math.abs(highestLetterPosition?.y ?? 300) + 10}px` }">
+      :style="{ bottom: `${Math.abs(highestLetterPosition?.y ?? 300) + 5}px` }">
     <svg xmlns="http://www.w3.org/2000/svg" class="invisible absolute size-full">
       <defs>
         <filter id="goo">
@@ -44,7 +44,7 @@ function dismissWith(type?: 'bonus' | 'word') {
     return;
   }
 
-  bgColor.value = type === 'bonus' ? 'bg-blue-600' : 'bg-red-600';
+  bgColor.value = type === 'bonus' ? 'bg-blue-600' : 'bg-green-600';
   setTimeout(() => (showCurrentlyBuildingWord.value = false), 50);
 }
 

@@ -37,7 +37,7 @@ import { computed, ref, toRaw, watch } from 'vue';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';
 import type { Cell, Grid } from '@/services/puzzles.service.ts';
 import { centerOfCells, clone, positionInArray } from '@/util';
-import { useWindowSize } from '@/composables/reactive-sizes.composable.ts';
+import { useWindowSize } from '@/composables/window-size.composable.ts';
 
 const { width } = useWindowSize();
 

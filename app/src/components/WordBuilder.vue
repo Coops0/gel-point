@@ -18,6 +18,7 @@
           v-for="(l, letterIndex) in alignedLetters"
           :key="letterIndex.toString() + l.letter"
           :active="selectedLetterIndices.includes(letterIndex)"
+          :any-active="selectedLetterIndices.length > 0"
           :animating
           :last-selected="selectedLetterIndices.length > 0 && selectedLetterIndices[selectedLetterIndices.length - 1] === letterIndex"
           v-bind="l"
@@ -32,7 +33,7 @@
 <script lang="ts" setup>
 import { computed, ref, toRef, watch } from 'vue';
 import Letter from '@/components/Letter.vue';
-import { useWindowSize } from '@/composables/reactive-sizes.composable.ts';
+import { useWindowSize } from '@/composables/window-size.composable.ts';
 import { type LetterPosition, useLetterAlignment } from '@/composables/letter-alignment.composable.ts';
 import { useEventListener } from '@/composables/event-listener.composable.ts';
 import { selectionFeedback } from '@tauri-apps/plugin-haptics';

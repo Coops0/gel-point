@@ -2,7 +2,7 @@
   <div
       :ref="uniqueId"
       :style="{ transform }"
-      class="absolute flex items-center justify-center size-18 rounded-full group"
+      class="absolute flex items-center justify-center rounded-full group size-22"
       @pointerdown.prevent="event => emit('start-touch', event)"
       @pointerenter.prevent="event => emit('hover', event)"
   >
@@ -11,7 +11,7 @@
           active && '!bg-accent-600 ring-primary-400 ring-4',
           animating && 'animate-bonus'
         ]"
-        class="absolute flex items-center justify-center text-xl font-bold size-16
+        class="absolute flex items-center justify-center text-xl font-bold size-20
                transition-colors duration-100 rounded-full select-none cursor-pointer
                bg-accent-400 text-background-50 group-active:bg-accent-500 shadow-lg pointer-events-none uppercase"
     >
@@ -33,6 +33,7 @@ const props = defineProps<{
   animating: boolean;
   active: boolean;
   lastSelected: boolean;
+  anyActive: boolean;
 }>();
 
 const emit = defineEmits<{

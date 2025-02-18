@@ -12,7 +12,7 @@ const assignPositions = <E = string>(l: E[], circleRadius: number, circleXCenter
         const angle = Math.PI * (2 * step - (1 / 2));
 
         return {
-            x: (Math.cos(angle)) * circleRadius + (circleXCenterOffset / 2) + 65,
+            x: (Math.cos(angle)) * circleRadius + (circleXCenterOffset / 2) + 57,
             y: (Math.sin(angle) * circleRadius) - circleYCenterOffset,
             letter
         };
@@ -22,13 +22,13 @@ const assignPositions = <E = string>(l: E[], circleRadius: number, circleXCenter
 export const useLetterAlignment = (letters: Ref<string[]>, windowWidth: Ref<number>) => {
     const circleRadius = computed(() => {
         const l = letters.value.length;
-        if (l <= 5) return 70;
-        if (l <= 8) return 100;
-        return 120;
+        if (l <= 5) return 90;
+        if (l <= 8) return 120;
+        return 140;
     });
 
     const circleXCenterOffset = computed(() => windowWidth.value / 2);
-    const circleYCenterOffset = ref(200);
+    const circleYCenterOffset = ref(220);
 
     const alignedLetters = ref(assignPositions(letters.value, circleRadius.value, circleXCenterOffset.value, circleYCenterOffset.value));
 

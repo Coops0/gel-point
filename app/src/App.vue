@@ -51,7 +51,7 @@
         <BuiltWordIndicator
             ref="built-word-indicator"
             :highest-letter-position="highestLetterPosition"
-            :class="!showBuySelector && 'z-1'"
+            :class="!showBuySelector && 'z-22'"
         />
 
         <Actions
