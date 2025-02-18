@@ -19,11 +19,11 @@ serde = { version = "1.0.217", features = ["derive"] }
 tauri = { version = "2.2.5", features = [] }
 tauri-plugin-fs = "2.2.0"
 tauri-plugin-haptics = "2.2.3"
+# look into changing feature flags
 tauri-plugin-http = "2.3.0"
 tauri-plugin-log = "2.2.1"
 log = "0.4.25"
 tokio = { version = "1.43.0", features = ["fs"] }
-anyhow = "1.0.95"
 
 # https://v2.tauri.app/concept/size/
 [profile.dev]

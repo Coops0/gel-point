@@ -1,18 +1,22 @@
 #![allow(clippy::missing_panics_doc, clippy::used_underscore_binding, clippy::large_stack_frames)]
 
-use crate::state::{memoized_fetch_cache, CachedData, Paths};
-use anyhow::Context;
+use crate::{
+    errors::{ResultExtDisplay, SmallResult}, state::{memoized_fetch_cache, CachedData, Paths}
+};
 use log::{error, info, LevelFilter};
 use serde::Serialize;
 use std::{
     fs, sync::{Arc, Mutex}
 };
-use tauri::{command, generate_handler, path::BaseDirectory, Manager, State};
+use std::error::Error;
+use tauri::{command, generate_handler, path::BaseDirectory, App, Manager, State};
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::{Target, TargetKind};
 use tokio::sync::Notify;
+use crate::errors::SmallError;
 
 mod ctx_macro_offload;
+mod errors;
 mod state;
 
 const BASE_API_URL: &str = "https://gel-point.cooperhanessian.com";
@@ -37,7 +41,7 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .append_invoke_initialization_script(include_str!("../assets/startup.js"))
         .invoke_handler(generate_handler![test_word, load_puzzle_buffered])
-        .setup(|app| {
+        .setup(|app: &mut App| -> Result<(), Box<dyn Error>> {
             let path = app.path();
             let paths = Paths::new(path).context("failed to init paths struct")?;
 
@@ -50,14 +54,19 @@ pub fn run() {
                 .context("failed to allow puzzles file via fs_scope")?;
 
             if !paths.puzzles().exists() {
-                let bundled_puzzles =
-                    path.resolve("./assets/puzzles.data", BaseDirectory::Resource)?;
+                let bundled_puzzles = path
+                    .resolve("./assets/puzzles.data", BaseDirectory::Resource)
+                    .context("failed to resolve puzzles data path")?;
+
                 let _ = fs::copy(&bundled_puzzles, paths.puzzles());
                 info!("copied bundled puzzles to cache");
             }
 
             if !paths.words().exists() {
-                let bundled_words = path.resolve("./assets/words.data", BaseDirectory::Resource)?;
+                let bundled_words = path
+                    .resolve("./assets/words.data", BaseDirectory::Resource)
+                    .context("failed to resolve words data path")?;
+
                 let _ = fs::copy(&bundled_words, paths.words());
                 info!("copied bundled words to cache");
             }
@@ -66,9 +75,9 @@ pub fn run() {
                 cached_data: Mutex::new(None::<CachedData>),
                 notify: Notify::new()
             });
-            
+
             if !app.manage(Arc::clone(&state)) {
-                return Err(Box::from("failed to create managed app state in setup hook"));
+                return Err(SmallError::from("failed to create managed app state in setup hook").into());
             }
 
             tauri::async_runtime::spawn(async move {

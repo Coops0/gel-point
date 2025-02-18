@@ -19,7 +19,8 @@
 - Fix popout menu being aligned incorrectly for the first few seconds of the app loading
 - Move all icons up a little bit to prevent accidental swipes up
 - Change how letter deselection works to be more intuitive
-- Hopefully fully disable iOS magnifier
+- Hopefully fully disabled iOS magnifier
+- Updated word building indicator to react to guesses
 
 ### v0.1.4
 

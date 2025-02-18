@@ -1,3 +1,4 @@
+use crate::errors::{ResultExtDisplay, SmallResult};
 use log::{info, warn};
 use serde::Serialize;
 use std::{
@@ -5,8 +6,7 @@ use std::{
 };
 use tauri::{path::PathResolver, Wry};
 use tauri_plugin_http::reqwest;
-use tokio::time::Instant;
-use tokio::try_join;
+use tokio::{time::Instant, try_join};
 
 #[derive(Serialize, Clone)]
 pub struct CachedData {
@@ -48,27 +48,29 @@ impl Paths {
 }
 
 fn req_client() -> reqwest::Client {
-    reqwest::Client::builder().timeout(Duration::from_secs(1)).build().unwrap()
+    reqwest::Client::builder().timeout(Duration::from_secs(3)).build().unwrap()
 }
 
-async fn fetch_hash(route: &str) -> anyhow::Result<String> {
+async fn fetch_hash(route: &str) -> SmallResult<String> {
     req_client()
         .get(format!("{}/{route}/hash-string", crate::BASE_API_URL))
         .send()
-        .await?
+        .await
+        .context("failed to send hash req")?
         .text()
         .await
-        .map_err(Into::into)
+        .context("failed to get hash text")
 }
 
-async fn fetch_text(route: &str) -> anyhow::Result<String> {
+async fn fetch_text(route: &str) -> SmallResult<String> {
     req_client()
         .get(format!("{}/{route}", crate::BASE_API_URL))
         .send()
-        .await?
+        .await
+        .context("failed to send text req")?
         .text()
         .await
-        .map_err(Into::into)
+        .context("failed to get text")
 }
 
 async fn read_cached_hashes(path: &Path) -> Option<(String, String)> {
@@ -80,7 +82,7 @@ async fn memoize_or_fetch(
     path: &Path,
     route: &str,
     cached_hash: Option<String>
-) -> anyhow::Result<(String, String)> {
+) -> SmallResult<(String, String)> {
     let remote_hash = match fetch_hash(route).await {
         Ok(hash) => Some(hash),
         Err(err) => {
@@ -92,8 +94,10 @@ async fn memoize_or_fetch(
     match (remote_hash, cached_hash) {
         (Some(remote), Some(cached)) if remote == cached => {
             info!("hashes for {route} match remote; using local cache");
-            let contents = tokio::fs::read_to_string(path).await?;
-            Ok((contents, remote))
+            let contents =
+                tokio::fs::read_to_string(path).await.context("failed to read file contents")?;
+
+            return Ok((contents, remote));
         }
         (Some(remote), maybe_cached) => {
             if maybe_cached.is_some() {
@@ -102,16 +106,19 @@ async fn memoize_or_fetch(
                 info!("no local hash for {route}; fetching remote");
             }
 
-            let contents = fetch_text(route).await?;
-            tokio::fs::write(path, &contents).await?;
-
-            Ok((contents, remote))
+            if let Ok(contents) = fetch_text(route).await {
+                tokio::fs::write(path, &contents).await.context("failed to write contents")?;
+                return Ok((contents, remote));
+            } else {
+                warn!("failed to fetch text for (case 2B) {route}");
+            }
         }
         (None, Some(cached)) => {
             info!("remote hash fetch failed for {route}; using local cache");
-            let contents = tokio::fs::read_to_string(path).await?;
+            let contents =
+                tokio::fs::read_to_string(path).await.context("failed to read string contents")?;
 
-            Ok((contents, cached))
+            return Ok((contents, cached));
         }
         (None, None) => {
             warn!("no remote or local cache for {route}");
@@ -119,13 +126,16 @@ async fn memoize_or_fetch(
             // most likely case this happens is if they start the app for the first time
             // without internet. we'll just load the local bundled files, and "cache" a
             // temporary hash that will be overwritten the next time they have internet
-            let contents = tokio::fs::read_to_string(path).await?;
-            Ok((contents, String::from("TEMP-HASH")))
         }
     }
+
+    // fall thru
+    let contents =
+        tokio::fs::read_to_string(path).await.context("failed to read local string contents???")?;
+    Ok((contents, String::from("TEMP-HASH")))
 }
 
-pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, HashMap<u32, String>)> {
+pub async fn memoized_fetch_cache(paths: &Paths) -> SmallResult<(String, HashMap<u32, String>)> {
     let words_data = paths.words();
     let puzzles_data = paths.puzzles();
     let hashes = paths.hashes();
@@ -133,10 +143,13 @@ pub async fn memoized_fetch_cache(paths: &Paths) -> anyhow::Result<(String, Hash
     let (local_words_hash, local_puzzles_hash) = read_cached_hashes(&hashes).await.unzip();
 
     let before = Instant::now();
+
     let ((words, words_hash), (puzzles, puzzles_hash)) = try_join!(
         memoize_or_fetch(&words_data, "words", local_words_hash),
         memoize_or_fetch(&puzzles_data, "puzzles", local_puzzles_hash)
-    )?;
+    )
+    .context("failed to memoize or fetch")?;
+
     info!("fetched data in {}ms", before.elapsed().as_millis());
 
     if let Err(err) = tokio::fs::write(hashes, format!("{words_hash},{puzzles_hash}")).await {
