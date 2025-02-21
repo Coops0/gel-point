@@ -67,6 +67,7 @@
             :earned="earnedThemes"
             :show-unread="showNewlyUnlockedIndicator"
             class="fixed right-2 bottom-6"
+            :class="!showBuySelector && 'z-23'"
             @change-theme="t => setTheme(t)"
             @clear-unread="() => showNewlyUnlockedIndicator = false"
         />
@@ -353,6 +354,13 @@ useEventListener(
       } else {
         showBuySelector.value = false;
       }
+    }
+);
+
+useEventListener(
+    'touchstart',
+    (event: TouchEvent) => {
+      event.preventDefault();
     }
 );
 

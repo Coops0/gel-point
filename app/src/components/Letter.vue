@@ -11,7 +11,7 @@
           active && '!bg-accent-600 outline-primary-400 outline-4',
           animating && 'animate-bonus'
         ]"
-        class="absolute flex items-center justify-center text-xl font-bold size-20
+        class="absolute flex items-center justify-center text-2xl font-bold size-20
                transition-colors duration-100 rounded-full select-none cursor-pointer
                bg-accent-400 text-background-50 group-active:bg-accent-500 shadow-lg pointer-events-none uppercase"
     >

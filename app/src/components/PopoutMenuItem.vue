@@ -9,14 +9,14 @@
     <div
         v-show="active"
         :style="{ top: `${y}px`, left: `${x}px` }"
-        class="flex items-center justify-between fixed z-9 bg-background-50 rounded-2xl"
+        class="flex items-center justify-between fixed z-9 rounded-full backdrop-blur-md"
     >
       <GhostButton
           :ref="uniqueId"
           :active="hovered"
           :data-popup-key="popupKey"
           :variant
-          class="text-nowrap"
+          class="text-nowrap mix-blend-multiply"
       >
         {{ label }}
       </GhostButton>

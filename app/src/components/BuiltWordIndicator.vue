@@ -14,7 +14,11 @@
 
     <div
         class="text-2xl font-bold uppercase inline-block box-decoration-clone text-background-50 px-4 py-2 relative overflow-hidden"
-        :style="{ filter: 'url(#goo)', transition: `opacity ${prolongFadeOut ? '1500' : '150'}ms, background-color ${prolongFadeOut ? '150' : '0'}ms ease-in-out !important` }"
+        :style="{
+          filter: 'url(#goo)',
+          transform: `scale(${scaleOut ? 1.5 : 1})`,
+          transition: `opacity ${prolongFadeOut ? '1500' : '150'}ms, background-color ${prolongFadeOut ? '150' : '0'}ms ease-in-out, transform ${scaleOut ? '2500' : '0'}ms !important`
+        }"
         :class="[showCurrentlyBuildingWord ? 'opacity-100' : 'opacity-0', bgColor]">
       {{ word }}
     </div>
@@ -36,20 +40,25 @@ const ORIGINAL_BG_COLOR = 'bg-secondary-500';
 const bgColor = ref(ORIGINAL_BG_COLOR);
 
 const prolongFadeOut = computed(() => bgColor.value !== ORIGINAL_BG_COLOR);
+const scaleOut = ref(false);
 
 function dismissWith(type?: 'bonus' | 'word') {
   if (!type) {
+    scaleOut.value = false;
     bgColor.value = ORIGINAL_BG_COLOR;
     showCurrentlyBuildingWord.value = true;
     return;
   }
 
+  scaleOut.value = type === 'word';
   bgColor.value = type === 'bonus' ? 'bg-blue-600' : 'bg-green-600';
+
   setTimeout(() => (showCurrentlyBuildingWord.value = false), 50);
 }
 
 function updateWord(nWord: string) {
   if (nWord.length) {
+    scaleOut.value = false;
     bgColor.value = ORIGINAL_BG_COLOR;
     showCurrentlyBuildingWord.value = true;
     word.value = nWord;
