@@ -8,7 +8,7 @@
   >
     <div
         :class="[
-          active && '!bg-accent-600 ring-primary-400 ring-4',
+          active && '!bg-accent-600 outline-primary-400 outline-4',
           animating && 'animate-bonus'
         ]"
         class="absolute flex items-center justify-center text-xl font-bold size-20
