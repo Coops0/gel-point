@@ -21,6 +21,8 @@
 - Change how letter deselection works to be more intuitive
 - Hopefully fully disabled iOS magnifier
 - Updated word building indicator to react to guesses
+- Fix visual bug when selecting letters immediately after finding a bonus word
+- Increased letter sizes
 
 ### v0.1.4
 
