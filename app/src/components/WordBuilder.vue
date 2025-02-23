@@ -17,6 +17,7 @@
       <Letter
           v-for="(l, letterIndex) in alignedLetters"
           :key="letterIndex.toString() + l.letter"
+          :letter-index="letterIndex"
           :active="selectedLetterIndices.includes(letterIndex)"
           :any-active="selectedLetterIndices.length > 0"
           :animating
@@ -24,7 +25,6 @@
           v-bind="l"
           @hover="event => hover(event, letterIndex)"
           @move="(x, y) => handleLetterMovement(letterIndex, x, y)"
-          @start-touch="event => startTouch(event, letterIndex)"
       />
     </div>
   </div>
@@ -112,6 +112,37 @@ function showBonusAnimation() {
     animating.value = false;
   }, 1500);
 }
+
+useEventListener('pointerdown', (event: PointerEvent) => {
+  if (selectedLetterIndices.value.length !== 0) return;
+
+  const directClickTarget = document.elementsFromPoint(event.clientX, event.clientY);
+  if (directClickTarget.length && directClickTarget.some(el => el.tagName.toLowerCase() === 'button' && !('letterIndex' in (<HTMLElement>el).dataset))) {
+    return;
+  }
+
+  const elements = document.querySelectorAll<HTMLElement>('[data-letter-index]');
+  const closest = [...elements].reduce((acc, cur) => {
+    const rect = cur.getBoundingClientRect();
+    const letter = Number(cur.dataset['letterIndex']);
+
+    if (isNaN(letter)) return acc;
+
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
+
+    if (distance < acc.distance) {
+      return { distance, letter };
+    }
+
+    return acc;
+  }, { distance: Infinity, letter: -1 });
+  
+  if (closest.letter !== -1 && closest.distance < 65) {
+    startTouch(event, closest.letter);
+  }
+});
 
 function startTouch(event: PointerEvent, letterIndex: number) {
   selectedLetterIndices.value = [letterIndex];

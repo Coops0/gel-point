@@ -3,7 +3,7 @@
       :ref="uniqueId"
       :style="{ transform }"
       class="absolute flex items-center justify-center rounded-full group size-22"
-      @pointerdown.prevent="event => emit('start-touch', event)"
+      :data-letter-index="letterIndex"
       @pointerenter.prevent="event => emit('hover', event)"
   >
     <div
@@ -34,10 +34,10 @@ const props = defineProps<{
   active: boolean;
   lastSelected: boolean;
   anyActive: boolean;
+  letterIndex: number;
 }>();
 
 const emit = defineEmits<{
-  'start-touch': [event: PointerEvent];
   hover: [event: PointerEvent];
   move: [x: number, y: number];
 }>();

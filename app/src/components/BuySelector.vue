@@ -23,12 +23,12 @@
 
         <div class="flex flex-row gap-4 items-center justify-center fixed top-4/5">
           <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
-          <div
+          <button
               class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg !transition-colors !duration-200 !pointer-events-auto font-shippori"
               @click="cancel"
           >
             CANCEL
-          </div>
+          </button>
         </div>
 
         <div
