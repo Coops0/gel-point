@@ -17,7 +17,7 @@
         <div class="text-primary-400 text-sm font-shippori">you did all the puzzles. now wait for me to add more.</div>
       </div>
 
-      <FadeTransition :duration="200">
+      <FadeTransition :duration="350">
         <div
             v-if="winState !== 'active' && !isLoaded"
             class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999]">
@@ -77,7 +77,7 @@
             <div
                 v-if="showHelp"
                 class="fixed top-3/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-9 bg-primary-900/85 text-white p-2 rounded-md font-shippori w-fit"
-                :class="!showHelp && '!pointer-events-none'"
+                :class="[!showHelp && '!pointer-events-none', !showBuySelector && 'z-23']"
                 @click="() => showHelp = false">
               hold and drag letters to build words
             </div>

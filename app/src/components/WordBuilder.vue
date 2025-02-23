@@ -138,7 +138,7 @@ useEventListener('pointerdown', (event: PointerEvent) => {
 
     return acc;
   }, { distance: Infinity, letter: -1 });
-  
+
   if (closest.letter !== -1 && closest.distance < 65) {
     startTouch(event, closest.letter);
   }

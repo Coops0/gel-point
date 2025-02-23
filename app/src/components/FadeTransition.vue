@@ -13,7 +13,6 @@
 </template>
 
 <script lang="ts" setup>
-
 withDefaults(
     defineProps<{ duration?: number; appear?: boolean; }>(),
     { duration: 150, appear: false }
