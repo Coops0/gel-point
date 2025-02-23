@@ -1,19 +1,18 @@
 #![allow(clippy::missing_panics_doc, clippy::used_underscore_binding, clippy::large_stack_frames)]
 
 use crate::{
-    errors::{ResultExtDisplay, SmallResult}, state::{memoized_fetch_cache, CachedData, Paths}
+    errors::{ResultExtDisplay, SmallError, SmallResult}, state::{memoized_fetch_cache, CachedData, Paths}
 };
 use log::{error, info, LevelFilter};
 use serde::Serialize;
 use std::{
-    fs, sync::{Arc, Mutex}
+    collections::HashSet, error::Error, fs, sync::{Arc, Mutex}
 };
-use std::error::Error;
+use std::sync::MutexGuard;
 use tauri::{command, generate_handler, path::BaseDirectory, App, Manager, State};
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::{Target, TargetKind};
 use tokio::sync::Notify;
-use crate::errors::SmallError;
 
 mod ctx_macro_offload;
 mod errors;
@@ -77,7 +76,9 @@ pub fn run() {
             });
 
             if !app.manage(Arc::clone(&state)) {
-                return Err(SmallError::from("failed to create managed app state in setup hook").into());
+                return Err(
+                    SmallError::from("failed to create managed app state in setup hook").into()
+                );
             }
 
             tauri::async_runtime::spawn(async move {
@@ -91,7 +92,7 @@ pub fn run() {
                 };
 
                 let words =
-                    words.to_lowercase().split('\n').map(ToOwned::to_owned).collect::<Vec<_>>();
+                    words.to_lowercase().split('\n').map(ToOwned::to_owned).collect::<HashSet<_>>();
 
                 {
                     let mut state = state.cached_data.lock().unwrap();
@@ -107,14 +108,24 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-#[command]
-async fn test_word(state: State<'_, Arc<AppState>>, word: String) -> Result<bool, ()> {
-    if state.cached_data.lock().unwrap().is_none() {
-        state.notify.notified().await;
+async fn extract_state<'s>(state: &'s State<'s, Arc<AppState>>) -> MutexGuard<'s, Option<CachedData>> {
+    {
+        let guard = state.cached_data.lock().unwrap();
+
+        if guard.is_some() {
+            return guard;
+        }
     }
 
-    let state = state.cached_data.lock().unwrap();
-    Ok(state.as_ref().unwrap().find_word(&word))
+    state.notify.notified().await;
+    state.cached_data.lock().unwrap()
+}
+
+#[command]
+async fn test_word(state: State<'_, Arc<AppState>>, word: String) -> Result<bool, ()> {
+    let state = extract_state(&state).await;
+    let cached_data = state.as_ref().unwrap();
+    Ok(cached_data.find_word(&word))
 }
 
 #[derive(Serialize)]
@@ -128,26 +139,15 @@ async fn load_puzzle_buffered(
     state: State<'_, Arc<AppState>>,
     id: u32
 ) -> Result<PuzzleBufferedResponse, ()> {
-    if state.cached_data.lock().unwrap().is_none() {
-        state.notify.notified().await;
-    }
+    let state = extract_state(&state).await;
+    let cached_data = state.as_ref().unwrap();
 
-    let state = state.cached_data.lock().unwrap();
-
-    let mut viable_puzzles = state
-        .as_ref()
-        .unwrap()
-        .puzzles
-        .iter()
-        .filter(|(&puzzle_id, _)| puzzle_id >= id)
-        .collect::<Vec<_>>();
+    let mut viable_puzzles = cached_data.puzzles.iter().filter(|(&puzzle_id, _)| puzzle_id >= id).collect::<Vec<_>>();
 
     viable_puzzles.sort_by_key(|(&puzzle_id, _)| puzzle_id);
 
     let puzzle = viable_puzzles.first().map(|(_, puzzle)| *puzzle).cloned();
     let next_puzzle = viable_puzzles.get(1).map(|(_, puzzle)| *puzzle).cloned();
-
-    drop(state);
 
     Ok(PuzzleBufferedResponse { puzzle, next_puzzle })
 }

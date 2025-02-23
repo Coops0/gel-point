@@ -4,19 +4,20 @@ use serde::Serialize;
 use std::{
     collections::HashMap, path::{Path, PathBuf}, time::Duration
 };
+use std::collections::HashSet;
 use tauri::{path::PathResolver, Wry};
 use tauri_plugin_http::reqwest;
 use tokio::{time::Instant, try_join};
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize)]
 pub struct CachedData {
-    pub words: Vec<String>,
+    pub words: HashSet<String>,
     pub puzzles: HashMap<u32, String>
 }
 
 impl CachedData {
     pub fn find_word(&self, word: &str) -> bool {
-        self.words.iter().any(|w| w == word)
+        self.words.contains(word)
     }
 }
 
@@ -74,8 +75,13 @@ async fn fetch_text(route: &str) -> SmallResult<String> {
 }
 
 async fn read_cached_hashes(path: &Path) -> Option<(String, String)> {
-    let data = tokio::fs::read_to_string(path).await.ok()?;
-    data.split_once(',').map(|(a, b)| (a.to_owned(), b.to_owned()))
+    let mut data = tokio::fs::read_to_string(path).await.ok()?;
+    let split_index = data.find(',')?;
+
+    data.remove(split_index);
+    let right = data.split_off(split_index);
+
+    Some((data, right))
 }
 
 async fn memoize_or_fetch(
