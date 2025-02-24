@@ -17,6 +17,13 @@
         <div class="text-primary-400 text-sm font-shippori">you did all the puzzles. now wait for me to add more.</div>
       </div>
 
+      <FadeTransition :duration="350">
+        <div v-if="winState !== 'active' && !isLoaded"
+             class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999]">
+          <div class="flex flex-col justify-center items-center h-screen gap-4 z-[999] pointer-events-none"/>
+        </div>
+      </FadeTransition>
+
 
       <div v-if="winState !== 'active' && isLoaded" class="flex flex-col h-screen">
         <!-- compensate for dynamic island -->
