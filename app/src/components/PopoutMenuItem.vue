@@ -9,7 +9,7 @@
     <div
         v-show="active"
         :style="{ top: `${y}px`, left: `${x}px` }"
-        class="flex items-center justify-between fixed z-9 rounded-full backdrop-blur-md"
+        class="flex items-center justify-between fixed z-9 rounded-md backdrop-blur-md"
     >
       <GhostButton
           :ref="uniqueId"
