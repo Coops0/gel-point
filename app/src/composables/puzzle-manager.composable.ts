@@ -3,6 +3,7 @@ import { useLocalStorage } from '@/composables/local-storage.composable.ts';
 import type { Grid, Puzzle } from '@/services/puzzles.service.ts';
 import { clone } from '@/util';
 import type { WordService } from '@/services/words.service.ts';
+import { useTauriStore } from '@/composables/tauri-store.composable.ts';
 
 export type WordTestResult =
     { tag: 'not_found' } |
@@ -16,14 +17,7 @@ export const usePuzzleManager = (wordService: WordService) => {
 
     const activeGrid = useLocalStorage<Grid | null>('active-grid', null, JSON.stringify, JSON.parse, true);
 
-    const foundBonusWords = useLocalStorage<Array<string>>(
-        'bonus-words',
-        [],
-        w => w.join(','),
-        s => s.split(','),
-        true
-    );
-
+    const tauriStore = useTauriStore();
     const availableBonusWordPoints = useLocalStorage('available-bonus-word-points', 0);
 
     const hasWon = () => activeGrid.value?.every(row => row.every(cell => cell !== 0)) === true;
@@ -33,15 +27,17 @@ export const usePuzzleManager = (wordService: WordService) => {
 
         const match = puzzle.value.words.find(w => w.word === word);
         if (!match) {
-            if (foundBonusWords.value.includes(word) || !(await wordService.testWord(word))) {
+            const fbw = await tauriStore.getFoundBonusWords();
+            if (fbw.includes(word) || !(await wordService.testWord(word))) {
                 return { tag: 'not_found' };
             }
 
             availableBonusWordPoints.value++;
-            foundBonusWords.value = [...foundBonusWords.value, word];
+            await tauriStore.setFoundBonusWords([...fbw, word]);
+
             return {
                 tag: 'bonus',
-                theme: foundBonusWords.value.length % 30 === 0
+                theme: (fbw.length + 1) % 30 === 0
             };
         }
 

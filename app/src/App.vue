@@ -17,16 +17,6 @@
         <div class="text-primary-400 text-sm font-shippori">you did all the puzzles. now wait for me to add more.</div>
       </div>
 
-      <FadeTransition :duration="350">
-        <div
-            v-if="winState !== 'active' && !isLoaded"
-            class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999]">
-          <div class="flex flex-col justify-center items-center h-screen gap-4 z-[999] pointer-events-none">
-            <div class="text-primary-400 font-shippori">loading...</div>
-            <div class="text-primary-400 font-shippori">{{ motd }}</div>
-          </div>
-        </div>
-      </FadeTransition>
 
       <div v-if="winState !== 'active' && isLoaded" class="flex flex-col h-screen">
         <!-- compensate for dynamic island -->
@@ -128,7 +118,6 @@ import { type LoadLevelResult, type Puzzle, PuzzleService } from '@/services/puz
 import { WordService } from '@/services/words.service.ts';
 import { clone } from '@/util';
 import ThemeSelector from '@/components/ThemeSelector.vue';
-import { MOTDS } from '@/util/motds.util.ts';
 import type { LetterPosition } from '@/composables/letter-alignment.composable.ts';
 import FadeTransition from '@/components/FadeTransition.vue';
 import BuiltWordIndicator from '@/components/BuiltWordIndicator.vue';
@@ -156,8 +145,6 @@ const buySelector = useTemplateRef<InstanceType<typeof BuySelector>>('buy-select
 const winState = ref<'next-level' | 'active' | 'none'>('none');
 
 const puzzleId = useLocalStorage('puzzle-id', 0);
-
-const motd = MOTDS[Math.floor(Math.random() * MOTDS.length)];
 
 const {
   grid,

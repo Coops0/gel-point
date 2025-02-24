@@ -16,6 +16,7 @@ struct AppState {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_haptics::init())
         .append_invoke_initialization_script(include_str!("../assets/startup.js"))
         .invoke_handler(generate_handler![test_word, load_puzzle_buffered])
