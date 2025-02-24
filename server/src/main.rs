@@ -1,4 +1,3 @@
-use anyhow::Context;
 use axum::routing::get;
 use axum::Router;
 use sha2::{Digest, Sha256};
@@ -11,10 +10,10 @@ static mut WORDS: String = String::new();
 static mut PUZZLES: String = String::new();
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() {
     unsafe {
-        WORDS = fs::read_to_string("./words.data").await.context("no words.data file found")?;
-        PUZZLES = fs::read_to_string("./puzzles.data").await.context("no puzzles.data file found")?;
+        WORDS = fs::read_to_string("./words.data").await.expect("no words.data file found");
+        PUZZLES = fs::read_to_string("./puzzles.data").await.expect("no puzzles.data file found");
 
         let words_hash = Sha256::digest(&WORDS);
         let puzzles_hash = Sha256::digest(&PUZZLES);
@@ -32,8 +31,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/puzzles/", get(puzzles))
         .route("/puzzles/hash-string", get(puzzles_hash_string));
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:4444").await?;
-    axum::serve(listener, app).await.map_err(Into::into)
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:4444").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 
 async fn words_hash_string() -> &'static str {
