@@ -114,6 +114,8 @@ function showBonusAnimation() {
 }
 
 useEventListener('pointerdown', (event: PointerEvent) => {
+  event.preventDefault();
+
   if (selectedLetterIndices.value.length !== 0) return;
 
   const directClickTarget = document.elementsFromPoint(event.clientX, event.clientY);
@@ -145,13 +147,17 @@ useEventListener('pointerdown', (event: PointerEvent) => {
 });
 
 function startTouch(event: PointerEvent, letterIndex: number) {
+  event.preventDefault();
+
   selectedLetterIndices.value = [letterIndex];
   (<Element>event.target)?.releasePointerCapture(event.pointerId);
 
   selectionFeedback();
 }
 
-function hover(_event: PointerEvent, letterIndex: number) {
+function hover(event: PointerEvent, letterIndex: number) {
+  event.preventDefault();
+
   const len = selectedLetterIndices.value.length;
   if (len === 0) return;
 
@@ -211,8 +217,8 @@ function handleLetterMovement(letterIndex: number, x: number, y: number) {
   };
 }
 
-useEventListener('pointerup', endTouch, { passive: true });
-useEventListener('touchend', endTouch, { passive: true });
+useEventListener('pointerup', endTouch);
+useEventListener('touchend', endTouch);
 </script>
 
 <style scoped>

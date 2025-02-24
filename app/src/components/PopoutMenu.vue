@@ -131,6 +131,8 @@ let previousHoldTimeout = -1;
 const showHelper = ref(false);
 
 function beginHold(event: PointerEvent) {
+  event.preventDefault();
+
   emit('start');
 
   isHolding.value = true;
@@ -142,6 +144,8 @@ function beginHold(event: PointerEvent) {
 }
 
 useEventListener('pointerup', event => {
+  event.preventDefault();
+
   if (!isHolding.value) return;
   isHolding.value = false;
 

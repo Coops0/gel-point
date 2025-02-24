@@ -22,14 +22,14 @@ const assignPositions = <E = string>(l: E[], circleRadius: number, circleXCenter
 export const useLetterAlignment = (letters: Ref<string[]>, windowWidth: Ref<number>) => {
     const circleRadius = computed(() => {
         const l = letters.value.length;
-        if (l <= 3) return 75;
-        if (l <= 5) return 90;
-        if (l <= 8) return 120;
-        return 140;
+        if (l <= 3) return 70;
+        if (l <= 5) return 80;
+        if (l <= 8) return 100;
+        return 115;
     });
 
     const circleXCenterOffset = computed(() => windowWidth.value / 2);
-    const circleYCenterOffset = ref(225);
+    const circleYCenterOffset = ref(205);
 
     const alignedLetters = ref(assignPositions(letters.value, circleRadius.value, circleXCenterOffset.value, circleYCenterOffset.value));
 

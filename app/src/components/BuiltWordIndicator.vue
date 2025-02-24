@@ -17,7 +17,7 @@
         :style="{
           filter: 'url(#goo)',
           transform: `scale(${scaleOut ? 1.5 : 1})`,
-          transition: `opacity ${prolongFadeOut ? '1500' : '150'}ms, background-color ${prolongFadeOut ? '150' : '0'}ms ease-in-out, transform ${scaleOut ? '2500' : '0'}ms !important`
+          transition: `opacity ${prolongFadeOut ? '900' : '150'}ms, background-color ${prolongFadeOut ? '150' : '0'}ms ease-in-out, transform ${scaleOut ? '2500' : '0'}ms !important`
         }"
         :class="[showCurrentlyBuildingWord ? 'opacity-100' : 'opacity-0', bgColor]">
       {{ word }}

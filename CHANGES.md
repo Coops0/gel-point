@@ -23,6 +23,9 @@
 - Updated word building indicator to react to guesses
 - Fix visual bug when selecting letters immediately after finding a bonus word
 - Increased letter sizes
+- Rewrite letter interactions to allow for a much larger radius on initial selection
+- Massively decreased complexity of backend, app should be substantially faster
+- Use a lazy load storage method for found words to decrease initial load time
 
 ### v0.1.4
 

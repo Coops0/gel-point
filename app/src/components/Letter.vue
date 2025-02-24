@@ -75,7 +75,9 @@ const element = useTemplateRef<HTMLElement>(uniqueId);
 
 useEventListener(
     'pointermove',
-    (event: MouseEvent) => {
+    (event: PointerEvent) => {
+      event.preventDefault();
+
       const el = element.value;
       if (!el || !props.active) {
         moveToOffsetTarget.value = [0, 0];
@@ -91,16 +93,16 @@ useEventListener(
       y = lerp(y, localPos.value[1], 0.1) / modifier;
 
       moveToOffsetTarget.value = [x, y];
-    },
-    { passive: true }
+    }
 );
 
 useEventListener(
     'pointerup',
-    () => {
+    (event: PointerEvent) => {
+      event.preventDefault();
+
       moveToOffsetTarget.value = [0, 0];
-    },
-    { passive: true }
+    }
 );
 
 useInterval(() => {
