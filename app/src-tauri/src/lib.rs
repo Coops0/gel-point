@@ -1,14 +1,13 @@
 #![allow(clippy::missing_panics_doc, clippy::used_underscore_binding, clippy::large_stack_frames)]
 
 use crate::{
-    errors::{ResultExtDisplay, SmallError, SmallResult}, state::{memoized_fetch_cache, CachedData, Paths}
+    errors::{ResultExtDisplay, SmallError}, state::{memoized_fetch_cache, CachedData, Paths}
 };
 use log::{error, info, LevelFilter};
 use serde::Serialize;
 use std::{
-    collections::HashSet, error::Error, fs, sync::{Arc, Mutex}
+    collections::HashSet, error::Error, fs, sync::{Arc, Mutex, MutexGuard}
 };
-use std::sync::MutexGuard;
 use tauri::{command, generate_handler, path::BaseDirectory, App, Manager, State};
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::{Target, TargetKind};
@@ -108,7 +107,9 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-async fn extract_state<'s>(state: &'s State<'s, Arc<AppState>>) -> MutexGuard<'s, Option<CachedData>> {
+async fn extract_state<'s>(
+    state: &'s State<'s, Arc<AppState>>
+) -> MutexGuard<'s, Option<CachedData>> {
     {
         let guard = state.cached_data.lock().unwrap();
 
@@ -142,7 +143,8 @@ async fn load_puzzle_buffered(
     let state = extract_state(&state).await;
     let cached_data = state.as_ref().unwrap();
 
-    let mut viable_puzzles = cached_data.puzzles.iter().filter(|(&puzzle_id, _)| puzzle_id >= id).collect::<Vec<_>>();
+    let mut viable_puzzles =
+        cached_data.puzzles.iter().filter(|(&puzzle_id, _)| puzzle_id >= id).collect::<Vec<_>>();
 
     viable_puzzles.sort_by_key(|(&puzzle_id, _)| puzzle_id);
 

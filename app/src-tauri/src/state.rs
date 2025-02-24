@@ -2,9 +2,8 @@ use crate::errors::{ResultExtDisplay, SmallResult};
 use log::{info, warn};
 use serde::Serialize;
 use std::{
-    collections::HashMap, path::{Path, PathBuf}, time::Duration
+    collections::{HashMap, HashSet}, path::{Path, PathBuf}, time::Duration
 };
-use std::collections::HashSet;
 use tauri::{path::PathResolver, Wry};
 use tauri_plugin_http::reqwest;
 use tokio::{time::Instant, try_join};
@@ -115,9 +114,9 @@ async fn memoize_or_fetch(
             if let Ok(contents) = fetch_text(route).await {
                 tokio::fs::write(path, &contents).await.context("failed to write contents")?;
                 return Ok((contents, remote));
-            } else {
-                warn!("failed to fetch text for (case 2B) {route}");
             }
+
+            warn!("failed to fetch text for (case 2B) {route}");
         }
         (None, Some(cached)) => {
             info!("remote hash fetch failed for {route}; using local cache");

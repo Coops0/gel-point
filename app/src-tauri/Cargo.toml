@@ -156,6 +156,7 @@ useless_let_if_seq = "warn"
 verbose_bit_mask = "warn"
 verbose_file_reads = "warn"
 zero_sized_map_values = "warn"
+significant_drop_tightening = "allow"
 
 [lints.rust]
 warnings = "warn"
