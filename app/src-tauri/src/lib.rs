@@ -6,7 +6,7 @@ use crate::{
 use log::{error, info, LevelFilter};
 use serde::Serialize;
 use std::{
-    collections::HashSet, error::Error, fs, sync::{Arc, Mutex, MutexGuard}
+    error::Error, fs, sync::{Arc, Mutex, MutexGuard}
 };
 use tauri::{command, generate_handler, path::BaseDirectory, App, Manager, State};
 use tauri_plugin_fs::FsExt;
@@ -90,12 +90,11 @@ pub fn run() {
                     }
                 };
 
-                let words =
-                    words.to_lowercase().split('\n').map(ToOwned::to_owned).collect::<HashSet<_>>();
+                let cached_data = CachedData::new(words, puzzles);
 
                 {
                     let mut state = state.cached_data.lock().unwrap();
-                    *state = Some(CachedData { words, puzzles });
+                    *state = Some(cached_data);
                 }
 
                 state.notify.notify_waiters();
@@ -130,16 +129,16 @@ async fn test_word(state: State<'_, Arc<AppState>>, word: String) -> Result<bool
 }
 
 #[derive(Serialize)]
-struct PuzzleBufferedResponse {
-    puzzle: Option<String>,
-    next_puzzle: Option<String>
+struct PuzzleBufferedResponse<'a> {
+    puzzle: Option<&'a str>,
+    next_puzzle: Option<&'a str>
 }
 
 #[command]
 async fn load_puzzle_buffered(
     state: State<'_, Arc<AppState>>,
     id: u32
-) -> Result<PuzzleBufferedResponse, ()> {
+) -> Result<PuzzleBufferedResponse<'static>, ()> {
     let state = extract_state(&state).await;
     let cached_data = state.as_ref().unwrap();
 
@@ -148,8 +147,8 @@ async fn load_puzzle_buffered(
 
     viable_puzzles.sort_by_key(|(&puzzle_id, _)| puzzle_id);
 
-    let puzzle = viable_puzzles.first().map(|(_, puzzle)| *puzzle).cloned();
-    let next_puzzle = viable_puzzles.get(1).map(|(_, puzzle)| *puzzle).cloned();
+    let puzzle = viable_puzzles.first().map(|(_, &puzzle)| puzzle);
+    let next_puzzle = viable_puzzles.get(1).map(|(_, &puzzle)| puzzle);
 
     Ok(PuzzleBufferedResponse { puzzle, next_puzzle })
 }

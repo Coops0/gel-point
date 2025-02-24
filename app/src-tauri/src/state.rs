@@ -10,11 +10,33 @@ use tokio::{time::Instant, try_join};
 
 #[derive(Serialize)]
 pub struct CachedData {
-    pub words: HashSet<String>,
-    pub puzzles: HashMap<u32, String>
+    pub words: HashSet<&'static str>,
+    pub puzzles: HashMap<u32, &'static str>
 }
 
 impl CachedData {
+    // owned_words MUST be lowercase
+    pub fn new(owned_words: String, owned_puzzles: String) -> Self {
+        // SAFETY: these strings will be used and unmutated for the lifetime of the app
+        let leaked_words: &'static str = owned_words.leak();
+        let leaked_puzzles: &'static str = owned_puzzles.leak();
+
+        let words =
+            leaked_words.lines().collect::<HashSet<_>>();
+
+        let puzzles = leaked_puzzles
+            .lines()
+            .filter_map(|line| {
+                let mut parts = line.split('|');
+                let id: u32 = parts.next()?.parse().ok()?;
+
+                Some((id, line))
+            })
+            .collect::<HashMap<u32, &str>>();
+
+        Self { words, puzzles }
+    }
+
     pub fn find_word(&self, word: &str) -> bool {
         self.words.contains(word)
     }
@@ -140,7 +162,7 @@ async fn memoize_or_fetch(
     Ok((contents, String::from("TEMP-HASH")))
 }
 
-pub async fn memoized_fetch_cache(paths: &Paths) -> SmallResult<(String, HashMap<u32, String>)> {
+pub async fn memoized_fetch_cache(paths: &Paths) -> SmallResult<(String, String)> {
     let words_data = paths.words();
     let puzzles_data = paths.puzzles();
     let hashes = paths.hashes();
@@ -160,19 +182,6 @@ pub async fn memoized_fetch_cache(paths: &Paths) -> SmallResult<(String, HashMap
     if let Err(err) = tokio::fs::write(hashes, format!("{words_hash},{puzzles_hash}")).await {
         warn!("failed to write hashes to disk: {err}");
     }
-
-    let before = Instant::now();
-    let puzzles = puzzles
-        .split('\n')
-        .filter_map(|line| {
-            let mut parts = line.split('|');
-            let id: u32 = parts.next()?.parse().ok()?;
-
-            Some((id, line.to_owned()))
-        })
-        .collect::<HashMap<u32, String>>();
-
-    info!("parsed {} puzzles in {}ms", puzzles.len(), before.elapsed().as_millis());
 
     Ok((words, puzzles))
 }
