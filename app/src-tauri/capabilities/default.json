@@ -7,20 +7,9 @@
   ],
   "permissions": [
     "core:default",
-    "fs:scope-data",
-    "fs:scope-cache",
     "haptics:allow-vibrate",
     "haptics:allow-selection-feedback",
     "haptics:allow-impact-feedback",
-    "haptics:allow-notification-feedback",
-    "log:default",
-    {
-      "identifier": "http:default",
-      "allow": [
-        {
-          "url": "https://gel-point.cooperhanessian.com"
-        }
-      ]
-    }
+    "haptics:allow-notification-feedback"
   ]
 }

@@ -1,104 +1,39 @@
-#![allow(clippy::missing_panics_doc, clippy::used_underscore_binding, clippy::large_stack_frames)]
-
-use crate::{
-    errors::{ResultExtDisplay, SmallError}, state::{memoized_fetch_cache, CachedData, Paths}
-};
-use log::{error, info, LevelFilter};
+use crate::data::{PUZZLES_DATA, WORDS_DATA};
 use serde::Serialize;
 use std::{
-    error::Error, fs, sync::{Arc, Mutex, MutexGuard}
+    collections::{HashMap, HashSet}, sync::Arc
 };
-use tauri::{command, generate_handler, path::BaseDirectory, App, Manager, State};
-use tauri_plugin_fs::FsExt;
-use tauri_plugin_log::{Target, TargetKind};
-use tokio::sync::Notify;
+use tauri::{command, generate_handler, App, Manager, State};
 
 mod ctx_macro_offload;
-mod errors;
-mod state;
-
-const BASE_API_URL: &str = "https://gel-point.cooperhanessian.com";
+mod data;
 
 struct AppState {
-    cached_data: Mutex<Option<CachedData>>,
-    notify: Notify
+    processed_words: HashSet<&'static str>,
+    processed_puzzles: HashMap<u32, &'static str>
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(
-            tauri_plugin_log::Builder::new()
-                .targets([Target::new(TargetKind::Stdout)])
-                .level(LevelFilter::Warn)
-                .level_for("app_lib", LevelFilter::Trace)
-                .build()
-        )
-        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_haptics::init())
-        .plugin(tauri_plugin_http::init())
         .append_invoke_initialization_script(include_str!("../assets/startup.js"))
         .invoke_handler(generate_handler![test_word, load_puzzle_buffered])
-        .setup(|app: &mut App| -> Result<(), Box<dyn Error>> {
-            let path = app.path();
-            let paths = Paths::new(path).context("failed to init paths struct")?;
+        .setup(|app: &mut App| {
+            let processed_words = WORDS_DATA.lines().collect::<HashSet<_>>();
 
-            let _ = fs::create_dir_all(paths.cache_dir());
+            let processed_puzzles = PUZZLES_DATA
+                .lines()
+                .filter_map(|line| {
+                    let mut parts = line.split('|');
+                    let id: u32 = parts.next()?.parse().ok()?;
 
-            let scope = app.fs_scope();
-            scope.allow_file(paths.words()).context("failed to allow words file via fs_scope")?;
-            scope
-                .allow_file(paths.puzzles())
-                .context("failed to allow puzzles file via fs_scope")?;
+                    Some((id, line))
+                })
+                .collect::<HashMap<u32, &str>>();
 
-            if !paths.puzzles().exists() {
-                let bundled_puzzles = path
-                    .resolve("./assets/puzzles.data", BaseDirectory::Resource)
-                    .context("failed to resolve puzzles data path")?;
-
-                let _ = fs::copy(&bundled_puzzles, paths.puzzles());
-                info!("copied bundled puzzles to cache");
-            }
-
-            if !paths.words().exists() {
-                let bundled_words = path
-                    .resolve("./assets/words.data", BaseDirectory::Resource)
-                    .context("failed to resolve words data path")?;
-
-                let _ = fs::copy(&bundled_words, paths.words());
-                info!("copied bundled words to cache");
-            }
-
-            let state = Arc::new(AppState {
-                cached_data: Mutex::new(None::<CachedData>),
-                notify: Notify::new()
-            });
-
-            if !app.manage(Arc::clone(&state)) {
-                return Err(
-                    SmallError::from("failed to create managed app state in setup hook").into()
-                );
-            }
-
-            tauri::async_runtime::spawn(async move {
-                let (words, puzzles) = match memoized_fetch_cache(&paths).await {
-                    Ok((words, puzzles)) => (words, puzzles),
-                    Err(e) => {
-                        // for some reason tauri ignores panics in async threads
-                        error!("failed to fetch cache: {e:?}");
-                        panic!("failed to fetch cache: {e:?}");
-                    }
-                };
-
-                let cached_data = CachedData::new(words, puzzles);
-
-                {
-                    let mut state = state.cached_data.lock().unwrap();
-                    *state = Some(cached_data);
-                }
-
-                state.notify.notify_waiters();
-            });
+            let state = Arc::new(AppState { processed_words, processed_puzzles });
+            app.manage(state);
 
             Ok(())
         })
@@ -106,26 +41,9 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-async fn extract_state<'s>(
-    state: &'s State<'s, Arc<AppState>>
-) -> MutexGuard<'s, Option<CachedData>> {
-    {
-        let guard = state.cached_data.lock().unwrap();
-
-        if guard.is_some() {
-            return guard;
-        }
-    }
-
-    state.notify.notified().await;
-    state.cached_data.lock().unwrap()
-}
-
 #[command]
-async fn test_word(state: State<'_, Arc<AppState>>, word: String) -> Result<bool, ()> {
-    let state = extract_state(&state).await;
-    let cached_data = state.as_ref().unwrap();
-    Ok(cached_data.find_word(&word))
+fn test_word(state: State<'_, Arc<AppState>>, word: String) -> bool {
+    state.processed_words.contains(&*word)
 }
 
 #[derive(Serialize)]
@@ -135,20 +53,20 @@ struct PuzzleBufferedResponse<'a> {
 }
 
 #[command]
-async fn load_puzzle_buffered(
+fn load_puzzle_buffered(
     state: State<'_, Arc<AppState>>,
     id: u32
-) -> Result<PuzzleBufferedResponse<'static>, ()> {
-    let state = extract_state(&state).await;
-    let cached_data = state.as_ref().unwrap();
-
-    let mut viable_puzzles =
-        cached_data.puzzles.iter().filter(|(&puzzle_id, _)| puzzle_id >= id).collect::<Vec<_>>();
+) -> PuzzleBufferedResponse<'static> {
+    let mut viable_puzzles = state
+        .processed_puzzles
+        .iter()
+        .filter(|(&puzzle_id, _)| puzzle_id >= id)
+        .collect::<Vec<_>>();
 
     viable_puzzles.sort_by_key(|(&puzzle_id, _)| puzzle_id);
 
     let puzzle = viable_puzzles.first().map(|(_, &puzzle)| puzzle);
     let next_puzzle = viable_puzzles.get(1).map(|(_, &puzzle)| puzzle);
 
-    Ok(PuzzleBufferedResponse { puzzle, next_puzzle })
+    PuzzleBufferedResponse { puzzle, next_puzzle }
 }

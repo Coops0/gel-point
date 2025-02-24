@@ -17,13 +17,7 @@ tauri-build = { version = "2.0.5", features = [] }
 serde_json = "1.0.139"
 serde = { version = "1.0.218", features = ["derive"] }
 tauri = { version = "2.2.5", features = [] }
-tauri-plugin-fs = "2.2.0"
 tauri-plugin-haptics = "2.2.3"
-# look into changing feature flags
-tauri-plugin-http = "2.3.0"
-tauri-plugin-log = "2.2.1"
-log = "0.4.26"
-tokio = { version = "1.43.0", features = ["fs"] }
 
 # https://v2.tauri.app/concept/size/
 [profile.dev]
@@ -104,7 +98,6 @@ needless_bitwise_bool = "warn"
 needless_collect = "warn"
 needless_continue = "warn"
 needless_for_each = "warn"
-needless_pass_by_value = "warn"
 non_std_lazy_statics = "warn"
 non_zero_suggestions = "warn"
 nonstandard_macro_braces = "warn"
@@ -157,6 +150,10 @@ verbose_bit_mask = "warn"
 verbose_file_reads = "warn"
 zero_sized_map_values = "warn"
 significant_drop_tightening = "allow"
+missing_panics_doc = "allow"
+used_underscore_binding = "allow"
+large_stack_frames = "allow"
+needless_pass_by_value = "allow"
 
 [lints.rust]
 warnings = "warn"
