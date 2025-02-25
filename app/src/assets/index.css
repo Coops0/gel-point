@@ -902,8 +902,15 @@
     }
 }
 
-body {
-    background-color: var(--color-background-50);
+.launch-screen-pallet {
+    /*background-color: var(--color-background-50);*/
+    background-color: #ECEFF8;
+}
+
+@media (prefers-color-scheme: dark) {
+    .launch-screen-pallet {
+        background-color: #121218 !important;
+    }
 }
 
 body * {

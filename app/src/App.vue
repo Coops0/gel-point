@@ -18,9 +18,9 @@
       </div>
 
       <FadeTransition :duration="350">
-        <div v-if="winState !== 'active' && !isLoaded"
-             class="fixed bg-background-50 text-text-900 h-screen w-screen p-2 z-[999]">
-          <div class="flex flex-col justify-center items-center h-screen gap-4 z-[999] pointer-events-none"/>
+        <div
+            v-if="winState !== 'active' && !isLoaded"
+            class="fixed launch-screen-pallet h-screen min-w-screen overflow-hidden z-[999] pointer-events-none inset-0">
         </div>
       </FadeTransition>
 
@@ -110,7 +110,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, toRaw, useTemplateRef } from 'vue';
+import { ref, toRaw, useTemplateRef, watch } from 'vue';
 import PuzzleGrid from '@/components/PuzzleGrid.vue';
 import WordBuilder from '@/components/WordBuilder.vue';
 import { usePuzzleManager } from '@/composables/puzzle-manager.composable.ts';
@@ -357,6 +357,16 @@ useEventListener(
       event.preventDefault();
     }
 );
+
+let hasRanInitialLoad = false;
+watch(isLoaded, l => {
+  if (!l || hasRanInitialLoad) return;
+  hasRanInitialLoad = true;
+
+  const c = document.body.classList;
+  c.remove('launch-screen-pallet');
+  c.add('bg-background-50');
+});
 
 loadTheme();
 loadAndSetPuzzle();
