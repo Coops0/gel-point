@@ -1,7 +1,8 @@
 # changelog
 
 ### v0.1.6
-- x
+- Loading screen wasn't fully covering screen
+- Add direct iOS splash screen with dark mode support
 
 ### v0.1.5
 - Use capital letters for all game-related elements
