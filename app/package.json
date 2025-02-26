@@ -12,12 +12,12 @@
     "lint": "eslint \"src/**/*.{js,vue,ts}\""
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.2.0",
+    "@tauri-apps/api": "^2.3.0",
     "@tauri-apps/plugin-haptics": "^2.2.3",
     "@tauri-apps/plugin-store": "^2.2.0",
     "@types/eslint-config-prettier": "^6.11.3",
     "eslint": "^9.21.0",
-    "eslint-config-prettier": "^10.0.1",
+    "eslint-config-prettier": "^10.0.2",
     "eslint-plugin-vue": "^9.32.0",
     "globals": "^16.0.0",
     "gsap": "^3.12.7",
