@@ -21,6 +21,9 @@ tauri-plugin-haptics = "2.2.3"
 tauri-plugin-store = "2.2.0"
 include-flate = "0.3.0"
 
+# https://rustsec.org/advisories/RUSTSEC-2024-0429.html
+glib = "0.20.9"
+
 [profile.dev]
 incremental = true
 rustflags = ["-Zthreads=8"]
