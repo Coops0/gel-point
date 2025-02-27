@@ -8,7 +8,7 @@
         >
           <span
               :key="localBonusPoints" :style="{ transitionDuration: `${transitionSpeed / 2}ms` }"
-              class="absolute inset-0 !transition-all !ease-in-out font-shippori text-center">
+              class="absolute inset-0 !transition-all !ease-in-out font-alt text-center">
             {{ localBonusPoints }}
           </span>
         </Transition>

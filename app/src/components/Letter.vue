@@ -2,7 +2,7 @@
   <div
       :ref="uniqueId"
       :style="{ transform }"
-      class="absolute flex items-center justify-center rounded-full group size-20"
+      class="absolute flex items-center justify-center rounded-full group size-19"
       :data-letter-index="letterIndex"
       @pointerenter.prevent="event => emit('hover', event)"
   >

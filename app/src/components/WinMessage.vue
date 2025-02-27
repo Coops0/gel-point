@@ -10,7 +10,7 @@
     >
       <div
           v-if="isVisible"
-          class="text-5xl font-bold text-white/80 font-shippori"
+          class="text-5xl font-bold text-white/80 font-alt"
       >
         {{ message }}
       </div>

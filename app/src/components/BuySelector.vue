@@ -15,7 +15,7 @@
       >
         <p
             :class="hasSelection ? 'animate-pulse' : 'opacity-0'"
-            class="text-xl text-white text-center !transition-opacity fixed top-7/10 font-shippori">
+            class="text-xl text-white text-center !transition-opacity fixed top-7/10 font-alt">
           PRICE: <span
             :class="canAfford ? 'text-red-300' : 'text-red-500'"
             class="!transition-colors font-bold">{{ affectedCells.length * 2 }}</span>
@@ -24,7 +24,7 @@
         <div class="flex flex-row gap-4 items-center justify-center fixed top-4/5">
           <BuyButton :can-afford="canAfford" :has-selection="hasSelection" @click="buySelection"/>
           <button
-              class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg !transition-colors !duration-200 !pointer-events-auto font-shippori"
+              class="px-6 py-3 bg-gray-600 active:bg-gray-700 text-white rounded-lg !transition-colors !duration-200 !pointer-events-auto font-alt"
               @click="cancel"
           >
             CANCEL
@@ -32,7 +32,7 @@
         </div>
 
         <div
-            class="flex flex-col gap-2 text-center items-center justify-center fixed top-9/10 text-white/50 font-shippori">
+            class="flex flex-col gap-2 text-center items-center justify-center fixed top-9/10 text-white/50 font-alt">
           <p>select a row or column by clicking on it, or double clicking to switch axis</p>
         </div>
       </div>

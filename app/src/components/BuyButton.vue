@@ -1,7 +1,7 @@
 <template>
   <button
       :class="bgColor"
-      class="w-32 text-center flex justify-center items-center h-12 text-white rounded-lg !transition-all !duration-200 !pointer-events-auto font-shippori"
+      class="w-32 text-center flex justify-center items-center h-12 text-white rounded-lg !transition-all !duration-200 !pointer-events-auto font-alt"
   >
     <span v-text="text"/>
   </button>

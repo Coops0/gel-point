@@ -13,8 +13,8 @@
       <div
           v-if="winState === 'active'"
           class="flex flex-col justify-center items-center h-screen gap-4">
-        <div class="text-primary-400 font-shippori">good job 🎉</div>
-        <div class="text-primary-400 text-sm font-shippori">you did all the puzzles. now wait for me to add more.</div>
+        <div class="text-primary-400 font-alt">good job 🎉</div>
+        <div class="text-primary-400 text-sm font-alt">you did all the puzzles. now wait for me to add more.</div>
       </div>
 
       <FadeTransition :duration="350">
@@ -29,7 +29,7 @@
         <!-- compensate for dynamic island -->
         <div class="h-12"/>
         <div class="flex justify-center items-center gap-4">
-          <div class="text-primary-400 font-shippori">LEVEL {{ puzzleId }}</div>
+          <div class="text-primary-400 font-alt">LEVEL {{ puzzleId }}</div>
         </div>
 
         <div class="flex-1">
@@ -73,7 +73,7 @@
           <FadeTransition appear>
             <div
                 v-if="showHelp"
-                class="fixed top-3/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-9 bg-primary-900/85 text-white p-2 rounded-md font-shippori w-fit"
+                class="fixed top-3/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-9 bg-primary-900/85 text-white p-2 rounded-md font-alt w-fit"
                 :class="[!showHelp && '!pointer-events-none', !showBuySelector && 'z-23']"
                 @click="() => showHelp = false">
               hold and drag letters to build words
