@@ -3,6 +3,11 @@
 ### v0.1.6
 - Loading screen wasn't fully covering screen
 - Add direct iOS splash screen with dark mode support
+- Move letters up
+- Slightly increase letter radius
+- Reduce letter parent sizing
+- Compress attached puzzles and words data files
+- Remove bundled font to reduce binary size, use system font 
 
 ### v0.1.5
 - Use capital letters for all game-related elements
