@@ -1,5 +1,8 @@
 # changelog
 
+### v0.1.7
+- x
+
 ### v0.1.6
 - Loading screen wasn't fully covering screen
 - Add direct iOS splash screen with dark mode support

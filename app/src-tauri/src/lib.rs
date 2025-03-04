@@ -61,13 +61,13 @@ fn load_puzzle_buffered(
     let mut viable_puzzles = state
         .processed_puzzles
         .iter()
-        .filter(|(&puzzle_id, _)| puzzle_id >= id)
+        .filter(|&(&puzzle_id, _)| puzzle_id >= id)
         .collect::<Vec<_>>();
 
-    viable_puzzles.sort_by_key(|(&puzzle_id, _)| puzzle_id);
+    viable_puzzles.sort_by_key(|&(&puzzle_id, _)| puzzle_id);
 
-    let puzzle = viable_puzzles.first().map(|(_, &puzzle)| puzzle);
-    let next_puzzle = viable_puzzles.get(1).map(|(_, &puzzle)| puzzle);
+    let puzzle = viable_puzzles.first().map(|&(_, &puzzle)| puzzle);
+    let next_puzzle = viable_puzzles.get(1).map(|&(_, &puzzle)| puzzle);
 
     PuzzleBufferedResponse { puzzle, next_puzzle }
 }

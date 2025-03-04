@@ -2,9 +2,9 @@ cargo-features = ["profile-rustflags", "trim-paths"]
 
 [package]
 name = "gel-point"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["Cooper Hanessian"]
-edition = "2021"
+edition = "2024"
 
 [lib]
 name = "app_lib"
