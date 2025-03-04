@@ -8,6 +8,8 @@
 - Reduce letter parent sizing
 - Compress attached puzzles and words data files
 - Remove bundled font to reduce binary size, use system font 
+- (Hopefully) Fix rare puzzle crash on completion
+- Replace word list with much smaller list and only real words
 
 ### v0.1.5
 - Use capital letters for all game-related elements

@@ -29,7 +29,7 @@ export const useLetterAlignment = (letters: Ref<string[]>, windowWidth: Ref<numb
     });
 
     const circleXCenterOffset = computed(() => windowWidth.value / 2);
-    const circleYCenterOffset = ref(215);
+    const circleYCenterOffset = ref(225);
 
     const alignedLetters = ref(assignPositions(letters.value, circleRadius.value, circleXCenterOffset.value, circleYCenterOffset.value));
 

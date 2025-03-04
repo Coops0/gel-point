@@ -233,7 +233,8 @@ async function testWord(word: string) {
       builtWordIndicator.value?.dismissWith('word');
 
       await goToNextLevel();
-      await notificationFeedback('success');
+      // causing crash?
+      // await notificationFeedback('success');
 
       puzzleGrid.value?.animateShimmerCells(r.cells);
       puzzleGrid.value?.animateGlowCells(r.cells);
